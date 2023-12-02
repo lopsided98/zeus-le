@@ -1,4 +1,4 @@
-{ lib, linkFarm, fetchgit, writeText }: linkFarm "west-workspace" [
+{ lib, linkFarm, fetchgit, writeText }: (linkFarm "west-workspace" [
 
 {
     name = "firmware";
@@ -20,9 +20,9 @@
     name = "tools/west-nix";
     path = fetchgit {
         url = "https://github.com/lopsided98/west-nix";
-        rev = "b8a51f07f73950179b610de6566fc85aa9c475f1";
+        rev = "179b1bc35fca6e5aa2971557285292c027ca105a";
         branchName = "manifest-rev";
-        hash = "sha256-tVQxhtUtBTDFx+ZxNMJxAIQmSk/wt5DduCdZtshBtQk=";
+        hash = "sha256-B5VWa8AckLkwjGyy8Lngu/4FOJFNpLVHaoT3TvWUJTw=";
         leaveDotGit = true;
     };
 }
@@ -49,12 +49,13 @@
     };
 }
 
-{
-  name = ".west/config";
-  path = writeText "west-config" ''
-  [manifest]
-  path = firmware
-  file = west.yml
-'';
-}
-]
+]).overrideAttrs ({ buildCommand, ... }: {
+    buildCommand = buildCommand + ''
+        mkdir -p .west
+        cat << EOF > .west/config
+        [manifest]
+        path = firmware
+        file = west.yml
+        EOF
+    '';
+})
