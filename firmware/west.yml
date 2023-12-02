@@ -1,0 +1,21 @@
+manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+    - name: lopsided98
+      url-base: https://github.com/lopsided98
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v3.5.0
+      import:
+        name-allowlist:
+          - cmsis
+          - hal_nordic
+    - name: west-nix
+      remote: lopsided98
+      revision: 179b1bc35fca6e5aa2971557285292c027ca105a
+      import: true
+      path: tools/west-nix
+  self:
+    path: firmware
