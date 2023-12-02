@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 cmake_minimum_required(VERSION 3.20.0)
 
 set(BOARD raytac_mdbt53_db_40_nrf5340_cpuapp)
