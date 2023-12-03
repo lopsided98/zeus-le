@@ -11,7 +11,7 @@
         url = "https://github.com/zephyrproject-rtos/zephyr";
         rev = "v3.5.0";
         branchName = "manifest-rev";
-        hash = "sha256-Ec1B9jSBxkIKBBZjKzdXKkXsAbey50X4S3oDo55BUOk=";
+        hash = "sha256-AKmTkHA+/1BM/qMtLEMF0NDUHCqo0A2e5LKLhRRLilU=";
     };
 }
 
@@ -31,7 +31,7 @@
         url = "https://github.com/zephyrproject-rtos/cmsis";
         rev = "5a00331455dd74e31e80efa383a489faea0590e3";
         branchName = "manifest-rev";
-        hash = "sha256-06vNDFbmmVsWkzE/Zv+6cAW1nTIxR2Gizt+ZeaM86yI=";
+        hash = "sha256-1oCeT681nFDbCyhp0mErktuoj3YtFDzP5dLYdWz0+AM=";
     };
 }
 
@@ -41,7 +41,7 @@
         url = "https://github.com/zephyrproject-rtos/hal_nordic";
         rev = "d054a315eb888ba70e09e5f6decd4097b0276d1f";
         branchName = "manifest-rev";
-        hash = "sha256-3aONqZ0avs5Inti+Z4g98256s9lp9AgsiH0v8s2CKdc=";
+        hash = "sha256-0rSZyKvK0iE4qPtPlRfF0IPndi/lLfJk4WJRbwLx9no=";
     };
 }
 ])
