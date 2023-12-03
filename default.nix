@@ -28,8 +28,8 @@
     overlays = [ optimizeSizeOverlay ];
   };
 in pkgs.callPackage ({
-  lib, stdenv, callPackage, git, cmake, ninja, python3, dtc, python3Packages
-, nix-prefetch-git
+  lib, stdenv, callPackage, cmake, ninja, python3, dtc, python3Packages
+, git, nix-prefetch-git
 }: stdenv.mkDerivation {
   pname = "zeus-le";
   version = "0.1.0";
@@ -39,44 +39,45 @@ in pkgs.callPackage ({
     else callPackage ./firmware/west.nix { };
 
   nativeBuildInputs = [
-    git
     cmake
     ninja
     python3
     dtc
   ] ++ (with python3Packages; [
-    west
     pyelftools
+    pykwalify
+    packaging
   ]) ++ (lib.optionals dev [
+    git
+    python3Packages.west
     nix-prefetch-git
   ]);
 
   env = {
-    GNUARMEMB_TOOLCHAIN_PATH = stdenv.cc;
-    ZEPHYR_TOOLCHAIN_VARIANT= "gnuarmemb";
+    ZEPHYR_TOOLCHAIN_VARIANT = "cross-compile";
+    CROSS_COMPILE = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}";
   };
 
-  dontConfigure = true;
+  cmakeFlags = [
+    "-S" "../firmware"
+    # TODO: generate dynamically
+    "-DBUILD_VERSION=zephyr-v3.5.0"
+  ];
 
-  buildPhase = ''
-    runHook preBuild
+  preConfigure = ''
+    # Zephyr requires absolute paths
+    export CC="$(command -v $CC)"
+    export CXX="$(command -v $CXX)"
 
-    # Convince Git to read from the Nix store
-    export XDG_CONFIG_HOME="$(pwd)/.config"
-    mkdir -p "$XDG_CONFIG_HOME/git"
-    touch "$XDG_CONFIG_HOME/git/config"
-    git config --global --add safe.directory '*'
-
-    west build firmware -- -DUSER_CACHE_DIR="$(pwd)/.cache" -DZEPHYR_GIT_INDEX=/
-
-    runHook postBuild
+    cmakeFlagsArray+=("-DUSER_CACHE_DIR=$(pwd)/user_cache")
+    source .zephyr-env
   '';
   
   installPhase = ''
     runHook preInstall
 
     mkdir -p "$out"
-    cp build/zephyr/zephyr.elf "$out"
+    cp zephyr/zephyr.elf "$out"
 
     runHook postInstall
   '';

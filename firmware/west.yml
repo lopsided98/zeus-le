@@ -14,7 +14,7 @@ manifest:
           - hal_nordic
     - name: west-nix
       remote: lopsided98
-      revision: 179b1bc35fca6e5aa2971557285292c027ca105a
+      revision: bde036d3aef61ef1d0cff2cf7226bc9e8d2b23ae
       import: true
       path: tools/west-nix
   self:
