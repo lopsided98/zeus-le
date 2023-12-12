@@ -12,6 +12,8 @@ manifest:
         name-allowlist:
           - cmsis
           - hal_nordic
+          - open-amp
+          - libmetal
     - name: west-nix
       remote: lopsided98
       revision: bde036d3aef61ef1d0cff2cf7226bc9e8d2b23ae

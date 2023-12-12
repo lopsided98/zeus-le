@@ -1,0 +1,4 @@
+// Required to enable BT_LLL_VENDOR_NORDIC
+&timer0 {
+	status = "disabled";
+};

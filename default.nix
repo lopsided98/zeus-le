@@ -1,7 +1,8 @@
 { nixpkgs, lib, stdenv
-
-, dev ? false }: let
+, dev ? false
+}: let
   optimizeSizeOverlay = final: prev: lib.optionalAttrs prev.stdenv.hostPlatform.isNone {
+    # Zephyr doesn't use newlib or libstdc++ by default, but this doesn't hurt
     stdenv = lib.pipe prev.stdenv [
       # Optimize newlib
       (prev.withCFlags [ "-Os" ])
@@ -20,7 +21,7 @@
       config = "arm-none-eabi";
       libc = "newlib-nano";
       gcc = {
-        arch = "armv8-m.main+dsp+fp";
+        arch = "armv8-m.main+fp";
         tune = "cortex-m33";
         float = "hard";
       };
@@ -28,8 +29,8 @@
     overlays = [ optimizeSizeOverlay ];
   };
 in pkgs.callPackage ({
-  lib, stdenv, callPackage, cmake, ninja, python3, dtc, python3Packages
-, git, nix-prefetch-git
+  lib, stdenv, callPackage, buildPackages, cmake, ninja, python3, dtc
+, python3Packages, git, nix-prefetch-git, clang-tools
 }: stdenv.mkDerivation {
   pname = "zeus-le";
   version = "0.1.0";
@@ -51,15 +52,21 @@ in pkgs.callPackage ({
     git
     python3Packages.west
     nix-prefetch-git
+    (buildPackages.clang-tools.override {
+      llvmPackages = buildPackages.llvmPackages_latest;
+    })
   ]);
 
   env = {
     ZEPHYR_TOOLCHAIN_VARIANT = "cross-compile";
     CROSS_COMPILE = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}";
+  } // lib.optionalAttrs dev {
+    # Required by menuconfig
+    LOCALE_ARCHIVE = "${buildPackages.glibcLocales}/lib/locale/locale-archive";
   };
 
   cmakeFlags = [
-    "-S" "../firmware"
+    "-S" "../firmware/central"
     # TODO: generate dynamically
     "-DBUILD_VERSION=zephyr-v3.5.0"
   ];
