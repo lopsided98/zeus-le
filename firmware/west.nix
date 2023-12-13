@@ -44,13 +44,33 @@
         hash = "sha256-0rSZyKvK0iE4qPtPlRfF0IPndi/lLfJk4WJRbwLx9no=";
     };
 }
+
+{
+    name = "modules/hal/libmetal";
+    path = fetchgit {
+        url = "https://github.com/zephyrproject-rtos/libmetal";
+        rev = "b91611a6f47dd29fb24c46e5621e797557f80ec6";
+        branchName = "manifest-rev";
+        hash = "sha256-n0mZzV62tZI27Y6dftMPWAtMaJQDuB9ju9THrr55QF4=";
+    };
+}
+
+{
+    name = "modules/lib/open-amp";
+    path = fetchgit {
+        url = "https://github.com/zephyrproject-rtos/open-amp";
+        rev = "42b7c577714b8f22ce82a901e19c1814af4609a8";
+        branchName = "manifest-rev";
+        hash = "sha256-iZtC8uXGapFPNU2XNWjfc6DmuaqkUiZo6H/swciOATI=";
+    };
+}
 ])
 
 .overrideAttrs ({ buildCommand, ... }: {
     buildCommand = buildCommand + ''
         cat << EOF > .zephyr-env
           export ZEPHYR_BASE='${placeholder "out"}/zephyr'
-          export ZEPHYR_MODULES='${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/hal/nordic'
+          export ZEPHYR_MODULES='${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/hal/nordic;${placeholder "out"}/modules/hal/libmetal;${placeholder "out"}/modules/lib/open-amp'
         EOF
     '';
 })
