@@ -64,13 +64,23 @@
         hash = "sha256-iZtC8uXGapFPNU2XNWjfc6DmuaqkUiZo6H/swciOATI=";
     };
 }
+
+{
+    name = "modules/crypto/tinycrypt";
+    path = fetchgit {
+        url = "https://github.com/zephyrproject-rtos/tinycrypt";
+        rev = "3e9a49d2672ec01435ffbf0d788db6d95ef28de0";
+        branchName = "manifest-rev";
+        hash = "sha256-5gtZbZNx+D/EUkyYk7rPtcxBZaNs4IFGTP/7IXzCoqU=";
+    };
+}
 ])
 
 .overrideAttrs ({ buildCommand, ... }: {
     buildCommand = buildCommand + ''
         cat << EOF > .zephyr-env
           export ZEPHYR_BASE='${placeholder "out"}/zephyr'
-          export ZEPHYR_MODULES='${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/hal/nordic;${placeholder "out"}/modules/hal/libmetal;${placeholder "out"}/modules/lib/open-amp'
+          export ZEPHYR_MODULES='${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/hal/nordic;${placeholder "out"}/modules/hal/libmetal;${placeholder "out"}/modules/lib/open-amp;${placeholder "out"}/modules/crypto/tinycrypt'
         EOF
     '';
 })

@@ -2,13 +2,13 @@ CompileFlags:
   Remove: [-mfp16-format=ieee, -fno-reorder-functions]
 ---
 If:
+  PathMatch: firmware/central/app.*
+
+CompileFlags:
+  CompilationDatabase: build/app
+---
+If:
   PathMatch: firmware/central/net/.*
 
 CompileFlags:
-  CompilationDatabase: build/zeus_le_central_net
----
-If:
-  PathMatch: firmware/central/.*
-
-CompileFlags:
-  CompilationDatabase: build/central
+  CompilationDatabase: build/net

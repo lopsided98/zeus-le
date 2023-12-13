@@ -69,7 +69,7 @@ in pkgs.callPackage ({
 
   cmakeFlags = [
     "-DBOARD=raytac_mdbt53_db_40_nrf5340_cpuapp"
-    "-DAPP_DIR=../firmware/central"
+    "-DAPP_DIR=../firmware/central/app"
     # TODO: generate dynamically
     "-DBUILD_VERSION=zephyr-v3.5.0"
   ];
@@ -87,8 +87,8 @@ in pkgs.callPackage ({
     runHook preInstall
 
     mkdir -p "$out"
-    cp central/zephyr/zephyr.elf "$out/zeus_le_central_app.elf"
-    cp central_net/zephyr/zephyr.elf "$out/zeus_le_central_net.elf"
+    cp app/zephyr/zephyr.elf "$out/zeus_le_central_app.elf"
+    cp net/zephyr/zephyr.elf "$out/zeus_le_central_net.elf"
 
     runHook postInstall
   '';
