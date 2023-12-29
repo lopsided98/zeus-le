@@ -30,7 +30,7 @@
   };
 in pkgs.callPackage ({
   lib, stdenv, callPackage, buildPackages, cmake, ninja, python3, dtc
-, python3Packages, git, nix-prefetch-git, clang-tools
+, python3Packages, git, nix-prefetch-git, clang-tools, openocd, gdb
 }: stdenv.mkDerivation {
   pname = "zeus-le";
   version = "0.1.0";
@@ -55,6 +55,8 @@ in pkgs.callPackage ({
     (buildPackages.clang-tools.override {
       llvmPackages = buildPackages.llvmPackages_latest;
     })
+    openocd
+    gdb
   ]);
 
   env = {

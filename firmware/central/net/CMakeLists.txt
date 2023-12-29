@@ -8,3 +8,4 @@ target_sources(app PRIVATE
     src/main.c
     src/hci_ipc.c
 )
+target_include_directories(app PRIVATE ../common/src)

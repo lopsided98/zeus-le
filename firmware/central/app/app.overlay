@@ -10,14 +10,9 @@
 			compatible = "zephyr,ipc-openamp-static-vrings";
 			memory-region = <&sram_ipc_log>;
 			mboxes = <&mbox 2>, <&mbox 3>;
-			mbox-names = "rx", "tx";
-			role = "remote";
+			mbox-names = "tx", "rx";
+			role = "host";
 			status = "okay";
 		};
 	};
-};
-
-// Required to enable BT_LLL_VENDOR_NORDIC
-&timer0 {
-	status = "disabled";
 };
