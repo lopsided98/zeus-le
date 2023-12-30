@@ -8,10 +8,10 @@
 {
     name = "zephyr";
     path = fetchgit {
-        url = "https://github.com/zephyrproject-rtos/zephyr";
-        rev = "aa4416624dceef29ec9ca78820c9fe5d3868f62c";
+        url = "https://github.com/lopsided98/zephyr";
+        rev = "053912d30dda768b71863f166dab2732f9503e97";
         branchName = "manifest-rev";
-        hash = "sha256-Y9g1d1jrKrh5H7CTHtc6efLm8/Pa3eE97BRzYHeZEIo=";
+        hash = "sha256-hwvP4enYzzf+E7LVfBmZAudH9a6tZKhXd7jB6dAyeNQ=";
     };
 }
 

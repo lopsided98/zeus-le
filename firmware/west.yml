@@ -6,8 +6,8 @@ manifest:
       url-base: https://github.com/lopsided98
   projects:
     - name: zephyr
-      remote: zephyrproject-rtos
-      revision: aa4416624dceef29ec9ca78820c9fe5d3868f62c
+      remote: lopsided98
+      revision: 053912d30dda768b71863f166dab2732f9503e97
       import:
         name-allowlist:
           - cmsis
