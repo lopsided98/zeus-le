@@ -9,9 +9,9 @@
     name = "zephyr";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/zephyr";
-        rev = "v3.5.0";
+        rev = "aa4416624dceef29ec9ca78820c9fe5d3868f62c";
         branchName = "manifest-rev";
-        hash = "sha256-AKmTkHA+/1BM/qMtLEMF0NDUHCqo0A2e5LKLhRRLilU=";
+        hash = "sha256-Y9g1d1jrKrh5H7CTHtc6efLm8/Pa3eE97BRzYHeZEIo=";
     };
 }
 
@@ -29,9 +29,9 @@
     name = "modules/hal/cmsis";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/cmsis";
-        rev = "5a00331455dd74e31e80efa383a489faea0590e3";
+        rev = "4b96cbb174678dcd3ca86e11e1f24bc5f8726da0";
         branchName = "manifest-rev";
-        hash = "sha256-1oCeT681nFDbCyhp0mErktuoj3YtFDzP5dLYdWz0+AM=";
+        hash = "sha256-vzCbE69wCMLIjrSz1m8yspgVCto4JSm4Qg5zY/Ozg+k=";
     };
 }
 
@@ -39,9 +39,9 @@
     name = "modules/hal/nordic";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/hal_nordic";
-        rev = "d054a315eb888ba70e09e5f6decd4097b0276d1f";
+        rev = "b9633ecea67bf52925d4c61455046223b46402b1";
         branchName = "manifest-rev";
-        hash = "sha256-0rSZyKvK0iE4qPtPlRfF0IPndi/lLfJk4WJRbwLx9no=";
+        hash = "sha256-BdPhDjSOwPLHuO6UKYWzZfUK4DHnfq1spKTsopVypkI=";
     };
 }
 
@@ -49,9 +49,9 @@
     name = "modules/hal/libmetal";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/libmetal";
-        rev = "b91611a6f47dd29fb24c46e5621e797557f80ec6";
+        rev = "243eed541b9c211a2ce8841c788e62ddce84425e";
         branchName = "manifest-rev";
-        hash = "sha256-n0mZzV62tZI27Y6dftMPWAtMaJQDuB9ju9THrr55QF4=";
+        hash = "sha256-wCsYllPeDKx4P5gBGEFDcY4QNbMdwrd+5h5GZ8tEsJM=";
     };
 }
 
@@ -59,9 +59,9 @@
     name = "modules/lib/open-amp";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/open-amp";
-        rev = "42b7c577714b8f22ce82a901e19c1814af4609a8";
+        rev = "da78aea63159771956fe0c9263f2e6985b66e9d5";
         branchName = "manifest-rev";
-        hash = "sha256-iZtC8uXGapFPNU2XNWjfc6DmuaqkUiZo6H/swciOATI=";
+        hash = "sha256-7yae0X7zqDPA4CUfGU3LgNBh7qyKGIPLUv6dn/d65Fg=";
     };
 }
 

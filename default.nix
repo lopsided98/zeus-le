@@ -73,7 +73,7 @@ in pkgs.callPackage ({
     "-DBOARD=raytac_mdbt53_db_40_nrf5340_cpuapp"
     "-DAPP_DIR=../firmware/central/app"
     # TODO: generate dynamically
-    "-DBUILD_VERSION=zephyr-v3.5.0"
+    "-DBUILD_VERSION=zephyr-v3.5.0-3513-gaa4416624dce"
   ];
 
   preConfigure = ''
