@@ -76,7 +76,7 @@ int packet_timer_init(void) {
                   &packet_timer);
     IRQ_DIRECT_CONNECT(
         NRFX_IRQ_NUMBER_GET(NRF_EGU_INST_GET(PACKET_TIMER_EGU_IDX)),
-        IRQ_PRIO_LOWEST, NRFX_EGU_INST_HANDLER_GET(PACKET_TIMER_EGU_IDX), 0);
+        NRFX_DEFAULT_IRQ_PRIORITY, NRFX_EGU_INST_HANDLER_GET(PACKET_TIMER_EGU_IDX), 0);
 
     // Use EGU to fire interrupt when packet is transmitted
     nrf_egu_subscribe_set(egu.p_reg, NRF_EGU_TASK_TRIGGER0,

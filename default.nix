@@ -1,4 +1,5 @@
-{ nixpkgs, lib, stdenv
+{ nixpkgs, pkgs, lib, stdenv
+, platform ? "nrf53"
 , dev ? false
 }: let
   optimizeSizeOverlay = final: prev: lib.optionalAttrs prev.stdenv.hostPlatform.isNone {
@@ -15,22 +16,28 @@
     ];
   };
 
-  pkgs = nixpkgs {
-    localSystem = stdenv.hostPlatform;
-    crossSystem = {
-      config = "arm-none-eabi";
-      libc = "newlib-nano";
-      gcc = {
-        arch = "armv8-m.main+fp";
-        tune = "cortex-m33";
-        float = "hard";
+  pkgs' = {
+    "nrf53" = nixpkgs {
+      localSystem = stdenv.hostPlatform;
+      crossSystem = {
+        config = "arm-none-eabi";
+        libc = "newlib-nano";
+        gcc = {
+          arch = "armv8-m.main+fp";
+          tune = "cortex-m33";
+          float = "hard";
+        };
       };
+      overlays = [ optimizeSizeOverlay ];
     };
-    overlays = [ optimizeSizeOverlay ];
-  };
-in pkgs.callPackage ({
-  lib, stdenv, callPackage, buildPackages, cmake, ninja, python3, dtc
-, python3Packages, git, nix-prefetch-git, clang-tools, openocd, gdb
+    "native" = nixpkgs {
+      localSystem = stdenv.hostPlatform;
+      crossSystem = pkgs.pkgsi686Linux.stdenv.hostPlatform;
+    };
+  }.${platform};
+in pkgs'.callPackage ({
+  lib, stdenv, callPackage, buildPackages, cmake, ninja, makedepend, python3
+, dtc, python3Packages, git, nix-prefetch-git, clang-tools, openocd, gdb
 }: stdenv.mkDerivation {
   pname = "zeus-le";
   version = "0.1.0";
@@ -42,6 +49,7 @@ in pkgs.callPackage ({
   nativeBuildInputs = [
     cmake
     ninja
+    makedepend # babblesim
     python3
     dtc
   ] ++ (with python3Packages; [

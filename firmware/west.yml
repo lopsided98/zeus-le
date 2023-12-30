@@ -1,5 +1,9 @@
 manifest:
+  group-filter:
+    - +babblesim
   remotes:
+    - name: babblesim
+      url-base: https://github.com/BabbleSim
     - name: zephyrproject-rtos
       url-base: https://github.com/zephyrproject-rtos
     - name: lopsided98
@@ -10,11 +14,22 @@ manifest:
       revision: 053912d30dda768b71863f166dab2732f9503e97
       import:
         name-allowlist:
+          - bsim
+          - babblesim_base
+          - babblesim_ext_2G4_libPhyComv1
+          - babblesim_ext_2G4_phy_v1
+          - babblesim_ext_2G4_channel_NtNcable
+          - babblesim_ext_2G4_modem_magic
           - cmsis
           - hal_nordic
-          - open-amp
           - libmetal
+          - open-amp
           - tinycrypt
+    - name: babblesim_ext_nRF_hw_models
+      remote: babblesim
+      repo-path: ext_nRF_hw_models.git
+      path: tools/bsim/components/ext_nRF_hw_models
+      revision: 9b985ea6bc237b6ae06f48eb228f2ac7f6e3b96b
     - name: west-nix
       remote: lopsided98
       revision: bde036d3aef61ef1d0cff2cf7226bc9e8d2b23ae

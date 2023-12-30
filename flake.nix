@@ -14,9 +14,17 @@
     packages.default = pkgs.callPackage ./default.nix {
       nixpkgs = import nixpkgs;
     };
-    devShells.default = pkgs.callPackage ./default.nix {
-      nixpkgs = import nixpkgs;
-      dev = true;
+    devShells = {
+      nrf53 = pkgs.callPackage ./default.nix {
+        nixpkgs = import nixpkgs;
+        platform = "nrf53";
+        dev = true;
+      };
+      native = pkgs.callPackage ./default.nix {
+        nixpkgs = import nixpkgs;
+        platform = "native";
+        dev = true;
+      };
     };
   });
 }
