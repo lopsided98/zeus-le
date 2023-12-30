@@ -252,7 +252,7 @@ static void hci_ipc_send(struct net_buf *buf, bool is_fatal_err) {
         }
     } while (ret < 0);
 
-    LOG_INF("Sent message of %d bytes.", ret);
+    LOG_DBG("Sent message of %d bytes.", ret);
 
     net_buf_unref(buf);
 }
@@ -374,7 +374,7 @@ static void hci_ept_bound(void *priv) {
 }
 
 static void hci_ept_recv(const void *data, size_t len, void *priv) {
-    LOG_INF("Received message of %u bytes.", len);
+    LOG_DBG("Received message of %u bytes.", len);
     hci_ipc_recv((uint8_t *)data, len);
 }
 
