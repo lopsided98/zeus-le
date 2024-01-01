@@ -6,6 +6,13 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+// Zephyr internal headers, order is important
+// clang-format off
+#include <bluetooth/controller/ll_sw/pdu_df.h>
+#include <bluetooth/controller/ll_sw/nordic/lll/pdu_vendor.h>
+#include <bluetooth/controller/ll_sw/pdu.h>
+// clang-format on
+
 #include "drivers/nrfx_errors.h"
 #include "hci_ipc.h"
 #include "sync.h"
@@ -20,21 +27,37 @@ struct packet_timer {
     struct ipc_ept ept;
 } packet_timer;
 
-extern volatile uint32_t adv_sync_isr_done;
+static void packet_timer_ipc_bound(void* priv) {}
 
-void packet_timer_isr(uint8_t event_idx, void* context) {
+static const struct ipc_ept_cfg packet_timer_ept_cfg = {
+    .name = "packet_timer",
+};
+
+static void packet_timer_isr(uint8_t event_idx, void* context) {
     struct packet_timer* t = (struct packet_timer*)context;
+
+    const struct pdu_adv* pdu = (const struct pdu_adv*)NRF_RADIO->PACKETPTR;
+    if (!pdu) {
+        LOG_WRN("Null PDU");
+        return;
+    }
+    // Check PDU type, but this is not enough because all extended advertising
+    // packets share the same type
+    if (pdu->type != PDU_ADV_TYPE_AUX_SYNC_IND) return;
+    // Make sure there is no extended advertising header. All extended
+    // advertising packets except the periodic packet have a header.
+    if (pdu->adv_ext_ind.ext_hdr_len != 0) return;
 
     const struct zeus_packet_timer_msg msg = {
         .timer = nrfx_timer_capture_get(&t->timer, NRF_TIMER_CC_CHANNEL0),
     };
-    LOG_INF("timer: %" PRIu32 ", %" PRIu32, adv_sync_isr_done, msg.timer);
-    adv_sync_isr_done = 0;
+    LOG_INF("pdu: type=%" PRIu8 ", len=%" PRIu8 ", t=%" PRIu32, pdu->type,
+            pdu->len, msg.timer);
 
-    // ipc_service_send(&t->ept, &msg, sizeof(msg));
+    ipc_service_send(&t->ept, &msg, sizeof(msg));
 }
 
-int packet_timer_init(void) {
+static int packet_timer_init(void) {
     int err;
     nrfx_err_t nerr;
     const struct device* ipc = DEVICE_DT_GET(DT_NODELABEL(ipc0));
@@ -44,14 +67,12 @@ int packet_timer_init(void) {
         LOG_ERR("failed to initialize IPC (err %d)\n", err);
         return err;
     }
-    // err = ipc_service_register_endpoint(ipc, &packet_timer.ept,
-    //                                     &(struct ipc_ept_cfg){
-    //                                         .name = "packet_timer",
-    //                                     });
-    // if (err < 0) {
-    //     LOG_ERR("failed to register IPC endpoint (err %d)\n", err);
-    //     return err;
-    // }
+    err = ipc_service_register_endpoint(ipc, &packet_timer.ept,
+                                        &packet_timer_ept_cfg);
+    if (err < 0) {
+        LOG_ERR("failed to register IPC endpoint (err %d)\n", err);
+        return err;
+    }
 
     packet_timer.timer = (nrfx_timer_t)NRFX_TIMER_INSTANCE(PACKET_TIMER_IDX);
 
@@ -68,19 +89,19 @@ int packet_timer_init(void) {
     // Subscribe to radio end event through existing DPPI channel configured by
     // BLE driver
     nrf_timer_subscribe_set(packet_timer.timer.p_reg, NRF_TIMER_TASK_CAPTURE0,
-                            HAL_RADIO_END_TIME_CAPTURE_PPI);
+                            HAL_SW_SWITCH_TIMER_CLEAR_PPI);
 
     nrfx_egu_t egu = NRFX_EGU_INSTANCE(PACKET_TIMER_EGU_IDX);
 
     nrfx_egu_init(&egu, NRFX_EGU_DEFAULT_CONFIG_IRQ_PRIORITY, packet_timer_isr,
                   &packet_timer);
     IRQ_DIRECT_CONNECT(
-        NRFX_IRQ_NUMBER_GET(NRF_EGU_INST_GET(PACKET_TIMER_EGU_IDX)),
-        NRFX_DEFAULT_IRQ_PRIORITY, NRFX_EGU_INST_HANDLER_GET(PACKET_TIMER_EGU_IDX), 0);
+        NRFX_IRQ_NUMBER_GET(NRF_EGU_INST_GET(PACKET_TIMER_EGU_IDX)), 5,
+        NRFX_EGU_INST_HANDLER_GET(PACKET_TIMER_EGU_IDX), 0);
 
     // Use EGU to fire interrupt when packet is transmitted
     nrf_egu_subscribe_set(egu.p_reg, NRF_EGU_TASK_TRIGGER0,
-                          HAL_RADIO_END_TIME_CAPTURE_PPI);
+                          HAL_SW_SWITCH_TIMER_CLEAR_PPI);
     nrfx_egu_int_enable(&egu, NRF_EGU_INT_TRIGGERED0);
 
     // Start the timer

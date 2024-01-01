@@ -11,14 +11,15 @@ LOG_MODULE_REGISTER(central);
 
 struct ipc_ept packet_timer_ept;
 
-void packet_timer_callback(const void *data, size_t len, void *priv) {
+void packet_timer_ipc_recv(const void *data, size_t len, void *priv) {
     LOG_INF("pkt");
 }
 
 static const struct ipc_ept_cfg packet_timer_ept_cfg = {
     .name = "packet_timer",
-    .cb.received = packet_timer_callback,
-};
+    .cb = {
+        .received = packet_timer_ipc_recv,
+    }};
 
 int packet_timer_init(void) {
     int err;
@@ -128,10 +129,10 @@ int main(void) {
         return 0;
     }
 
-    // err = connect_adv_init();
-    // if (err) {
-    //     return 0;
-    // }
+    err = connect_adv_init();
+    if (err) {
+        return 0;
+    }
 
     err = sync_adv_init();
     if (err) {
