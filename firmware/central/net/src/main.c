@@ -6,6 +6,9 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#include "hci_ipc.h"
+#include "zeus/sync.h"
+
 // Zephyr internal headers, order is important
 // clang-format off
 #include <bluetooth/controller/ll_sw/pdu_df.h>
@@ -13,21 +16,16 @@
 #include <bluetooth/controller/ll_sw/pdu.h>
 // clang-format on
 
-#include "drivers/nrfx_errors.h"
-#include "hci_ipc.h"
-#include "sync.h"
-
 LOG_MODULE_REGISTER(central_net);
 
 #define PACKET_TIMER_EGU_IDX 0
 #define PACKET_TIMER_IDX 2
 
 struct packet_timer {
+    uint8_t seq;
     nrfx_timer_t timer;
     struct ipc_ept ept;
 } packet_timer;
-
-static void packet_timer_ipc_bound(void* priv) {}
 
 static const struct ipc_ept_cfg packet_timer_ept_cfg = {
     .name = "packet_timer",
@@ -49,10 +47,9 @@ static void packet_timer_isr(uint8_t event_idx, void* context) {
     if (pdu->adv_ext_ind.ext_hdr_len != 0) return;
 
     const struct zeus_packet_timer_msg msg = {
+        .seq = t->seq++,
         .timer = nrfx_timer_capture_get(&t->timer, NRF_TIMER_CC_CHANNEL0),
     };
-    LOG_INF("pdu: type=%" PRIu8 ", len=%" PRIu8 ", t=%" PRIu32, pdu->type,
-            pdu->len, msg.timer);
 
     ipc_service_send(&t->ept, &msg, sizeof(msg));
 }

@@ -7,16 +7,19 @@ if(("${BOARD}" STREQUAL "raytac_mdbt53_db_40_nrf5340_cpunet") OR
 	("${BOARD}" STREQUAL "nrf5340bsim_nrf5340_cpunet"))
 	message(INFO " ${BOARD} used for Network Core")
 else()
-	message(FATAL_ERROR "${BOARD} is not supported for this sample")
+	message(FATAL_ERROR "${BOARD} is not supported")
 endif()
 
 project(zeus_le_central_net LANGUAGES C)
+
+add_subdirectory(../../common common)
+add_subdirectory(../common central_common)
 
 target_sources(app PRIVATE
     src/main.c
     src/hci_ipc.c
 )
+target_link_libraries(app PRIVATE zeus_common zeus_central_common)
 target_include_directories(app PRIVATE
-    ../common/src
     ${ZEPHYR_BASE}/subsys # Need private Bluetooth headers
 )

@@ -1,28 +1,71 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <inttypes.h>
 #include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/ipc/ipc_service.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
-#include "sync.h"
+#include "zeus/protocol.h"
+#include "zeus/sync.h"
 
 LOG_MODULE_REGISTER(central);
 
-struct ipc_ept packet_timer_ept;
+static struct packet_timer {
+    struct ipc_ept ept;
+    struct bt_le_ext_adv *adv;
+    uint8_t last_seq;
+    bool first_seq;
+} packet_timer = {
+    .first_seq = true,
+};
+
+static const struct gpio_dt_spec led =
+    GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
+
+void led_off_work_handler(struct k_work *work) { gpio_pin_set_dt(&led, 0); }
+/* Register the work handler */
+K_WORK_DELAYABLE_DEFINE(led_off_work, led_off_work_handler);
 
 void packet_timer_ipc_recv(const void *data, size_t len, void *priv) {
+    struct packet_timer *t = priv;
+    const struct zeus_packet_timer_msg *msg = data;
+
+    if (msg->seq != t->last_seq + 1 && !t->first_seq) {
+        LOG_WRN("seq mismatch: %" PRIu8 " != %" PRIu8, msg->seq,
+                t->last_seq + 1);
+    }
+    t->last_seq = msg->seq;
+    t->first_seq = false;
+
     LOG_INF("pkt");
+
+    struct zeus_adv_data adv_data = {
+        .seq = msg->seq,
+        .timer = msg->timer,
+    };
+
+    struct bt_data ad[] = {
+        BT_DATA(BT_DATA_MANUFACTURER_DATA, &adv_data, sizeof(adv_data)),
+    };
+
+    bt_le_per_adv_set_data(t->adv, ad, ARRAY_SIZE(ad));
+
+    gpio_pin_set_dt(&led, 1);
+    k_work_schedule(&led_off_work, K_MSEC(50));
 }
 
 static const struct ipc_ept_cfg packet_timer_ept_cfg = {
     .name = "packet_timer",
-    .cb = {
-        .received = packet_timer_ipc_recv,
-    }};
+    .cb.received = packet_timer_ipc_recv,
+    .priv = &packet_timer,
+};
 
 int packet_timer_init(void) {
     int err;
+
+    gpio_pin_configure_dt(&led, GPIO_OUTPUT);
+
     const struct device *ipc = DEVICE_DT_GET(DT_NODELABEL(ipc0));
 
     err = ipc_service_open_instance(ipc);
@@ -30,7 +73,7 @@ int packet_timer_init(void) {
         LOG_ERR("failed to initialize IPC (err %d)\n", err);
         return err;
     }
-    err = ipc_service_register_endpoint(ipc, &packet_timer_ept,
+    err = ipc_service_register_endpoint(ipc, &packet_timer.ept,
                                         &packet_timer_ept_cfg);
     if (err < 0) {
         LOG_ERR("failed to register IPC endpoint (err %d)\n", err);
@@ -89,8 +132,8 @@ int sync_adv_init(void) {
 
     // Set periodic advertising parameters
     err = bt_le_per_adv_set_param(
-        adv, BT_LE_PER_ADV_PARAM(BT_GAP_PER_ADV_SLOW_INT_MIN,
-                                 BT_GAP_PER_ADV_SLOW_INT_MAX,
+        adv, BT_LE_PER_ADV_PARAM(BT_GAP_PER_ADV_FAST_INT_MIN_2,
+                                 BT_GAP_PER_ADV_FAST_INT_MAX_2,
                                  BT_LE_PER_ADV_OPT_NONE));
     if (err) {
         LOG_ERR("Failed to set periodic sync advertising parameters (err %d)\n",

@@ -1,0 +1,2 @@
+add_library(zeus_common INTERFACE)
+target_include_directories(zeus_common INTERFACE include)
