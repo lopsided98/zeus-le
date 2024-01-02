@@ -38,9 +38,9 @@ in symlinkJoin {
     link = "tools/west-nix";
     path = fetchgit {
         url = "https://github.com/lopsided98/west-nix";
-        rev = "c984c611b865b227534f13a114665504606e8dd6";
+        rev = "2c09b5de284ab4eb3fa69da1613176e83f84dda0";
         branchName = "manifest-rev";
-        hash = "sha256-lJI5XFUAbFYxT/5H+x+fdUZwQaoZiWRCE9BkudsR9LM=";
+        hash = "sha256-v4YDB3YZ207csSZaGxQYPZmaWPInzeAg4a5zZTy3T2c=";
     };
 })
 
@@ -157,8 +157,8 @@ in symlinkJoin {
   ];
   postBuild = ''
     cat << EOF > "$out/.zephyr-env"
-      export ZEPHYR_BASE='${placeholder "out"}/zephyr'
-      export ZEPHYR_MODULES=''
+      export ZEPHYR_BASE=${lib.escapeShellArg "${placeholder "out"}/zephyr"}
+      export ZEPHYR_MODULES=${lib.escapeShellArg "${placeholder "out"}/tools/bsim/components/ext_nRF_hw_models;${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/hal/nordic;${placeholder "out"}/modules/hal/libmetal;${placeholder "out"}/modules/lib/open-amp;${placeholder "out"}/modules/crypto/tinycrypt"}
     EOF
   '';
 }
