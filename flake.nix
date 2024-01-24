@@ -20,11 +20,12 @@
         platform = "nrf53";
         dev = true;
       };
-      native = pkgs.callPackage ./default.nix {
+      simulator = pkgs.callPackage ./default.nix {
         nixpkgs = import nixpkgs;
-        platform = "native";
+        platform = "simulator";
         dev = true;
       };
+      model = pkgs.callPackage ./model/shell.nix { };
     };
   });
 }

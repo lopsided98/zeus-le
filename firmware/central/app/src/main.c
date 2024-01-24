@@ -14,6 +14,8 @@ LOG_MODULE_REGISTER(central);
 static struct packet_timer {
     struct ipc_ept ept;
     struct bt_le_ext_adv *adv;
+    struct zeus_adv_data adv_data;
+    struct k_work update_work;
     uint8_t last_seq;
     bool first_seq;
 } packet_timer = {
@@ -27,11 +29,26 @@ void led_off_work_handler(struct k_work *work) { gpio_pin_set_dt(&led, 0); }
 /* Register the work handler */
 K_WORK_DELAYABLE_DEFINE(led_off_work, led_off_work_handler);
 
+void packet_timer_update_handler(struct k_work *work) {
+    struct packet_timer *t =
+        CONTAINER_OF(work, struct packet_timer, update_work);
+
+    struct bt_data ad[] = {
+        BT_DATA(BT_DATA_MANUFACTURER_DATA, &t->adv_data, sizeof(t->adv_data)),
+    };
+
+    int err = bt_le_per_adv_set_data(t->adv, ad, ARRAY_SIZE(ad));
+    if (err < 0) {
+        LOG_ERR("Failed to set advertising data (err %d)\n", err);
+        return;
+    }
+}
+
 void packet_timer_ipc_recv(const void *data, size_t len, void *priv) {
     struct packet_timer *t = priv;
     const struct zeus_packet_timer_msg *msg = data;
 
-    if (msg->seq != t->last_seq + 1 && !t->first_seq) {
+    if (msg->seq != (uint8_t)(t->last_seq + 1) && !t->first_seq) {
         LOG_WRN("seq mismatch: %" PRIu8 " != %" PRIu8, msg->seq,
                 t->last_seq + 1);
     }
@@ -40,19 +57,14 @@ void packet_timer_ipc_recv(const void *data, size_t len, void *priv) {
 
     LOG_INF("pkt");
 
-    struct zeus_adv_data adv_data = {
-        .seq = msg->seq,
-        .timer = msg->timer,
-    };
-
-    struct bt_data ad[] = {
-        BT_DATA(BT_DATA_MANUFACTURER_DATA, &adv_data, sizeof(adv_data)),
-    };
-
-    bt_le_per_adv_set_data(t->adv, ad, ARRAY_SIZE(ad));
-
     gpio_pin_set_dt(&led, 1);
     k_work_schedule(&led_off_work, K_MSEC(50));
+
+    t->adv_data = (struct zeus_adv_data){
+        .seq = msg->seq,
+        .time = msg->time,
+    };
+    k_work_submit(&t->update_work);
 }
 
 static const struct ipc_ept_cfg packet_timer_ept_cfg = {
@@ -63,6 +75,7 @@ static const struct ipc_ept_cfg packet_timer_ept_cfg = {
 
 int packet_timer_init(void) {
     int err;
+    k_work_init(&packet_timer.update_work, packet_timer_update_handler);
 
     gpio_pin_configure_dt(&led, GPIO_OUTPUT);
 
@@ -123,8 +136,7 @@ int sync_adv_init(void) {
         .peer = NULL,
     };
 
-    struct bt_le_ext_adv *adv;
-    int err = bt_le_ext_adv_create(&adv_param, NULL, &adv);
+    int err = bt_le_ext_adv_create(&adv_param, NULL, &packet_timer.adv);
     if (err) {
         LOG_ERR("Failed to create sync advertising set (err %d)\n", err);
         return err;
@@ -132,9 +144,9 @@ int sync_adv_init(void) {
 
     // Set periodic advertising parameters
     err = bt_le_per_adv_set_param(
-        adv, BT_LE_PER_ADV_PARAM(BT_GAP_PER_ADV_FAST_INT_MIN_2,
-                                 BT_GAP_PER_ADV_FAST_INT_MAX_2,
-                                 BT_LE_PER_ADV_OPT_NONE));
+        packet_timer.adv, BT_LE_PER_ADV_PARAM(BT_GAP_PER_ADV_FAST_INT_MIN_2,
+                                              BT_GAP_PER_ADV_FAST_INT_MAX_2,
+                                              BT_LE_PER_ADV_OPT_NONE));
     if (err) {
         LOG_ERR("Failed to set periodic sync advertising parameters (err %d)\n",
                 err);
@@ -142,13 +154,13 @@ int sync_adv_init(void) {
     }
 
     // Enable Periodic Advertising
-    err = bt_le_per_adv_start(adv);
+    err = bt_le_per_adv_start(packet_timer.adv);
     if (err) {
         LOG_ERR("Failed to enable periodic sync advertising (err %d)\n", err);
         return err;
     }
 
-    err = bt_le_ext_adv_start(adv, BT_LE_EXT_ADV_START_DEFAULT);
+    err = bt_le_ext_adv_start(packet_timer.adv, BT_LE_EXT_ADV_START_DEFAULT);
     if (err) {
         LOG_ERR("Failed to start sync advertising (err %d)\n", err);
         return err;

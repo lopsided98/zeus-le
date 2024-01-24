@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "App Debug",
+            "type": "cortex-debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/app/zephyr/zephyr.elf",
+            "servertype": "external",
+            "gdbTarget": "localhost:3333",
+            "request": "attach",
+        },
+        {
+            "name": "Net Debug",
+            "type": "cortex-debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "build/net/zephyr/zephyr.elf",
+            "servertype": "external",
+            "gdbTarget": "localhost:3334",
+            "request": "attach",
+        }
+    ]
+}

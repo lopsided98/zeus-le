@@ -10,17 +10,17 @@ else()
 	message(FATAL_ERROR "${BOARD} is not supported")
 endif()
 
-project(zeus_le_central_net LANGUAGES C)
+project(zeus_le_audio_net LANGUAGES C)
 
 add_subdirectory(../../hci_ipc hci_ipc)
 add_subdirectory(../../common common)
-add_subdirectory(../common central_common)
+add_subdirectory(../common audio_common)
 
 target_sources(app PRIVATE src/main.c)
 target_link_libraries(app PRIVATE
     hci_ipc
     zeus_common
-    zeus_central_common
+    zeus_audio_common
 )
 target_include_directories(app PRIVATE
     ${ZEPHYR_BASE}/subsys # Need private Bluetooth headers

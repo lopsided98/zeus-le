@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <nrfx_egu.h>
 #include <nrfx_timer.h>
+#include <zephyr/drivers/clock_control/nrf_clock_control.h>
 #include <zephyr/ipc/ipc_service.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -25,6 +26,7 @@ struct packet_timer {
     uint8_t seq;
     nrfx_timer_t timer;
     struct ipc_ept ept;
+    struct onoff_client hf_cli;
 } packet_timer;
 
 static const struct ipc_ept_cfg packet_timer_ept_cfg = {
@@ -48,7 +50,7 @@ static void packet_timer_isr(uint8_t event_idx, void* context) {
 
     const struct zeus_packet_timer_msg msg = {
         .seq = t->seq++,
-        .timer = nrfx_timer_capture_get(&t->timer, NRF_TIMER_CC_CHANNEL0),
+        .time = nrfx_timer_capture_get(&t->timer, NRF_TIMER_CC_CHANNEL0),
     };
 
     ipc_service_send(&t->ept, &msg, sizeof(msg));
@@ -101,6 +103,13 @@ static int packet_timer_init(void) {
                           HAL_SW_SWITCH_TIMER_CLEAR_PPI);
     nrfx_egu_int_enable(&egu, NRF_EGU_INT_TRIGGERED0);
 
+    // Keep HFCLK enabled and using HFXO all the time. This is required because
+    // we need an accurate clock to run the timer.
+    struct onoff_manager* mgr =
+        z_nrf_clock_control_get_onoff(CLOCK_CONTROL_NRF_SUBSYS_HF);
+    sys_notify_init_spinwait(&packet_timer.hf_cli.notify);
+    onoff_request(mgr, &packet_timer.hf_cli);
+
     // Start the timer
     nrfx_timer_enable(&packet_timer.timer);
 
@@ -121,6 +130,12 @@ int main(void) {
     }
 
     LOG_INF("Booted");
+
+    nrf_clock_hfclk_t type;
+    bool running =
+        nrf_clock_is_running(NRF_CLOCK, NRF_CLOCK_DOMAIN_HFCLK, &type);
+    LOG_INF("HFCLK: running: %d, type: %d, expected: %d", running, type,
+            NRF_CLOCK_HFCLK_HIGH_ACCURACY);
 
     return 0;
 }

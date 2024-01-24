@@ -2,41 +2,51 @@
 , platform ? "nrf53"
 , dev ? false
 }: let
+  # Optimize newlib for size
   optimizeSizeOverlay = final: prev: lib.optionalAttrs prev.stdenv.hostPlatform.isNone {
-    # Zephyr doesn't use newlib or libstdc++ by default, but this doesn't hurt
-    stdenv = lib.pipe prev.stdenv [
-      # Optimize newlib
-      (prev.withCFlags [ "-Os" ])
-      # Optimize libstdc++
-      (stdenv: prev.overrideCC stdenv (prev.buildPackages.wrapCCWith {
-        cc = prev.buildPackages.gcc-unwrapped.overrideAttrs (oldAttrs: {
-          EXTRA_FLAGS_FOR_TARGET = oldAttrs.EXTRA_FLAGS_FOR_TARGET ++ [ "-Os" ];
-        });
-      }))
-    ];
+    stdenv = prev.withCFlags [ "-Os" ] prev.stdenv;
+  };
+
+  # Build a ARM multilib GCC
+  multilibOverlay = final: prev: lib.optionalAttrs prev.stdenv.hostPlatform.isNone {
+    stdenv = prev.overrideCC prev.stdenv (prev.buildPackages.wrapCCWith {
+      cc = (prev.buildPackages.gcc-unwrapped.override {
+        enableMultilib = true;
+      }).overrideAttrs ({
+        configureFlags ? [], ...
+      }: {
+        configureFlags = configureFlags ++ [ "--with-multilib-list=rmprofile" ];
+      });
+    });
   };
 
   pkgs' = {
     "nrf53" = nixpkgs {
       localSystem = stdenv.hostPlatform;
-      crossSystem = {
+      crossSystem = let
+        # Remove an attribute from an attrset by its path
+        removeByPath = pathList: set:
+          lib.updateManyAttrsByPath (lib.singleton {
+            path = lib.init pathList;
+            update = old:
+              lib.filterAttrs (n: v: n != (lib.last pathList)) old;
+          }) set;
+      # Can't pass --with-float when building multilib gcc, so need to remove
+      # parsed.abi.float.
+      in removeByPath [ "parsed" "abi" "float" ] (lib.systems.elaborate {
         config = "arm-none-eabi";
         libc = "newlib-nano";
-        gcc = {
-          arch = "armv8-m.main+fp";
-          tune = "cortex-m33";
-          float = "hard";
-        };
-      };
-      overlays = [ optimizeSizeOverlay ];
+      });
+      overlays = [ optimizeSizeOverlay multilibOverlay ];
     };
-    "native" = nixpkgs {
+
+    "simulator" = nixpkgs {
       localSystem = stdenv.hostPlatform;
       crossSystem = pkgs.pkgsi686Linux.stdenv.hostPlatform;
     };
   }.${platform};
 in pkgs'.callPackage ({
-  lib, stdenv, callPackage, buildPackages, cmake, ninja, makedepend, python3
+  lib, stdenv, callPackage, pkgsBuildBuild, cmake, ninja, makedepend, python3
 , dtc, python3Packages, git, nix-prefetch-git, clang-tools, openocd, gdb
 }: stdenv.mkDerivation {
   pname = "zeus-le";
@@ -60,8 +70,8 @@ in pkgs'.callPackage ({
     git
     python3Packages.west
     nix-prefetch-git
-    (buildPackages.clang-tools.override {
-      llvmPackages = buildPackages.llvmPackages_latest;
+    (pkgsBuildBuild.clang-tools.override {
+      llvmPackages = pkgsBuildBuild.llvmPackages_latest;
     })
     openocd
     gdb
@@ -72,7 +82,7 @@ in pkgs'.callPackage ({
     CROSS_COMPILE = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}";
   } // lib.optionalAttrs dev {
     # Required by menuconfig
-    LOCALE_ARCHIVE = "${buildPackages.glibcLocales}/lib/locale/locale-archive";
+    LOCALE_ARCHIVE = "${pkgsBuildBuild.glibcLocales}/lib/locale/locale-archive";
   };
 
   cmakeDir = "../zephyr/share/sysbuild";
@@ -92,7 +102,7 @@ in pkgs'.callPackage ({
 
     source .zephyr-env
   '';
-  
+
   installPhase = ''
     runHook preInstall
 
@@ -102,6 +112,6 @@ in pkgs'.callPackage ({
 
     runHook postInstall
   '';
-  
+
   dontFixup = true;
 }) { }

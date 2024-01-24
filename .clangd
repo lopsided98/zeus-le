@@ -12,3 +12,15 @@ If:
 
 CompileFlags:
   CompilationDatabase: build/net
+---
+If:
+  PathMatch: firmware/audio/app.*
+
+CompileFlags:
+  CompilationDatabase: build/app
+---
+If:
+  PathMatch: firmware/audio/net/.*
+
+CompileFlags:
+  CompilationDatabase: build/net

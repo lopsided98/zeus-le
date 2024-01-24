@@ -1,0 +1,2 @@
+add_library(zeus_audio_common INTERFACE)
+target_include_directories(zeus_audio_common INTERFACE include)
