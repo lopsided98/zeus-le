@@ -1,29 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include <hal/nrf_clock.h>
 #include <hal/nrf_ipc.h>
-#include <inttypes.h>
-#include <zephyr/drivers/mbox.h>
-#include <zephyr/ipc/ipc_service.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <hal/nrf_clock.h>
 
-#include "hal/nrf_ipc.h"
 #include "hci_ipc.h"
 #include "zeus/sync.h"
 
-// Zephyr internal headers, order is important
-// clang-format off
-#include <bluetooth/controller/ll_sw/pdu_df.h>
-#include <bluetooth/controller/ll_sw/nordic/lll/pdu_vendor.h>
-#include <bluetooth/controller/ll_sw/pdu.h>
-// clang-format on
-
 LOG_MODULE_REGISTER(audio_net);
-
-#define PACKET_TIMER_EGU_IDX 0
-
-struct packet_timer {
-} packet_timer;
 
 static int packet_timer_init(void) {
     // Subscribe to radio end event through existing DPPI channel configured by
@@ -51,7 +35,8 @@ int main(void) {
     LOG_INF("Booted");
 
     nrf_clock_hfclk_t type;
-    bool running = nrf_clock_is_running(NRF_CLOCK, NRF_CLOCK_DOMAIN_HFCLK, &type);
+    bool running =
+        nrf_clock_is_running(NRF_CLOCK, NRF_CLOCK_DOMAIN_HFCLK, &type);
     LOG_INF("net HFCLK: running: %d, type: %d", running, type);
 
     return 0;

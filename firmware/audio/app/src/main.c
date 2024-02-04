@@ -11,21 +11,11 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
-#include "adv_timer.h"
+#include "audio.h"
 #include "freq_est.h"
+#include "sync_timer.h"
 
-LOG_MODULE_REGISTER(audio);
-
-static const struct freq_est_params FREQ_EST_PARAMS = {
-    .nominal_freq = 16000000,
-    .q_theta = 0.0,
-    .q_f = 256.0,
-    .r = 390625.0,
-    .p0 = 1e6,
-};
-
-static struct freq_est freq_est;
-static struct adv_timer adv_timer;
+LOG_MODULE_REGISTER(audio_app);
 
 static const struct gpio_dt_spec led =
     GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
@@ -85,7 +75,7 @@ static int sync_start(const struct bt_le_scan_recv_info *info) {
 
     err = bt_le_per_adv_sync_create(&param, &sync.sync);
     if (err < 0) {
-        LOG_ERR("failed to start adv sync (err %d)\n", err);
+        LOG_ERR("failed to start adv sync (err %d)", err);
         return err;
     }
 
@@ -107,7 +97,7 @@ static void scan_recv_cb(const struct bt_le_scan_recv_info *info,
     LOG_INF(
         "[DEVICE]: %s, AD evt type %u, Tx Pwr: %i, RSSI %i %s "
         "C:%u S:%u D:%u SR:%u E:%u Prim: %s, Secn: %s, "
-        "Interval: 0x%04x (%u ms), SID: %u\n",
+        "Interval: 0x%04x (%u ms), SID: %u",
         le_addr, info->adv_type, info->tx_power, info->rssi, name,
         (info->adv_props & BT_GAP_ADV_PROP_CONNECTABLE) != 0,
         (info->adv_props & BT_GAP_ADV_PROP_SCANNABLE) != 0,
@@ -134,7 +124,7 @@ static void sync_cb(struct bt_le_per_adv_sync *sync,
 
     LOG_INF(
         "PER_ADV_SYNC[%u]: [DEVICE]: %s synced, "
-        "Interval 0x%04x (%u ms)\n",
+        "Interval 0x%04x (%u ms)",
         bt_le_per_adv_sync_get_index(sync), le_addr, info->interval,
         info->interval * 5 / 4);
 }
@@ -145,24 +135,17 @@ static void term_cb(struct bt_le_per_adv_sync *sync,
 
     bt_addr_le_to_str(info->addr, le_addr, sizeof(le_addr));
 
-    LOG_INF("PER_ADV_SYNC[%u]: [DEVICE]: %s sync terminated\n",
+    LOG_INF("PER_ADV_SYNC[%u]: [DEVICE]: %s sync terminated",
             bt_le_per_adv_sync_get_index(sync), le_addr);
 }
 
 static bool data_parse_cb(struct bt_data *data, void *user_data) {
-    struct adv_timer *t = (struct adv_timer *)user_data;
-
     if (data->type != BT_DATA_MANUFACTURER_DATA) return true;
     if (data->data_len < sizeof(struct zeus_adv_data)) return true;
 
-    uint32_t local_time;
-    uint32_t central_time;
     struct zeus_adv_data *adv_data = (struct zeus_adv_data *)data->data;
 
-    if (adv_timer_recv(t, adv_data, &local_time, &central_time)) {
-        printk("sync,%" PRIu32 ",%" PRIu32 "\n", local_time, central_time);
-        freq_est_update(&freq_est, local_time, central_time);
-    }
+    sync_timer_recv_adv(adv_data);
 
     return false;
 }
@@ -170,7 +153,7 @@ static bool data_parse_cb(struct bt_data *data, void *user_data) {
 static void recv_cb(struct bt_le_per_adv_sync *sync,
                     const struct bt_le_per_adv_sync_recv_info *info,
                     struct net_buf_simple *buf) {
-    bt_data_parse(buf, data_parse_cb, &adv_timer);
+    bt_data_parse(buf, data_parse_cb, NULL);
 
     gpio_pin_set_dt(&led, 1);
     k_work_schedule(&led_off_work, K_MSEC(50));
@@ -189,14 +172,12 @@ static int sync_scan_init(void) {
 
     int err = bt_le_scan_start(BT_LE_SCAN_PASSIVE, NULL);
     if (err) {
-        LOG_ERR("Failed to start scan (err %d)\n", err);
+        LOG_ERR("Failed to start scan (err %d)", err);
         return err;
     }
 
     return 0;
 }
-
-struct onoff_client hf_cli;
 
 int main(void) {
     int err;
@@ -204,21 +185,18 @@ int main(void) {
     // Initialize the Bluetooth Subsystem
     err = bt_enable(NULL);
     if (err) {
-        LOG_ERR("failed to enable Bluetooth (err %d)\n", err);
+        LOG_ERR("failed to enable Bluetooth (err %d)", err);
         return 0;
     }
 
-    freq_est_init(&freq_est, &FREQ_EST_PARAMS);
+    err = sync_timer_init();
+    if (err) return 0;
 
-    err = adv_timer_init(&adv_timer);
-    if (err) {
-        return 0;
-    }
+    err = audio_init();
+    if (err) return 0;
 
     err = sync_scan_init();
-    if (err) {
-        return 0;
-    }
+    if (err) return 0;
 
     LOG_INF("Booted");
 

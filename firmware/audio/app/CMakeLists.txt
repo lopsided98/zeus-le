@@ -17,7 +17,9 @@ add_subdirectory(../common audio_common)
 
 target_sources(app PRIVATE
 	src/main.c
-	src/adv_timer.c
+	src/sync_timer.c
+	src/freq_ctlr.c
 	src/freq_est.c
+	src/audio.c
 )
 target_link_libraries(app PRIVATE zeus_common zeus_audio_common)
