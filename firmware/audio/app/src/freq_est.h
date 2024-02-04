@@ -6,6 +6,12 @@
 
 #include "fixed.h"
 
+enum freq_est_status {
+    FREQ_EST_STATUS_RESET,
+    FREQ_EST_STATUS_CONVERGING,
+    FREQ_EST_STATUS_CONVERGED,
+};
+
 struct freq_est_config {
     // Nominal frequency of the timer (ticks/sec)
     uint32_t nominal_freq;
@@ -21,6 +27,7 @@ struct freq_est_config {
 };
 
 struct freq_est_state {
+    enum freq_est_status status;
     qu32_32 theta;
     float f;
 };
@@ -35,7 +42,7 @@ struct freq_est {
     float r;
 
     // State
-    bool init;
+    enum freq_est_status status;
     qu32_32 last_time;
     /// Phase offset (ticks) as unsigned Q32.32 fixed point. We want sub-tick
     /// resolution over the entire range, therefore single-precision float is

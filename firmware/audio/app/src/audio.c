@@ -52,6 +52,7 @@ static struct audio {
     ///
     qu32_32 time;
     qu32_32 ref_time;
+    bool target_locked;
     qu32_32 target_theta;
     /// Last controller input
     int16_t hfclkaudio_increment;
@@ -61,8 +62,8 @@ static struct audio {
 
     .freq_ctlr =
         {
-            .k_theta = 5.91781174e-04,
-            .k_f = 6.45994963e-05,
+            .k_theta = 4.03747559e-11,
+            .k_f = 6.45996094e-05,
             .max_step = 1000,
         },
     .sync_work = &audio_sync_work,
@@ -115,12 +116,17 @@ static void audio_sync_work_handler(struct k_work *item) {
     qu32_32 ref_time = a->ref_time;
     irq_enable(AUDIO_EGU_IRQ);
 
-    gpio_pin_toggle(gpio, TRIGGER_PIN);
-    sync_timer_correct_time(&ref_time);
+    if (!sync_timer_correct_time(&ref_time)) {
+        return;
+    }
+
     freq_est_update(&a->freq_est, time, ref_time, a->hfclkaudio_increment);
 
     struct freq_est_state state = freq_est_get_state(&a->freq_est);
-    a->target_theta = state.theta;
+    if (!a->target_locked) {
+        a->target_theta = state.theta;
+        a->target_locked = true;
+    }
     a->hfclkaudio_increment =
         freq_ctlr_update(&a->freq_ctlr, a->target_theta, state);
 
@@ -137,8 +143,9 @@ static void audio_sync_work_handler(struct k_work *item) {
     freq += a->hfclkaudio_increment;
 
     nrf_clock_hfclkaudio_config_set(NRF_CLOCK, freq);
-    printk("audio,%" PRIu64 ",%" PRIu64 ",%" PRIu16 ",%" PRIi16 ",%f\n", time,
-           ref_time, freq, a->hfclkaudio_increment, state.f / QU32_32_ONE);
+    printk("audio,%" PRIu64 ",%" PRIu64 ",%" PRIu16 ",%" PRIi16 ",%e\n", time,
+           ref_time + a->target_theta, freq, a->hfclkaudio_increment,
+           state.f / QU32_32_ONE);
 }
 
 static void audio_egu_handler(uint8_t event_idx, void *p_context) {

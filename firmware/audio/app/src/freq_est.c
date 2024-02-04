@@ -35,6 +35,8 @@ void freq_est_init(struct freq_est *e, const struct freq_est_config *config) {
     e->q_f = config->q_f / nominal_freq_2;
     e->r = config->r * nominal_freq_2;
 
+    e->status = FREQ_EST_STATUS_RESET;
+
     e->p[0][0] = config->p0;
     e->p[1][1] = config->p0;
 }
@@ -48,10 +50,11 @@ void freq_est_update(struct freq_est *e, qu32_32 local_time, qu32_32 ref_time,
                      int16_t input) {
     qu32_32 z = local_time - ref_time;
 
-    if (!e->init) {
+    if (e->status == FREQ_EST_STATUS_RESET) {
         e->theta = z;
+        e->f = 0;
         e->last_time = local_time;
-        e->init = true;
+        e->status = FREQ_EST_STATUS_CONVERGING;
         return;
     }
 
@@ -89,5 +92,9 @@ void freq_est_update(struct freq_est *e, qu32_32 local_time, qu32_32 ref_time,
 }
 
 struct freq_est_state freq_est_get_state(const struct freq_est *e) {
-    return (struct freq_est_state){.theta = e->theta, .f = e->f};
+    return (struct freq_est_state){
+        .status = e->status,
+        .theta = e->theta,
+        .f = e->f,
+    };
 }

@@ -28,6 +28,7 @@ int16_t freq_ctlr_update(const struct freq_ctlr *c, qu32_32 target_theta,
     float theta_err = (float)phase_diff_signed(target_theta, state.theta);
     float f_err = -state.f;
     float u = c->k_theta * theta_err + c->k_f * f_err;
+    // LOG_INF("te: %f, fe: %f, u: %f", theta_err, f_err, u);
     if (u > c->max_step) {
         return c->max_step;
     } else if (u < -(float)c->max_step) {

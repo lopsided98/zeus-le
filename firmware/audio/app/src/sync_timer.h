@@ -19,4 +19,6 @@ uint8_t sync_timer_get_i2s_dppi(void);
 
 uint32_t sync_timer_get_i2s_time(void);
 
-void sync_timer_correct_time(qu32_32 *time);
+/// Adjust a local sync timer measurement to the corresponding central time
+/// measurement. Returns true if the time was adjusted successfully.
+bool sync_timer_correct_time(qu32_32 *time);

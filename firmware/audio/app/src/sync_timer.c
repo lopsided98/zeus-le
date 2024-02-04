@@ -135,8 +135,13 @@ uint32_t sync_timer_get_i2s_time(void) {
     return nrfx_timer_capture_get(&t->timer, SYNC_TIMER_I2S_CAPTURE_CHANNEL);
 }
 
-void sync_timer_correct_time(qu32_32 *time) {
+bool sync_timer_correct_time(qu32_32 *time) {
     struct sync_timer *t = &sync_timer;
-    qu32_32 theta = freq_est_predict(&t->freq_est, *time);
-    *time += theta;
+    if (t->freq_est.status != FREQ_EST_STATUS_RESET) {
+        qu32_32 theta = freq_est_predict(&t->freq_est, *time);
+        *time += theta;
+        return true;
+    } else {
+        return false;
+    }
 }
