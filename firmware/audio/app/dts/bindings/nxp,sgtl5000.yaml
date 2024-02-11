@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+description: NXP/Freescale SGTL5000 Audio Codec
+
+compatible: "nxp,sgtl5000"
+
+include: i2c-device.yaml
+
+properties:
+  micbias-resistor-k-ohms:
+    type: int
+    default: 0
+    description: |
+      The bias resistor to be used in kOhms. The resistor can take values of 2k,
+      4k or 8k. By default it is set to 0, which disables the micbias block.
+    enum: [ 0, 2, 4, 8 ]
+
+  micbias-voltage-m-volts:
+    type: int
+    default: 1250
+    description: |
+      The bias voltage to be used in millivolts. The voltage can take values
+      from 1.25V to 3V by 250mV steps. By default, it is set to 250mV.
+    enum: [ 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000 ]

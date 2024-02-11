@@ -12,6 +12,7 @@
 #include "fixed.h"
 #include "freq_ctlr.h"
 #include "freq_est.h"
+#include "input_codec.h"
 #include "sync_timer.h"
 
 LOG_MODULE_REGISTER(audio);
@@ -23,7 +24,7 @@ LOG_MODULE_REGISTER(audio);
 #define AUDIO_BLOCK_SIZE 17640
 #define AUDIO_BLOCK_COUNT 4
 
-#define AUDIO_HFCLKAUDIO_FREQ_DEFAULT \
+#define AUDIO_HFCLKAUDIO_FREQ_NOMINAL \
     DT_PROP(DT_NODELABEL(clock), hfclkaudio_frequency)
 
 #define AUDIO_HFCLKAUDIO_FREQ_REG_MIN 12519
@@ -31,6 +32,7 @@ LOG_MODULE_REGISTER(audio);
 
 K_MEM_SLAB_DEFINE_STATIC(audio_slab, AUDIO_BLOCK_SIZE, AUDIO_BLOCK_COUNT, 4);
 
+static K_SEM_DEFINE(audio_started, 0, 1);
 static K_THREAD_STACK_DEFINE(audio_thread_stack, 512);
 
 static void audio_sync_work_handler(struct k_work *);
@@ -38,8 +40,10 @@ static K_WORK_DEFINE(audio_sync_work, audio_sync_work_handler);
 
 static struct audio {
     // Resources
+    const struct device *const codec;
     const struct device *const i2s;
     struct k_mem_slab *const slab;
+    struct k_sem *const started;
     struct k_thread thread;
 
     struct freq_est freq_est;
@@ -57,8 +61,10 @@ static struct audio {
     /// Last controller input
     int16_t hfclkaudio_increment;
 } audio = {
+    .codec = DEVICE_DT_GET(DT_NODELABEL(sgtl5000)),
     .i2s = DEVICE_DT_GET(DT_NODELABEL(i2s_codec)),
     .slab = &audio_slab,
+    .started = &audio_started,
 
     .freq_ctlr =
         {
@@ -71,7 +77,7 @@ static struct audio {
 
 static const struct freq_est_config FREQ_EST_CONFIG = {
     .nominal_freq = SYNC_TIMER_FREQ,
-    .k_u = 32e6 / (12.0 * (1 << 16) * AUDIO_HFCLKAUDIO_FREQ_DEFAULT),
+    .k_u = 32e6 / (12.0 * (1 << 16) * AUDIO_HFCLKAUDIO_FREQ_NOMINAL),
     .q_theta = 0.0,
     .q_f = 256.0,
     .r = 390625.0,
@@ -92,9 +98,6 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
         return;
     }
 
-    // Enable bypass
-    // nrf_i2s_clk_configure(NRF_I2S0, NRF_I2S_CLKSRC_ACLK, true);
-
     while (true) {
         void *block = NULL;
         uint32_t block_size;
@@ -104,6 +107,7 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
             LOG_ERR("failed to read I2S (err %d)", err);
             break;
         }
+        k_sem_give(a->started);
 
         k_mem_slab_free(a->slab, block);
     }
@@ -159,31 +163,43 @@ int audio_init() {
     int err;
     struct audio *a = &audio;
 
-    if (!device_is_ready(a->i2s)) {
-        LOG_ERR("%s is not ready\n", a->i2s->name);
-        return -EAGAIN;
+    if (!device_is_ready(a->codec)) {
+        LOG_ERR("%s is not ready\n", a->codec->name);
+        return -ENODEV;
     }
 
-    struct i2s_config config = {
-        .word_size = 16,
-        .channels = 2,
-        .format = I2S_FMT_DATA_FORMAT_I2S,
-        .options = I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER,
-        .frame_clk_freq = 44100,
-        .mem_slab = a->slab,
-        .block_size = a->slab->info.block_size,
-        .timeout = 1000,
+    if (!device_is_ready(a->i2s)) {
+        LOG_ERR("%s is not ready\n", a->i2s->name);
+        return -ENODEV;
+    }
+
+    struct audio_codec_cfg cfg = {
+        .mclk_freq = AUDIO_HFCLKAUDIO_FREQ_NOMINAL,
+        .dai_type = AUDIO_DAI_TYPE_I2S,
+        .dai_cfg.i2s =
+            {
+                .word_size = 16,
+                .channels = 2,
+                .format = I2S_FMT_DATA_FORMAT_I2S,
+                .options = I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER,
+                .frame_clk_freq = 44100,
+                .mem_slab = a->slab,
+                .block_size = a->slab->info.block_size,
+                .timeout = 1000,
+            },
     };
 
-    // TODO: allow sample-rates that aren't a multiple of sample/block. Naive
-    // implementation overflows 64-bit integer with intermediate result.
-    a->time_increment = qu32_32_from_int(
-        (uint64_t)SYNC_TIMER_FREQ *
-        (AUDIO_BLOCK_SIZE / config.channels / 2 /* bytes per sample */) /
-        config.frame_clk_freq);
+    // TODO: allow sample-rates that aren't a multiple of sample/block.
+    // Naive implementation overflows 64-bit integer with intermediate
+    // result.
+    a->time_increment =
+        qu32_32_from_int((uint64_t)SYNC_TIMER_FREQ *
+                         (AUDIO_BLOCK_SIZE / cfg.dai_cfg.i2s.channels /
+                          2 /* bytes per sample */) /
+                         cfg.dai_cfg.i2s.frame_clk_freq);
 
-    err = i2s_configure(a->i2s, I2S_DIR_RX, &config);
-    if (err) {
+    err = i2s_configure(a->i2s, I2S_DIR_RX, &cfg.dai_cfg.i2s);
+    if (err < 0) {
         LOG_ERR("failed to configure I2S (err %d)", err);
         return err;
     }
@@ -212,6 +228,18 @@ int audio_init() {
                     K_THREAD_STACK_SIZEOF(audio_thread_stack), audio_thread_run,
                     NULL, NULL, NULL, K_PRIO_COOP(7), 0, K_NO_WAIT);
     k_thread_name_set(&a->thread, "audio");
+
+    err = k_sem_take(a->started, K_MSEC(500));
+    if (err < 0) {
+        LOG_ERR("audio did not start");
+        return err;
+    }
+
+    err = input_codec_configure(a->codec, &cfg);
+    if (err < 0) {
+        LOG_ERR("failed to configure codec (err %d)", err);
+        return err;
+    }
 
     return 0;
 }

@@ -1,9 +1,9 @@
 {
   "project_hashes": {
-    "ef0ba1859812b1cbc4197bac0dd551e4715e7101b6c4c4f13433d3c925a39ec5": {
+    "f33316ed98c132a0b3f3093975ca0b6430335259388a84fdb94548cec3d4f305": {
       "url": "https://github.com/lopsided98/zephyr",
-      "rev": "053912d30dda768b71863f166dab2732f9503e97",
-      "hash": "sha256-hwvP4enYzzf+E7LVfBmZAudH9a6tZKhXd7jB6dAyeNQ="
+      "rev": "cb45a3684d7d9f4cefdd5bf7514300ac0c90805d",
+      "hash": "sha256-0Hn2WjEl8zCbRPwh7WtCg1O8w+8VYdi5kf3vL/zcEbo="
     },
     "2f0b8175147123daf179982b72353262901abe3894c8b3cedce65fdb5d8ec3ce": {
       "url": "https://github.com/BabbleSim/ext_nRF_hw_models.git",

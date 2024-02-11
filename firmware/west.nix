@@ -18,9 +18,9 @@ in symlinkJoin {
     link = "zephyr";
     path = fetchgit {
         url = "https://github.com/lopsided98/zephyr";
-        rev = "053912d30dda768b71863f166dab2732f9503e97";
+        rev = "cb45a3684d7d9f4cefdd5bf7514300ac0c90805d";
         branchName = "manifest-rev";
-        hash = "sha256-hwvP4enYzzf+E7LVfBmZAudH9a6tZKhXd7jB6dAyeNQ=";
+        hash = "sha256-0Hn2WjEl8zCbRPwh7WtCg1O8w+8VYdi5kf3vL/zcEbo=";
     };
 })
 
