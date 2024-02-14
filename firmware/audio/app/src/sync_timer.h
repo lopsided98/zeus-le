@@ -17,7 +17,11 @@ void sync_timer_recv_adv(const struct zeus_adv_data *data);
 
 uint8_t sync_timer_get_i2s_dppi(void);
 
+uint8_t sync_timer_get_usb_sof_dppi(void);
+
 uint32_t sync_timer_get_i2s_time(void);
+
+uint32_t sync_timer_get_usb_sof_time(void);
 
 /// Adjust a local sync timer measurement to the corresponding central time
 /// measurement. Returns true if the time was adjusted successfully.

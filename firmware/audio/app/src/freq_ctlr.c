@@ -20,7 +20,7 @@ static q32_32 phase_diff_signed(qu32_32 a, qu32_32 b) {
 }
 
 static int16_t round_f_to_i16(float f) {
-    return f + (f > 0 ? 0.5 : -0.5);
+    return f + (f > 0.0f ? 0.5f : -0.5f);
 }
 
 int16_t freq_ctlr_update(const struct freq_ctlr *c, qu32_32 target_theta,

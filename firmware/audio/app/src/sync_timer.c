@@ -13,16 +13,20 @@
 LOG_MODULE_REGISTER(sync_timer);
 
 #define SYNC_TIMER_INDEX 2
-#define SYNC_TIMER_ADV_CAPTURE_CHANNEL 0
-#define SYNC_TIMER_I2S_CAPTURE_CHANNEL 1
 
-struct sync_timer {
+#define SYNC_TIMER_CAPTURE_CHANNEL_ADV 0
+#define SYNC_TIMER_CAPTURE_CHANNEL_I2S 1
+#define SYNC_TIMER_CAPTURE_CHANNEL_USB_SOF 2
+
+static struct sync_timer {
     // Resources
     const nrfx_timer_t timer;
     struct onoff_client hf_cli;
     struct mbox_channel channel;
     /// DPPI channel for I2S buffer timer capture
     uint8_t i2s_dppi;
+    /// DPPI channel for USB SOF timer capture
+    uint8_t usb_dppi;
 
     struct freq_est freq_est;
 
@@ -47,7 +51,7 @@ static const struct freq_est_config FREQ_EST_CONFIG = {
 
 int sync_timer_init(void) {
     struct sync_timer *t = &sync_timer;
-    nrfx_err_t nerr;
+    nrfx_err_t err;
 
     freq_est_init(&t->freq_est, &FREQ_EST_CONFIG);
 
@@ -57,19 +61,19 @@ int sync_timer_init(void) {
     mbox_init_channel(&channel, mbox, ZEUS_PACKET_END_MBOX_CHANNEL);
 
     // Setup 32-bit 16 MHz timer to capture on radio end event and I2S sample
-    nerr = nrfx_timer_init(&t->timer,
-                           &(nrfx_timer_config_t){
-                               .frequency = SYNC_TIMER_FREQ,
-                               .mode = NRF_TIMER_MODE_TIMER,
-                               .bit_width = NRF_TIMER_BIT_WIDTH_32,
-                           },
-                           NULL);
+    err = nrfx_timer_init(&t->timer,
+                          &(nrfx_timer_config_t){
+                              .frequency = SYNC_TIMER_FREQ,
+                              .mode = NRF_TIMER_MODE_TIMER,
+                              .bit_width = NRF_TIMER_BIT_WIDTH_32,
+                          },
+                          NULL);
     NRFX_ASSERT(NRFX_SUCCESS == nerr);
 
     uint8_t adv_dppi;
-    nerr = nrfx_dppi_channel_alloc(&adv_dppi);
-    if (NRFX_SUCCESS != nerr) {
-        LOG_ERR("failed to allocate adv DPPI channel (err %d)\n", nerr);
+    err = nrfx_dppi_channel_alloc(&adv_dppi);
+    if (NRFX_SUCCESS != err) {
+        LOG_ERR("failed to allocate adv DPPI channel (err %d)\n", err);
         return -ENOMEM;
     }
 
@@ -79,20 +83,32 @@ int sync_timer_init(void) {
                         adv_dppi);
     nrf_timer_subscribe_set(
         t->timer.p_reg,
-        nrf_timer_capture_task_get(SYNC_TIMER_ADV_CAPTURE_CHANNEL), adv_dppi);
+        nrf_timer_capture_task_get(SYNC_TIMER_CAPTURE_CHANNEL_ADV), adv_dppi);
     nrfx_dppi_channel_enable(adv_dppi);
 
-    nerr = nrfx_dppi_channel_alloc(&t->i2s_dppi);
-    if (NRFX_SUCCESS != nerr) {
-        LOG_ERR("failed to allocate I2S DPPI channel (err %d)\n", nerr);
+    err = nrfx_dppi_channel_alloc(&t->i2s_dppi);
+    if (NRFX_SUCCESS != err) {
+        LOG_ERR("failed to allocate I2S DPPI channel (err %d)\n", err);
         return -ENOMEM;
     }
 
     // Configure timer capture after each I2S buffer
     nrf_timer_subscribe_set(
         t->timer.p_reg,
-        nrf_timer_capture_task_get(SYNC_TIMER_I2S_CAPTURE_CHANNEL),
+        nrf_timer_capture_task_get(SYNC_TIMER_CAPTURE_CHANNEL_I2S),
         t->i2s_dppi);
+
+    err = nrfx_dppi_channel_alloc(&t->usb_dppi);
+    if (NRFX_SUCCESS != err) {
+        LOG_ERR("failed to allocate USB DPPI channel (err %d)\n", err);
+        return -ENOMEM;
+    }
+
+    // Configure timer capture on each USB SOF
+    nrf_timer_subscribe_set(
+        t->timer.p_reg,
+        nrf_timer_capture_task_get(SYNC_TIMER_CAPTURE_CHANNEL_USB_SOF),
+        t->usb_dppi);
 
     // Keep HFCLK enabled and using HFXO all the time. This is required because
     // we need an accurate clock to run the timer.
@@ -118,7 +134,7 @@ void sync_timer_recv_adv(const struct zeus_adv_data *data) {
     }
 
     uint32_t time =
-        nrfx_timer_capture_get(&t->timer, SYNC_TIMER_ADV_CAPTURE_CHANNEL);
+        nrfx_timer_capture_get(&t->timer, SYNC_TIMER_CAPTURE_CHANNEL_ADV);
 
     t->last_adv_valid = true;
     t->last_adv_seq = data->seq + 1;
@@ -130,9 +146,19 @@ uint8_t sync_timer_get_i2s_dppi(void) {
     return t->i2s_dppi;
 }
 
+uint8_t sync_timer_get_usb_sof_dppi(void) {
+    struct sync_timer *t = &sync_timer;
+    return t->usb_dppi;
+}
+
 uint32_t sync_timer_get_i2s_time(void) {
     struct sync_timer *t = &sync_timer;
-    return nrfx_timer_capture_get(&t->timer, SYNC_TIMER_I2S_CAPTURE_CHANNEL);
+    return nrfx_timer_capture_get(&t->timer, SYNC_TIMER_CAPTURE_CHANNEL_I2S);
+}
+
+uint32_t sync_timer_get_usb_sof_time(void) {
+    struct sync_timer *t = &sync_timer;
+    return nrfx_timer_capture_get(&t->timer, SYNC_TIMER_CAPTURE_CHANNEL_USB_SOF);
 }
 
 bool sync_timer_correct_time(qu32_32 *time) {

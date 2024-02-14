@@ -8,6 +8,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/i2s.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/net/buf.h>
 
 #include "fixed.h"
 #include "freq_ctlr.h"
@@ -32,6 +33,10 @@ LOG_MODULE_REGISTER(audio);
 
 K_MEM_SLAB_DEFINE_STATIC(audio_slab, AUDIO_BLOCK_SIZE, AUDIO_BLOCK_COUNT, 4);
 
+// Pool to allocate net_bufs to wrap audio data block allocated from slab
+static void audio_pool_destroy(struct net_buf *buf);
+NET_BUF_POOL_DEFINE(audio_pool, AUDIO_BLOCK_COUNT, 0, 0, audio_pool_destroy);
+
 static K_SEM_DEFINE(audio_started, 0, 1);
 static K_THREAD_STACK_DEFINE(audio_thread_stack, 512);
 
@@ -43,9 +48,11 @@ static struct audio {
     const struct device *const codec;
     const struct device *const i2s;
     struct k_mem_slab *const slab;
+    struct net_buf_pool *const pool;
     struct k_sem *const started;
     struct k_thread thread;
 
+    const struct freq_est_config freq_est_cfg;
     struct freq_est freq_est;
     const struct freq_ctlr freq_ctlr;
     struct k_work *const sync_work;
@@ -64,8 +71,18 @@ static struct audio {
     .codec = DEVICE_DT_GET(DT_NODELABEL(sgtl5000)),
     .i2s = DEVICE_DT_GET(DT_NODELABEL(i2s_codec)),
     .slab = &audio_slab,
+    .pool = &audio_pool,
     .started = &audio_started,
 
+    .freq_est_cfg =
+        {
+            .nominal_freq = SYNC_TIMER_FREQ,
+            .k_u = 32e6 / (12.0 * (1 << 16) * AUDIO_HFCLKAUDIO_FREQ_NOMINAL),
+            .q_theta = 0.0,
+            .q_f = 256.0,
+            .r = 390625.0,
+            .p0 = 1e6,
+        },
     .freq_ctlr =
         {
             .k_theta = 4.03747559e-11,
@@ -75,22 +92,17 @@ static struct audio {
     .sync_work = &audio_sync_work,
 };
 
-static const struct freq_est_config FREQ_EST_CONFIG = {
-    .nominal_freq = SYNC_TIMER_FREQ,
-    .k_u = 32e6 / (12.0 * (1 << 16) * AUDIO_HFCLKAUDIO_FREQ_NOMINAL),
-    .q_theta = 0.0,
-    .q_f = 256.0,
-    .r = 390625.0,
-    .p0 = 1e6,
-};
+static void audio_pool_destroy(struct net_buf *buf) {
+    struct audio *a = &audio;
 
-#define TRIGGER_PIN 4
-static const struct device *gpio = DEVICE_DT_GET(DT_NODELABEL(gpio0));
+    void *data = buf->__buf;
+    net_buf_destroy(buf);
+    k_mem_slab_free(a->slab, data);
+}
 
 static void audio_thread_run(void *p1, void *p2, void *p3) {
-    int err;
     struct audio *a = &audio;
-    gpio_pin_configure(gpio, TRIGGER_PIN, GPIO_OUTPUT);
+    int err;
 
     err = i2s_trigger(a->i2s, I2S_DIR_RX, I2S_TRIGGER_START);
     if (err) {
@@ -109,7 +121,14 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
         }
         k_sem_give(a->started);
 
-        k_mem_slab_free(a->slab, block);
+        struct net_buf *buf =
+            net_buf_alloc_with_data(a->pool, block, block_size, K_NO_WAIT);
+        if (!buf) {
+            LOG_ERR("failed to allocate audio net buf");
+            break;
+        }
+
+        net_buf_unref(buf);
     }
 }
 
@@ -149,7 +168,7 @@ static void audio_sync_work_handler(struct k_work *item) {
     nrf_clock_hfclkaudio_config_set(NRF_CLOCK, freq);
     printk("audio,%" PRIu64 ",%" PRIu64 ",%" PRIu16 ",%" PRIi16 ",%e\n", time,
            ref_time + a->target_theta, freq, a->hfclkaudio_increment,
-           state.f / QU32_32_ONE);
+           (double)(state.f / QU32_32_ONE));
 }
 
 static void audio_egu_handler(uint8_t event_idx, void *p_context) {
@@ -204,7 +223,7 @@ int audio_init() {
         return err;
     }
 
-    freq_est_init(&a->freq_est, &FREQ_EST_CONFIG);
+    freq_est_init(&a->freq_est, &a->freq_est_cfg);
 
     nrfx_egu_t egu = NRFX_EGU_INSTANCE(AUDIO_EGU_IDX);
 

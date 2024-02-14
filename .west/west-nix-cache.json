@@ -1,9 +1,9 @@
 {
   "project_hashes": {
-    "f33316ed98c132a0b3f3093975ca0b6430335259388a84fdb94548cec3d4f305": {
+    "5a8d31200a50c57738d0b86034b511c5d09fb7dfc26af7c654869a845a807897": {
       "url": "https://github.com/lopsided98/zephyr",
-      "rev": "cb45a3684d7d9f4cefdd5bf7514300ac0c90805d",
-      "hash": "sha256-0Hn2WjEl8zCbRPwh7WtCg1O8w+8VYdi5kf3vL/zcEbo="
+      "rev": "68f24837b0320f4c97b52e010c6084b8d67fbd33",
+      "hash": "sha256-glh6idGBnGc24nxD3N/Bcv99z4EO0LltAHU+Fp7I728="
     },
     "2f0b8175147123daf179982b72353262901abe3894c8b3cedce65fdb5d8ec3ce": {
       "url": "https://github.com/BabbleSim/ext_nRF_hw_models.git",
@@ -50,10 +50,10 @@
       "rev": "4b96cbb174678dcd3ca86e11e1f24bc5f8726da0",
       "hash": "sha256-vzCbE69wCMLIjrSz1m8yspgVCto4JSm4Qg5zY/Ozg+k="
     },
-    "2020daa6a4701d31a91b2b4b486f3d42eb378157a7e080be6670d726038f894b": {
+    "e56e92c7c64146209995933b16aea0abda21bda2f20e31284fb692c70f857fde": {
       "url": "https://github.com/zephyrproject-rtos/hal_nordic",
-      "rev": "b9633ecea67bf52925d4c61455046223b46402b1",
-      "hash": "sha256-BdPhDjSOwPLHuO6UKYWzZfUK4DHnfq1spKTsopVypkI="
+      "rev": "4362d0fcdbac80942212bffc999654beac7ab30e",
+      "hash": "sha256-VJNN0xuGHX1s1VnBRraay5GuQo/7gBxJWFsZdQFxNQM="
     },
     "0cf11a28de2b230435e3e9d1166a2b69b17fed44aaeb7c70ffb9e94b75912ba0": {
       "url": "https://github.com/zephyrproject-rtos/libmetal",

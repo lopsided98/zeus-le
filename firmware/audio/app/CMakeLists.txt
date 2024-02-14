@@ -25,5 +25,7 @@ target_sources(app PRIVATE
 	src/main.c
 	src/sgtl5000.c
 	src/sync_timer.c
+	src/usb_audio.c
+	src/usb.c
 )
 target_link_libraries(app PRIVATE zeus_common zeus_audio_common)

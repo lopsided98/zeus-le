@@ -11,7 +11,7 @@ manifest:
   projects:
     - name: zephyr
       remote: lopsided98
-      revision: cb45a3684d7d9f4cefdd5bf7514300ac0c90805d
+      revision: 68f24837b0320f4c97b52e010c6084b8d67fbd33
       import:
         name-allowlist:
           - bsim

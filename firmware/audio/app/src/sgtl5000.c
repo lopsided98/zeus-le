@@ -278,11 +278,19 @@ static int codec_configure_dai(const struct device *dev, audio_dai_cfg_t *cfg) {
 }
 
 static int codec_configure_input(const struct device *dev) {
+    const struct codec_driver_config *const dev_cfg = dev->config;
+
     int ret = codec_write_source_and_mute(dev, INPUT_CODEC_SOURCE_MIC, true);
     if (ret < 0) return ret;
 
-    uint16_t val =
-        CHIP_SSS_CTRL_DAC_SELECT_I2S_IN | CHIP_SSS_CTRL_I2S_SELECT_ADC;
+    uint8_t bias_resistor = LOG2CEIL(dev_cfg->micbias_resistor_k_ohms);
+    uint8_t bias_volt = (dev_cfg->micbias_voltage_m_volts - 1250) / 250;
+    uint16_t val = FIELD_PREP(CHIP_MIC_CTRL_BIAS_RESISTOR, bias_resistor) |
+                   FIELD_PREP(CHIP_MIC_CTRL_BIAS_VOLT, bias_volt);
+    ret = codec_write_reg(dev, CHIP_MIC_CTRL, val);
+    if (ret < 0) return ret;
+
+    val = CHIP_SSS_CTRL_DAC_SELECT_I2S_IN | CHIP_SSS_CTRL_I2S_SELECT_ADC;
     return codec_write_reg(dev, CHIP_SSS_CTRL, val);
 }
 

@@ -18,9 +18,9 @@ in symlinkJoin {
     link = "zephyr";
     path = fetchgit {
         url = "https://github.com/lopsided98/zephyr";
-        rev = "cb45a3684d7d9f4cefdd5bf7514300ac0c90805d";
+        rev = "68f24837b0320f4c97b52e010c6084b8d67fbd33";
         branchName = "manifest-rev";
-        hash = "sha256-0Hn2WjEl8zCbRPwh7WtCg1O8w+8VYdi5kf3vL/zcEbo=";
+        hash = "sha256-glh6idGBnGc24nxD3N/Bcv99z4EO0LltAHU+Fp7I728=";
     };
 })
 
@@ -118,9 +118,9 @@ in symlinkJoin {
     link = "modules/hal/nordic";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/hal_nordic";
-        rev = "b9633ecea67bf52925d4c61455046223b46402b1";
+        rev = "4362d0fcdbac80942212bffc999654beac7ab30e";
         branchName = "manifest-rev";
-        hash = "sha256-BdPhDjSOwPLHuO6UKYWzZfUK4DHnfq1spKTsopVypkI=";
+        hash = "sha256-VJNN0xuGHX1s1VnBRraay5GuQo/7gBxJWFsZdQFxNQM=";
     };
 })
 

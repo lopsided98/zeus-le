@@ -14,6 +14,8 @@
 #include "audio.h"
 #include "freq_est.h"
 #include "sync_timer.h"
+#include "usb.h"
+#include "usb_audio.h"
 
 LOG_MODULE_REGISTER(audio_app);
 
@@ -180,23 +182,27 @@ static int sync_scan_init(void) {
 }
 
 int main(void) {
-    int err;
-
     // Initialize the Bluetooth Subsystem
-    err = bt_enable(NULL);
-    if (err) {
-        LOG_ERR("failed to enable Bluetooth (err %d)", err);
+    int ret = bt_enable(NULL);
+    if (ret) {
+        LOG_ERR("failed to enable Bluetooth (err %d)", ret);
         return 0;
     }
 
-    err = sync_timer_init();
-    if (err) return 0;
+    ret = sync_timer_init();
+    if (ret) return 0;
 
-    err = audio_init();
-    if (err) return 0;
+    ret = audio_init();
+    if (ret) return 0;
 
-    err = sync_scan_init();
-    if (err) return 0;
+    ret = usb_audio_init();
+    if (ret) return 0;
+
+    ret = usb_init();
+    if (ret) return 0;
+
+    ret = sync_scan_init();
+    if (ret) return 0;
 
     LOG_INF("Booted");
 
