@@ -50,6 +50,11 @@
       "rev": "4b96cbb174678dcd3ca86e11e1f24bc5f8726da0",
       "hash": "sha256-vzCbE69wCMLIjrSz1m8yspgVCto4JSm4Qg5zY/Ozg+k="
     },
+    "a03d56bcd49d43047b41f4a4323af64710e6d806875c267e0b3fb13a3a6a2a37": {
+      "url": "https://github.com/zephyrproject-rtos/fatfs",
+      "rev": "427159bf95ea49b7680facffaa29ad506b42709b",
+      "hash": "sha256-5l3hJazG8BoLZ0QxfSFc98uKArIGAFD1P8D6tsKMRt4="
+    },
     "e56e92c7c64146209995933b16aea0abda21bda2f20e31284fb692c70f857fde": {
       "url": "https://github.com/zephyrproject-rtos/hal_nordic",
       "rev": "4362d0fcdbac80942212bffc999654beac7ab30e",

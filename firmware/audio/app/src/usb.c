@@ -8,10 +8,10 @@
 LOG_MODULE_REGISTER(usb);
 
 #define USB_VID_PID_CODES 0x1209
-#define USB_PID_PIC_CODES_TEST 0x000a
+#define USB_PID_PID_CODES_TEST 0x000a
 
 USBD_DEVICE_DEFINE(usbd, DEVICE_DT_GET(DT_NODELABEL(zephyr_udc0)),
-                   USB_VID_PID_CODES, USB_PID_PIC_CODES_TEST);
+                   USB_VID_PID_CODES, USB_PID_PID_CODES_TEST);
 
 USBD_DESC_LANG_DEFINE(usb_lang);
 USBD_DESC_MANUFACTURER_DEFINE(usb_mfr, "Zeus LE");
@@ -23,14 +23,11 @@ USBD_CONFIGURATION_DEFINE(usb_config, 0, 125 /* mA */);
 static struct usb {
     // Resources
     struct usbd_contex* const ctx;
-
-    // State
-    atomic_t ready;
 } usb = {
     .ctx = &usbd,
 };
 
-int usb_init(void) {
+static int usb_init(void) {
     struct usb* u = &usb;
     int ret;
 
@@ -72,7 +69,7 @@ int usb_init(void) {
             return ret;
         }
 
-        LOG_DBG("Register %s", node->name);
+        LOG_DBG("register %s", node->name);
     }
 
     /*
@@ -94,7 +91,7 @@ int usb_init(void) {
         return ret;
     }
 
-    atomic_set(&u->ready, 1);
-
     return 0;
 }
+
+SYS_INIT(usb_init, APPLICATION, 93);

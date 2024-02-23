@@ -69,11 +69,11 @@ static inline int input_codec_configure(const struct device *dev,
  *
  * @return 0 on success, negative error code on failure
  */
-static inline void input_codec_start_input(const struct device *dev) {
+static inline int input_codec_start_input(const struct device *dev) {
     const struct input_codec_api *api =
         (const struct input_codec_api *)dev->api;
 
-    api->start_input(dev);
+    return api->start_input(dev);
 }
 
 /**
@@ -85,11 +85,11 @@ static inline void input_codec_start_input(const struct device *dev) {
  *
  * @return 0 on success, negative error code on failure
  */
-static inline void input_codec_stop_input(const struct device *dev) {
+static inline int input_codec_stop_input(const struct device *dev) {
     const struct input_codec_api *api =
         (const struct input_codec_api *)dev->api;
 
-    api->stop_input(dev);
+    return api->stop_input(dev);
 }
 /**
  * @brief Set a codec property defined by input_codec_property

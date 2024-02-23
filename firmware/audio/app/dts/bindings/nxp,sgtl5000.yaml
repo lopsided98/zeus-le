@@ -20,5 +20,5 @@ properties:
     default: 1250
     description: |
       The bias voltage to be used in millivolts. The voltage can take values
-      from 1.25V to 3V by 250mV steps. By default, it is set to 250mV.
+      from 1.25V to 3V by 250mV steps. By default, it is set to 1.25mV.
     enum: [ 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000 ]

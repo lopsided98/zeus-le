@@ -14,13 +14,14 @@ manifest:
       revision: 68f24837b0320f4c97b52e010c6084b8d67fbd33
       import:
         name-allowlist:
-          - bsim
           - babblesim_base
-          - babblesim_ext_2G4_libPhyComv1
-          - babblesim_ext_2G4_phy_v1
           - babblesim_ext_2G4_channel_NtNcable
+          - babblesim_ext_2G4_libPhyComv1
           - babblesim_ext_2G4_modem_magic
+          - babblesim_ext_2G4_phy_v1
+          - bsim
           - cmsis
+          - fatfs
           - hal_nordic
           - libmetal
           - open-amp

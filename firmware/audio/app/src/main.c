@@ -13,9 +13,10 @@
 
 #include "audio.h"
 #include "freq_est.h"
+#include "net_audio.h"
+#include "sd_card.h"
 #include "sync_timer.h"
 #include "usb.h"
-#include "usb_audio.h"
 
 LOG_MODULE_REGISTER(audio_app);
 
@@ -184,25 +185,25 @@ static int sync_scan_init(void) {
 int main(void) {
     // Initialize the Bluetooth Subsystem
     int ret = bt_enable(NULL);
-    if (ret) {
+    if (ret < 0) {
         LOG_ERR("failed to enable Bluetooth (err %d)", ret);
         return 0;
     }
 
+    ret = sd_card_init();
+    if (ret < 0) return 0;
+
+    ret = net_audio_init();
+    if (ret < 0) return 0;
+
     ret = sync_timer_init();
-    if (ret) return 0;
+    if (ret < 0) return 0;
 
     ret = audio_init();
-    if (ret) return 0;
-
-    ret = usb_audio_init();
-    if (ret) return 0;
-
-    ret = usb_init();
-    if (ret) return 0;
+    if (ret < 0) return 0;
 
     ret = sync_scan_init();
-    if (ret) return 0;
+    if (ret < 0) return 0;
 
     LOG_INF("Booted");
 

@@ -23,9 +23,10 @@ target_sources(app PRIVATE
 	src/freq_ctlr.c
 	src/freq_est.c
 	src/main.c
+	src/net_audio.c
+	src/sd_card.c
 	src/sgtl5000.c
 	src/sync_timer.c
-	src/usb_audio.c
 	src/usb.c
 )
 target_link_libraries(app PRIVATE zeus_common zeus_audio_common)

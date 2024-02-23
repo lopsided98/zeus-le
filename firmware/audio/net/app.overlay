@@ -21,3 +21,8 @@
 &timer0 {
 	status = "disabled";
 };
+
+// Disable unused hardware
+&uart0 {
+	status = "disabled";
+};

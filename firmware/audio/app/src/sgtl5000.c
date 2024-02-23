@@ -12,7 +12,7 @@
 
 #include "input_codec.h"
 
-#define LOG_LEVEL CONFIG_AUDIO_CODEC_LOG_LEVEL
+#define LOG_LEVEL LOG_LEVEL_DBG  // CONFIG_AUDIO_CODEC_LOG_LEVEL
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sgtl5000);
 
@@ -65,8 +65,8 @@ static int codec_read_reg(const struct device *dev, uint16_t addr,
                           uint16_t *val) {
     const struct codec_driver_config *const dev_cfg = dev->config;
 
-    addr = sys_cpu_to_be16(addr);
-    int ret = i2c_write_read_dt(&dev_cfg->bus, &addr, sizeof(addr), val,
+    uint16_t addr_be = sys_cpu_to_be16(addr);
+    int ret = i2c_write_read_dt(&dev_cfg->bus, &addr_be, sizeof(addr), val,
                                 sizeof(*val));
     if (ret < 0) return ret;
     *val = sys_be16_to_cpu(*val);
@@ -238,12 +238,36 @@ static int codec_configure_dai(const struct device *dev, audio_dai_cfg_t *cfg) {
         return -EINVAL;
     }
 
-    if (cfg->i2s.format & I2S_FMT_BIT_CLK_INV) {
-        val |= CHIP_I2S_CTRL_SCLK_INV;
+    uint8_t i2s_mode;
+    // 1 -> LRCLK high = left, 0 -> LRCLK high = right
+    uint8_t lrpol;
+    switch (cfg->i2s.format & I2S_FMT_DATA_FORMAT_MASK) {
+        case I2S_FMT_DATA_FORMAT_I2S:
+            i2s_mode = CHIP_I2S_CTRL_I2S_MODE_I2S_LEFT_JUSTIFIED;
+            lrpol = 0;
+            break;
+        case I2S_FMT_DATA_FORMAT_LEFT_JUSTIFIED:
+            i2s_mode = CHIP_I2S_CTRL_I2S_MODE_I2S_LEFT_JUSTIFIED;
+            val |= CHIP_I2S_CTRL_LRALIGN;
+            lrpol = 1;
+            break;
+        case I2S_FMT_DATA_FORMAT_RIGHT_JUSTIFIED:
+            i2s_mode = CHIP_I2S_CTRL_I2S_MODE_RIGHT_JUSTIFIED;
+            lrpol = 1;
+            break;
+        default:
+            LOG_ERR("Unsupported data format: 0x%02x", cfg->i2s.format);
+            return -EINVAL;
     }
+    val |= FIELD_PREP(CHIP_I2S_CTRL_I2S_MODE, i2s_mode);
 
     if (cfg->i2s.format & I2S_FMT_FRAME_CLK_INV) {
-        val |= CHIP_I2S_CTRL_LRPOL;
+        lrpol = !lrpol;
+    }
+    val |= FIELD_PREP(CHIP_I2S_CTRL_LRPOL, lrpol);
+
+    if (cfg->i2s.format & I2S_FMT_BIT_CLK_INV) {
+        val |= CHIP_I2S_CTRL_SCLK_INV;
     }
 
     uint8_t dlen;
@@ -286,11 +310,14 @@ static int codec_configure_input(const struct device *dev) {
     uint8_t bias_resistor = LOG2CEIL(dev_cfg->micbias_resistor_k_ohms);
     uint8_t bias_volt = (dev_cfg->micbias_voltage_m_volts - 1250) / 250;
     uint16_t val = FIELD_PREP(CHIP_MIC_CTRL_BIAS_RESISTOR, bias_resistor) |
-                   FIELD_PREP(CHIP_MIC_CTRL_BIAS_VOLT, bias_volt);
+                   FIELD_PREP(CHIP_MIC_CTRL_BIAS_VOLT, bias_volt) |
+                   FIELD_PREP(CHIP_MIC_CTRL_GAIN, CHIP_MIC_CTRL_GAIN_40DB);
     ret = codec_write_reg(dev, CHIP_MIC_CTRL, val);
     if (ret < 0) return ret;
 
-    val = CHIP_SSS_CTRL_DAC_SELECT_I2S_IN | CHIP_SSS_CTRL_I2S_SELECT_ADC;
+    val =
+        FIELD_PREP(CHIP_SSS_CTRL_DAC_SELECT, CHIP_SSS_CTRL_DAC_SELECT_I2S_IN) |
+        FIELD_PREP(CHIP_SSS_CTRL_I2S_SELECT, CHIP_SSS_CTRL_I2S_SELECT_ADC);
     return codec_write_reg(dev, CHIP_SSS_CTRL, val);
 }
 
@@ -326,9 +353,6 @@ static int codec_configure(const struct device *dev,
 
     ret = codec_configure_input(dev);
     if (ret < 0) return ret;
-
-    CODEC_DUMP_REGS(dev);
-    LOG_INF("SGTL5000 configured");
 
     return 0;
 }

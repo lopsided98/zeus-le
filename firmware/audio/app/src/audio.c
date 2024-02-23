@@ -14,6 +14,7 @@
 #include "freq_ctlr.h"
 #include "freq_est.h"
 #include "input_codec.h"
+#include "net_audio.h"
 #include "sync_timer.h"
 
 LOG_MODULE_REGISTER(audio);
@@ -38,7 +39,7 @@ static void audio_pool_destroy(struct net_buf *buf);
 NET_BUF_POOL_DEFINE(audio_pool, AUDIO_BLOCK_COUNT, 0, 0, audio_pool_destroy);
 
 static K_SEM_DEFINE(audio_started, 0, 1);
-static K_THREAD_STACK_DEFINE(audio_thread_stack, 512);
+static K_THREAD_STACK_DEFINE(audio_thread_stack, 1024);
 
 static void audio_sync_work_handler(struct k_work *);
 static K_WORK_DEFINE(audio_sync_work, audio_sync_work_handler);
@@ -128,6 +129,8 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
             break;
         }
 
+        net_audio_send(buf);
+
         net_buf_unref(buf);
     }
 }
@@ -166,9 +169,10 @@ static void audio_sync_work_handler(struct k_work *item) {
     freq += a->hfclkaudio_increment;
 
     nrf_clock_hfclkaudio_config_set(NRF_CLOCK, freq);
-    printk("audio,%" PRIu64 ",%" PRIu64 ",%" PRIu16 ",%" PRIi16 ",%e\n", time,
-           ref_time + a->target_theta, freq, a->hfclkaudio_increment,
-           (double)(state.f / QU32_32_ONE));
+    // printk("audio,%" PRIu64 ",%" PRIu64 ",%" PRIu16 ",%" PRIi16 ",%e\n",
+    // time,
+    //        ref_time + a->target_theta, freq, a->hfclkaudio_increment,
+    //        (double)(state.f / QU32_32_ONE));
 }
 
 static void audio_egu_handler(uint8_t event_idx, void *p_context) {
@@ -199,7 +203,7 @@ int audio_init() {
             {
                 .word_size = 16,
                 .channels = 2,
-                .format = I2S_FMT_DATA_FORMAT_I2S,
+                .format = I2S_FMT_DATA_FORMAT_LEFT_JUSTIFIED,
                 .options = I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER,
                 .frame_clk_freq = 44100,
                 .mem_slab = a->slab,
@@ -257,6 +261,12 @@ int audio_init() {
     err = input_codec_configure(a->codec, &cfg);
     if (err < 0) {
         LOG_ERR("failed to configure codec (err %d)", err);
+        return err;
+    }
+
+    err = input_codec_start_input(a->codec);
+    if (err < 0) {
+        LOG_ERR("failed to start codec (err %d)", err);
         return err;
     }
 

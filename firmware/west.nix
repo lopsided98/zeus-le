@@ -115,6 +115,16 @@ in symlinkJoin {
 })
 
 (linkPath {
+    link = "modules/fs/fatfs";
+    path = fetchgit {
+        url = "https://github.com/zephyrproject-rtos/fatfs";
+        rev = "427159bf95ea49b7680facffaa29ad506b42709b";
+        branchName = "manifest-rev";
+        hash = "sha256-5l3hJazG8BoLZ0QxfSFc98uKArIGAFD1P8D6tsKMRt4=";
+    };
+})
+
+(linkPath {
     link = "modules/hal/nordic";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/hal_nordic";
@@ -158,7 +168,7 @@ in symlinkJoin {
   postBuild = ''
     cat << EOF > "$out/.zephyr-env"
       export ZEPHYR_BASE=${lib.escapeShellArg "${placeholder "out"}/zephyr"}
-      export ZEPHYR_MODULES=${lib.escapeShellArg "${placeholder "out"}/tools/bsim/components/ext_nRF_hw_models;${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/hal/nordic;${placeholder "out"}/modules/hal/libmetal;${placeholder "out"}/modules/lib/open-amp;${placeholder "out"}/modules/crypto/tinycrypt"}
+      export ZEPHYR_MODULES=${lib.escapeShellArg "${placeholder "out"}/tools/bsim/components/ext_nRF_hw_models;${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/fs/fatfs;${placeholder "out"}/modules/hal/nordic;${placeholder "out"}/modules/hal/libmetal;${placeholder "out"}/modules/lib/open-amp;${placeholder "out"}/modules/crypto/tinycrypt"}
     EOF
   '';
 }
