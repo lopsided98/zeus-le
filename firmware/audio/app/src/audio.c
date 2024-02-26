@@ -10,27 +10,18 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net/buf.h>
 
+#include "drivers/input_codec.h"
 #include "fixed.h"
 #include "freq_ctlr.h"
 #include "freq_est.h"
-#include "input_codec.h"
 #include "net_audio.h"
 #include "sync_timer.h"
 
 LOG_MODULE_REGISTER(audio);
 
-#define AUDIO_EGU_IDX 0
-#define AUDIO_EGU_IRQ NRFX_IRQ_NUMBER_GET(NRF_EGU_INST_GET(AUDIO_EGU_IDX))
-
 // TODO: sample rate must currently be divisible by the number of samples
 #define AUDIO_BLOCK_SIZE 17640
 #define AUDIO_BLOCK_COUNT 4
-
-#define AUDIO_HFCLKAUDIO_FREQ_NOMINAL \
-    DT_PROP(DT_NODELABEL(clock), hfclkaudio_frequency)
-
-#define AUDIO_HFCLKAUDIO_FREQ_REG_MIN 12519
-#define AUDIO_HFCLKAUDIO_FREQ_REG_MAX 18068
 
 K_MEM_SLAB_DEFINE_STATIC(audio_slab, AUDIO_BLOCK_SIZE, AUDIO_BLOCK_COUNT, 4);
 
@@ -41,8 +32,25 @@ NET_BUF_POOL_DEFINE(audio_pool, AUDIO_BLOCK_COUNT, 0, 0, audio_pool_destroy);
 static K_SEM_DEFINE(audio_started, 0, 1);
 static K_THREAD_STACK_DEFINE(audio_thread_stack, 1024);
 
+#define AUDIO_EGU_IDX 0
+#define AUDIO_EGU_IRQ NRFX_IRQ_NUMBER_GET(NRF_EGU_INST_GET(AUDIO_EGU_IDX))
+
+#define AUDIO_SYNC_ENABLED                                          \
+    (IS_ENABLED(CONFIG_I2S_NRFX) && IS_ENABLED(CONFIG_NRFX_DPPI) && \
+     IS_ENABLED(CONFIG_NRFX_EGU0))
+
+#if AUDIO_SYNC_ENABLED
+
+#define AUDIO_HFCLKAUDIO_FREQ_NOMINAL \
+    DT_PROP(DT_NODELABEL(clock), hfclkaudio_frequency)
+
+#define AUDIO_HFCLKAUDIO_FREQ_REG_MIN 12519
+#define AUDIO_HFCLKAUDIO_FREQ_REG_MAX 18068
+
 static void audio_sync_work_handler(struct k_work *);
 static K_WORK_DEFINE(audio_sync_work, audio_sync_work_handler);
+
+#endif
 
 static struct audio {
     // Resources
@@ -53,6 +61,7 @@ static struct audio {
     struct k_sem *const started;
     struct k_thread thread;
 
+#if AUDIO_SYNC_ENABLED
     const struct freq_est_config freq_est_cfg;
     struct freq_est freq_est;
     const struct freq_ctlr freq_ctlr;
@@ -68,13 +77,15 @@ static struct audio {
     qu32_32 target_theta;
     /// Last controller input
     int16_t hfclkaudio_increment;
+#endif
 } audio = {
-    .codec = DEVICE_DT_GET(DT_NODELABEL(sgtl5000)),
-    .i2s = DEVICE_DT_GET(DT_NODELABEL(i2s_codec)),
+    .codec = DEVICE_DT_GET(DT_ALIAS(codec)),
+    .i2s = DEVICE_DT_GET(DT_ALIAS(i2s)),
     .slab = &audio_slab,
     .pool = &audio_pool,
     .started = &audio_started,
 
+#if AUDIO_SYNC_ENABLED
     .freq_est_cfg =
         {
             .nominal_freq = SYNC_TIMER_FREQ,
@@ -91,6 +102,7 @@ static struct audio {
             .max_step = 1000,
         },
     .sync_work = &audio_sync_work,
+#endif
 };
 
 static void audio_pool_destroy(struct net_buf *buf) {
@@ -135,6 +147,7 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
     }
 }
 
+#if AUDIO_SYNC_ENABLED
 static void audio_sync_work_handler(struct k_work *item) {
     struct audio *a = &audio;
     irq_disable(AUDIO_EGU_IRQ);
@@ -181,6 +194,7 @@ static void audio_egu_handler(uint8_t event_idx, void *p_context) {
     a->ref_time = qu32_32_from_int(sync_timer_get_i2s_time());
     k_work_submit(a->sync_work);
 }
+#endif
 
 int audio_init() {
     int err;
@@ -197,7 +211,11 @@ int audio_init() {
     }
 
     struct audio_codec_cfg cfg = {
+#if AUDIO_SYNC_ENABLED
         .mclk_freq = AUDIO_HFCLKAUDIO_FREQ_NOMINAL,
+#else
+        .mclk_freq = 0,
+#endif
         .dai_type = AUDIO_DAI_TYPE_I2S,
         .dai_cfg.i2s =
             {
@@ -212,6 +230,7 @@ int audio_init() {
             },
     };
 
+#if AUDIO_SYNC_ENABLED
     // TODO: allow sample-rates that aren't a multiple of sample/block.
     // Naive implementation overflows 64-bit integer with intermediate
     // result.
@@ -220,12 +239,6 @@ int audio_init() {
                          (AUDIO_BLOCK_SIZE / cfg.dai_cfg.i2s.channels /
                           2 /* bytes per sample */) /
                          cfg.dai_cfg.i2s.frame_clk_freq);
-
-    err = i2s_configure(a->i2s, I2S_DIR_RX, &cfg.dai_cfg.i2s);
-    if (err < 0) {
-        LOG_ERR("failed to configure I2S (err %d)", err);
-        return err;
-    }
 
     freq_est_init(&a->freq_est, &a->freq_est_cfg);
 
@@ -246,6 +259,13 @@ int audio_init() {
     nrf_egu_subscribe_set(egu.p_reg, NRF_EGU_TASK_TRIGGER0, i2s_dppi);
     nrfx_egu_int_enable(&egu, NRF_EGU_INT_TRIGGERED0);
     nrfx_dppi_channel_enable(i2s_dppi);
+#endif
+
+    err = i2s_configure(a->i2s, I2S_DIR_RX, &cfg.dai_cfg.i2s);
+    if (err < 0) {
+        LOG_ERR("failed to configure I2S (err %d)", err);
+        return err;
+    }
 
     k_thread_create(&a->thread, audio_thread_stack,
                     K_THREAD_STACK_SIZEOF(audio_thread_stack), audio_thread_run,

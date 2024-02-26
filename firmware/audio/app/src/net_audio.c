@@ -24,6 +24,11 @@ int net_audio_init(void) {
     int ret;
     struct net_audio *n = &net_audio;
 
+    if (!net_if_get_default()) {
+        LOG_WRN("no network interface available");
+        return 0;
+    }
+
     struct sockaddr_in6 addr = {
         .sin6_family = AF_INET6,
         .sin6_port = htons(54321),

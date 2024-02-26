@@ -7,14 +7,13 @@
 #include <errno.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 
 #include "input_codec.h"
 
-#define LOG_LEVEL LOG_LEVEL_DBG  // CONFIG_AUDIO_CODEC_LOG_LEVEL
-#include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(sgtl5000);
+LOG_MODULE_REGISTER(sgtl5000, CONFIG_AUDIO_CODEC_LOG_LEVEL);
 
 #define CODEC_VOLUME_MAX 45 /* +22.5 dB */
 #define CODEC_VOLUME_MIN 0  /* +0.0 dB */

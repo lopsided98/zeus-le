@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 / {
+	aliases {
+		i2s = &i2s0;
+		codec = &sgtl5000;
+	};
+
 	cdc_ecm_eth0: cdc_ecm_eth0 {
 		compatible = "zephyr,cdc-ecm-ethernet";
 		remote-mac-address = "8a5488a923a6";
@@ -73,7 +78,7 @@
 	hfclkaudio-frequency = <11289600>;
 };
 
-i2s_codec: &i2s0 {
+&i2s0 {
 	status = "okay";
 	pinctrl-0 = <&i2s0_default_alt>;
 	pinctrl-names = "default";

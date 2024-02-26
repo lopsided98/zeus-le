@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+/ {
+	aliases {
+		i2s = &alsa_i2s;
+		codec = &dummy_codec;
+	};
+
+	sim_flash {
+		compatible = "zephyr,sim-flash";
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+		erase-value = <0xff>;
+
+		flash@0 {
+			compatible = "soc-nv-flash";
+			reg = <0x00000000 DT_SIZE_M(256)>;
+
+			erase-block-size = <512>;
+			write-block-size = <512>;
+
+			partitions {
+				compatible = "fixed-partitions";
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				sdmmc_partition: partition@0 {
+					label = "sd";
+					reg = <0x00000000 DT_SIZE_M(256)>;
+				};
+			};
+		};
+	};
+
+	sdmmc {
+		compatible = "zephyr,flash-disk";
+		partition = <&sdmmc_partition>;
+		disk-name = "SD";
+		cache-size = <512>;
+	};
+
+	alsa_i2s: alsa-i2s {
+		compatible = "linux,alsa-i2s";
+	};
+
+	dummy_codec: dummy-codec {
+		compatible = "zephyr,dummy-codec";
+	};
+};

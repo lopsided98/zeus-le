@@ -20,13 +20,6 @@
 
 LOG_MODULE_REGISTER(audio_app);
 
-static const struct gpio_dt_spec led =
-    GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
-
-void led_off_work_handler(struct k_work *work) { gpio_pin_set_dt(&led, 0); }
-// Register the work handler
-K_WORK_DELAYABLE_DEFINE(led_off_work, led_off_work_handler);
-
 static struct sync_data {
     bool found;
     struct bt_le_per_adv_sync *sync;
@@ -157,9 +150,6 @@ static void recv_cb(struct bt_le_per_adv_sync *sync,
                     const struct bt_le_per_adv_sync_recv_info *info,
                     struct net_buf_simple *buf) {
     bt_data_parse(buf, data_parse_cb, NULL);
-
-    gpio_pin_set_dt(&led, 1);
-    k_work_schedule(&led_off_work, K_MSEC(50));
 }
 
 static struct bt_le_per_adv_sync_cb sync_callbacks = {
@@ -189,6 +179,9 @@ int main(void) {
         LOG_ERR("failed to enable Bluetooth (err %d)", ret);
         return 0;
     }
+
+    ret = usb_init();
+    if (ret < 0) return 0;
 
     ret = sd_card_init();
     if (ret < 0) return 0;

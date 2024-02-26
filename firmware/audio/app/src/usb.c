@@ -27,7 +27,7 @@ static struct usb {
     .ctx = &usbd,
 };
 
-static int usb_init(void) {
+int usb_init(void) {
     struct usb* u = &usb;
     int ret;
 
@@ -93,5 +93,3 @@ static int usb_init(void) {
 
     return 0;
 }
-
-SYS_INIT(usb_init, APPLICATION, 93);

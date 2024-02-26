@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#include <errno.h>
 #include <zephyr/audio/codec.h>
 #include <zephyr/device.h>
 

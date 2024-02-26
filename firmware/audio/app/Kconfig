@@ -1,0 +1,7 @@
+source "Kconfig.zephyr"
+
+menu "Zeus LE"
+
+rsource "src/drivers/Kconfig"
+
+endmenu

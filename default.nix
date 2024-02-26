@@ -7,7 +7,7 @@
     stdenv = prev.withCFlags [ "-Os" ] prev.stdenv;
   };
 
-  # Build a ARM multilib GCC
+  # Build an ARM multilib GCC
   multilibOverlay = final: prev: lib.optionalAttrs prev.stdenv.hostPlatform.isNone {
     stdenv = prev.overrideCC prev.stdenv (prev.buildPackages.wrapCCWith {
       cc = (prev.buildPackages.gcc-unwrapped.override {
@@ -42,12 +42,13 @@
 
     "simulator" = nixpkgs {
       localSystem = stdenv.hostPlatform;
-      crossSystem = pkgs.pkgsi686Linux.stdenv.hostPlatform;
+      crossSystem = pkgs.pkgsi686Linux.pkgsStatic.stdenv.hostPlatform;
     };
   }.${platform};
 in pkgs'.callPackage ({
   lib, stdenv, callPackage, pkgsBuildBuild, cmake, ninja, makedepend, python3
 , dtc, python3Packages, git, nix-prefetch-git, clang-tools, openocd, gdb
+, alsa-lib
 }: stdenv.mkDerivation {
   pname = "zeus-le";
   version = "0.1.0";
@@ -77,6 +78,10 @@ in pkgs'.callPackage ({
     gdb
   ]);
 
+  buildInputs = lib.optionals (platform == "simulator") [
+    alsa-lib
+  ];
+
   env = {
     ZEPHYR_TOOLCHAIN_VARIANT = "cross-compile";
     CROSS_COMPILE = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}";
@@ -91,7 +96,7 @@ in pkgs'.callPackage ({
     "-DBOARD=raytac_mdbt53_db_40_nrf5340_cpuapp"
     "-DAPP_DIR=../firmware/central/app"
     # TODO: generate dynamically
-    "-DBUILD_VERSION=zephyr-v3.5.0-3513-gaa4416624dce"
+    "-DBUILD_VERSION=zephyr-v3.5.0-5533-g68f24837b032"
   ];
 
   preConfigure = ''
