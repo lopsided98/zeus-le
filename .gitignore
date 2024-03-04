@@ -5,4 +5,5 @@
 /modules/
 /tools/
 /zephyr/
+flash.bin
 result*

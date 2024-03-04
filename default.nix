@@ -42,14 +42,34 @@
 
     "simulator" = nixpkgs {
       localSystem = stdenv.hostPlatform;
-      crossSystem = pkgs.pkgsi686Linux.pkgsStatic.stdenv.hostPlatform;
+      crossSystem = pkgs.pkgsi686Linux.stdenv.hostPlatform;
     };
   }.${platform};
 in pkgs'.callPackage ({
-  lib, stdenv, callPackage, pkgsBuildBuild, cmake, ninja, makedepend, python3
-, dtc, python3Packages, git, nix-prefetch-git, clang-tools, openocd, gdb
-, alsa-lib
-}: stdenv.mkDerivation {
+  lib, stdenv, linkFarm, makeStaticLibraries, callPackage, buildPackages
+, pkgsBuildBuild, cmake, ninja, makedepend, python3, dtc, python3Packages, git
+, bash-completion, nix-prefetch-git, clang-tools, openocd, gdb, glibc, alsa-lib
+}: let
+  # Zephyr host toolchain only looks for unprefixed tools
+  unprefixed-cc = linkFarm "host-cc" (builtins.map (name: {
+    name = "bin/${name}";
+    path = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}${name}";
+  }) [
+    "gcc"
+    "g++"
+  ]);
+
+  # Make a package that can be linked against the Zephyr posix arch for the
+  # simulator. This requires enabling static libraries and disabling PIE.
+  makeZephyrPackage = pkg: (pkg.override {
+    stdenv = makeStaticLibraries stdenv;
+  }).overrideAttrs ({ env ? {}, ...}: {
+    env = env // {
+      # undefined reference to `__x86.get_pc_thunk.ax'
+      NIX_CFLAGS_COMPILE = (env.NIX_CFLAGS_COMPILE or "") + " -fno-pie";
+    };
+  });
+in stdenv.mkDerivation {
   pname = "zeus-le";
   version = "0.1.0";
 
@@ -57,7 +77,14 @@ in pkgs'.callPackage ({
     then null
     else callPackage ./firmware/west.nix { };
 
+  depsBuildBuild = lib.optionals dev [
+    (pkgsBuildBuild.clang-tools.override {
+      llvmPackages = pkgsBuildBuild.llvmPackages_latest;
+    })
+  ];
+
   nativeBuildInputs = [
+    unprefixed-cc
     cmake
     ninja
     makedepend # babblesim
@@ -68,27 +95,31 @@ in pkgs'.callPackage ({
     pykwalify
     packaging
   ]) ++ (lib.optionals dev [
+    bash-completion
     git
     python3Packages.west
     nix-prefetch-git
-    (pkgsBuildBuild.clang-tools.override {
-      llvmPackages = pkgsBuildBuild.llvmPackages_latest;
-    })
     openocd
     gdb
   ]);
 
   buildInputs = lib.optionals (platform == "simulator") [
-    alsa-lib
+    (makeZephyrPackage alsa-lib)
   ];
+
+  hardeningDisable = [ "fortify" ];
 
   env = {
     ZEPHYR_TOOLCHAIN_VARIANT = "cross-compile";
     CROSS_COMPILE = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}";
   } // lib.optionalAttrs dev {
     # Required by menuconfig
-    LOCALE_ARCHIVE = "${pkgsBuildBuild.glibcLocales}/lib/locale/locale-archive";
+    LOCALE_ARCHIVE = "${buildPackages.glibcLocales}/lib/locale/locale-archive";
   };
+
+  shellHook = ''
+    source '${buildPackages.bash-completion}/etc/profile.d/bash_completion.sh'
+  '';
 
   cmakeDir = "../zephyr/share/sysbuild";
 

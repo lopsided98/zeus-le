@@ -145,6 +145,16 @@ in symlinkJoin {
 })
 
 (linkPath {
+    link = "tools/net-tools";
+    path = fetchgit {
+        url = "https://github.com/zephyrproject-rtos/net-tools";
+        rev = "3a677d355cc7f73e444801a6280d0ccec80a1957";
+        branchName = "manifest-rev";
+        hash = "sha256-YlaszC8BNXCzSGAusiYhEzzRs55gnWykN/3zb0MGA7w=";
+    };
+})
+
+(linkPath {
     link = "modules/lib/open-amp";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/open-amp";

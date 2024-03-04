@@ -24,6 +24,7 @@ manifest:
           - fatfs
           - hal_nordic
           - libmetal
+          - net-tools
           - open-amp
           - tinycrypt
     - name: babblesim_ext_nRF_hw_models
