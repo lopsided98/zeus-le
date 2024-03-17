@@ -15,8 +15,8 @@ static K_THREAD_STACK_ARRAY_DEFINE(ftp_conn_stacks, FTP_MAX_CONN, 2048);
 static struct ftp {
     struct k_thread server_thread;
     struct k_thread conn_threads[FTP_MAX_CONN];
-    lftpd_t lftp;
-    lftpd_client_t conn[FTP_MAX_CONN];
+    struct lftpd lftp;
+    struct lftpd_conn conn[FTP_MAX_CONN];
 } ftp;
 
 static void ftp_server_run(void *p1, void *p2, void *p3) {
@@ -26,8 +26,8 @@ static void ftp_server_run(void *p1, void *p2, void *p3) {
 
 static void ftp_conn_run(void *p1, void *p2, void *p3) {
     struct ftp *f = &ftp;
-    lftpd_client_t *client = p1;
-    lftpd_client_run(&f->lftp, client);
+    struct lftpd_conn *client = p1;
+    lftpd_conn_run(&f->lftp, client);
 }
 
 int ftp_init(void) {

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <zephyr/kernel.h>
 
-typedef struct {
+struct lftpd_conn {
 	const char* base_dir;
 	char cwd[CONFIG_LFTPD_MAX_PATH_LEN + 1];
 	/// Buffer to store received control command
@@ -12,22 +12,22 @@ typedef struct {
 	char buf[1024];
 	int socket;
 	int data_socket;
-} lftpd_client_t;
+};
 
-typedef struct {
+struct lftpd {
 	const char* base_dir;
 	int server_socket;
 
 	struct k_mbox conn_mbox;
-} lftpd_t;
+};
 
-int lftpd_init(lftpd_t* lftpd, const char* base_dir, uint16_t port);
+int lftpd_init(struct lftpd* lftpd, const char* base_dir, uint16_t port);
 
 /**
  * @brief Create a server on port and start listening for client
  * connections. This function blocks for the life of the server and
- * only returns when lftpd_stop() is called with the same lftpd_t.
+ * only returns when lftpd_stop() is called with the same struct lftpd.
  */
-int lftpd_run(lftpd_t* lftpd);
+int lftpd_run(struct lftpd* lftpd);
 
-int lftpd_client_run(lftpd_t* lftpd, lftpd_client_t* client);
+int lftpd_conn_run(struct lftpd* lftpd, struct lftpd_conn* client);
