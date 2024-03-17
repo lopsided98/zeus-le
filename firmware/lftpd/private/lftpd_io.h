@@ -1,16 +1,12 @@
 #pragma once
 
-/**
- * @brief Given a base path and a name, attempts to combine base and
- * name and produce an absolute path. If either base or name are NULL
- * they are treated as empty strings.
- * The following rules are then applied:
- * 1. If name does not begin with / it is appended to base with
- *    / as a separator. In other words, name is treated as relative
- *    to base and the two are combined.
- * 2. The path is then broken into segments by splitting on /.
- * 3. Path segments of . are removed entirely.
- * 4. Path segments of .. are resolved by removing the parent segment.
- * 5. The segments are then joined with / and the result is returned.
- */
-char* lftpd_io_canonicalize_path(const char* base, const char* name);
+#include <stddef.h>
+
+/// Trim trailing slashes from a path. Only leave a trailing slash if the path
+/// would be empty otherwise.
+void lftpd_io_trim_trailing_slash(char* path);
+
+int lftpd_io_prefix(const char* prefix, char* path, size_t path_buf_len);
+
+int lftpd_io_resolve_path(const char* base_dir, const char* working_dir,
+						  char* path, size_t path_buf_len);

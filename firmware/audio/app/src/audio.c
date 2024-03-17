@@ -141,7 +141,7 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
             break;
         }
 
-        net_audio_send(buf);
+        // net_audio_send(buf);
 
         net_buf_unref(buf);
     }
@@ -277,6 +277,7 @@ int audio_init() {
         LOG_ERR("audio did not start");
         return err;
     }
+    LOG_INF("audio started");
 
     err = input_codec_configure(a->codec, &cfg);
     if (err < 0) {

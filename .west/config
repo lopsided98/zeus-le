@@ -4,3 +4,6 @@ file = west.yml
 
 [zephyr]
 base = zephyr
+
+[build]
+dir-fmt = build/{source_dir}/{board}

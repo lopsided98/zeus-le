@@ -93,10 +93,10 @@ static int i2s_alsa_read(const struct device *dev, void **mem_block,
         return -EIO;
     }
 
-    void *buffer;
-    err = k_mem_slab_alloc(data->cfg.mem_slab, &buffer, K_NO_WAIT);
+    err = k_mem_slab_alloc(data->cfg.mem_slab, mem_block, K_NO_WAIT);
     if (err < 0) return err;
 
+    void *buffer = *mem_block;
     snd_pcm_uframes_t buffer_frames =
         data->cfg.block_size / data->cfg.channels / (data->cfg.word_size / 8);
     snd_pcm_sframes_t total_frames = 0;
@@ -111,7 +111,7 @@ static int i2s_alsa_read(const struct device *dev, void **mem_block,
         } else if (frames != -EAGAIN) {
             return frames;
         }
-        k_yield();
+        k_sleep(K_MSEC(10));
     }
     return 0;
 }
@@ -120,8 +120,8 @@ static int i2s_alsa_write(const struct device *dev, void *mem_block,
                           size_t size) {
     struct i2s_alsa_data *data = dev->data;
 
-    if (!data->handle || data->dir != I2S_DIR_RX) {
-        LOG_ERR("Device is not configured for RX");
+    if (!data->handle || data->dir != I2S_DIR_TX) {
+        LOG_ERR("Device is not configured for TX");
         return -EIO;
     }
 
@@ -130,7 +130,18 @@ static int i2s_alsa_write(const struct device *dev, void *mem_block,
 
 static int i2s_alsa_trigger(const struct device *dev, enum i2s_dir dir,
                             enum i2s_trigger_cmd cmd) {
-    return 0;
+    struct i2s_alsa_data *data = dev->data;
+
+    if (!data->handle || data->dir != dir) {
+        return -EIO;
+    }
+
+    switch (cmd) {
+        case I2S_TRIGGER_START:
+            return snd_pcm_start(data->handle);
+        default:
+            return -ENOSYS;
+    }
 }
 
 static const struct i2s_driver_api i2s_alsa_driver_api = {

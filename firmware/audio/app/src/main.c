@@ -13,6 +13,7 @@
 
 #include "audio.h"
 #include "freq_est.h"
+#include "ftp.h"
 #include "net_audio.h"
 #include "sd_card.h"
 #include "sync_timer.h"
@@ -184,6 +185,9 @@ int main(void) {
     if (ret < 0) return 0;
 
     ret = sd_card_init();
+    if (ret < 0) return 0;
+
+    ret = ftp_init();
     if (ret < 0) return 0;
 
     ret = net_audio_init();

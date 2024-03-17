@@ -1,8 +1,9 @@
 #pragma once
 
-#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
 
-int lftpd_inet_listen(int port);
+int lftpd_inet_listen(uint16_t port);
 int lftpd_inet_get_socket_port(int socket);
 
 /**

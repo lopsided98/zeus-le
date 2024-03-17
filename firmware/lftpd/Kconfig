@@ -1,0 +1,20 @@
+menuconfig LFTPD
+	bool "lftpd FTP server"
+    depends on FILE_SYSTEM
+	help
+	  Enable the lftpd FTP server
+
+if LFTPD
+
+module = LFTPD
+module-str = lftpd
+source "subsys/logging/Kconfig.template.log_config"
+
+config LFTPD_MAX_PATH_LEN
+	int "Maximum FTP command path length"
+    default 128
+	help
+	  Maximum FTP command path length. The FTP server base directory is
+	  included in this length.
+
+endif # LFTPD

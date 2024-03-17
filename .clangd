@@ -2,25 +2,43 @@ CompileFlags:
   Remove: [-mfp16-format=ieee, -fno-reorder-functions]
 ---
 If:
-  PathMatch: firmware/central/app.*
+  PathMatch: firmware/central/app/.*
 
 CompileFlags:
-  CompilationDatabase: build/app
+  CompilationDatabase: build/firmware/central/app/raytac_mdbt53_db_40/nrf5340/cpuapp/app
 ---
 If:
   PathMatch: firmware/central/net/.*
 
 CompileFlags:
-  CompilationDatabase: build/net
+  CompilationDatabase: build/firmware/central/app/raytac_mdbt53_db_40/nrf5340/cpuapp/net
 ---
 If:
-  PathMatch: firmware/audio/app.*
+  PathMatch: firmware/audio/app/.*
 
 CompileFlags:
-  CompilationDatabase: build/app
+  CompilationDatabase: build/firmware/audio/app/raytac_mdbt53_db_40/nrf5340/cpuapp/app
 ---
 If:
   PathMatch: firmware/audio/net/.*
 
 CompileFlags:
-  CompilationDatabase: build/net
+  CompilationDatabase: build/firmware/audio/app/raytac_mdbt53_db_40/nrf5340/cpuapp/net
+---
+If:
+  PathMatch: firmware/hci_ipc/.*
+
+CompileFlags:
+  CompilationDatabase: build/firmware/audio/app/raytac_mdbt53_db_40/nrf5340/cpuapp/net
+---
+If:
+  PathMatch: firmware/lftpd/.*
+
+CompileFlags:
+  CompilationDatabase: build/firmware/audio/app/raytac_mdbt53_db_40/nrf5340/cpuapp/app
+---
+If:
+  PathMatch: firmware/lftpd/tests/.*
+
+CompileFlags:
+  CompilationDatabase: build/firmware/lftpd/tests/nrf5340bsim_nrf5340_cpuapp/tests

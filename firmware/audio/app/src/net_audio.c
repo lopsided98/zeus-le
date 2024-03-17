@@ -15,6 +15,7 @@ static struct net_audio {
     const char *addr_str;
     uint16_t mtu;
 } net_audio = {
+    .socket = -1,
     .fifo = &net_audio_fifo,
 
     .addr_str = "fe80::cf73:fd64:8977:ea79",
@@ -24,9 +25,20 @@ int net_audio_init(void) {
     int ret;
     struct net_audio *n = &net_audio;
 
-    if (!net_if_get_default()) {
+    struct net_if *iface = net_if_get_default();
+    if (!iface) {
         LOG_WRN("no network interface available");
         return 0;
+    }
+
+    struct in6_addr *ll_addr = net_if_ipv6_get_ll(iface, NET_ADDR_ANY_STATE);
+    if (ll_addr) {
+        char ll_addr_str[INET6_ADDRSTRLEN] = {0};
+        zsock_inet_ntop(AF_INET6, ll_addr, ll_addr_str,
+                        sizeof(struct in6_addr));
+        LOG_INF("link-local address: %s", ll_addr_str);
+    } else {
+        LOG_WRN("no IPv6 link local address");
     }
 
     struct sockaddr_in6 addr = {
@@ -54,11 +66,6 @@ int net_audio_init(void) {
         return -errno;
     }
 
-    struct net_if *iface = net_if_get_default();
-    if (!iface) {
-        LOG_ERR("no network interfaces");
-        return -ENODEV;
-    }
     n->mtu = net_if_get_mtu(iface) - 48;
 
     return 0;
@@ -66,6 +73,7 @@ int net_audio_init(void) {
 
 int net_audio_send(struct net_buf *buf) {
     struct net_audio *n = &net_audio;
+    if (n->socket < 0) return -EINVAL;
 
     while (buf->len > 0) {
         size_t len = MIN(n->mtu, buf->len);

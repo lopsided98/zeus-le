@@ -6,6 +6,7 @@ target_sources(app PRIVATE
     audio.c
     freq_ctlr.c
     freq_est.c
+    ftp.c
     main.c
     net_audio.c
     sd_card.c

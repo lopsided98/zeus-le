@@ -1,4 +1,5 @@
 source "Kconfig.zephyr"
+rsource "../../lftpd/Kconfig"
 
 menu "Zeus LE"
 

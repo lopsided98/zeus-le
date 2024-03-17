@@ -4,12 +4,14 @@
 #include "private/lftpd_string.h"
 
 char* lftpd_string_trim(char* s) {
-	char* p = s;
-	for (int i = 0, len = strlen(s); i < len && isspace((int) s[i]); i++) {
-		p++;
+	size_t len = strlen(s);
+	for (size_t i = 0; i < len && isspace(s[i]); ++i) {
+		s++;
 	}
-	for (int i = strlen(p); i >= 0 && isspace((int) p[i]); i--) {
-		p[i] = '\0';
+	len = strlen(s);
+	if (len == 0) return s;
+	for (size_t i = len - 1; i >= 0 && isspace(s[i]); --i) {
+		s[i] = '\0';
 	}
-	return p;
+	return s;
 }

@@ -1,0 +1,6 @@
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+UseTab: Always
+IncludeBlocks: Regroup
+Cpp11BracedListStyle: false
