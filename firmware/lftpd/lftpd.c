@@ -11,7 +11,7 @@
 #include <zephyr/net/socket.h>
 
 #include "private/lftpd_inet.h"
-#include "private/lftpd_io.h"
+#include "private/lftpd_path.h"
 #include "private/lftpd_status.h"
 #include "private/lftpd_string.h"
 
@@ -299,8 +299,7 @@ static int cmd_cwd(lftpd_client_t* client, char* arg, size_t arg_buf_len) {
 		return send_simple_response(client, 550, STATUS_550);
 	}
 
-	ret =
-		lftpd_io_resolve_path(client->base_dir, client->cwd, arg, arg_buf_len);
+	ret = lftpd_path_resolve(client->base_dir, client->cwd, arg, arg_buf_len);
 	if (ret < 0) {
 		return send_simple_response(client, 553, STATUS_553);
 	}
@@ -344,7 +343,7 @@ static int cmd_dele(lftpd_client_t* client, char* arg, size_t arg_buf_len) {
 	}
 
 	int ret =
-		lftpd_io_resolve_path(client->base_dir, client->cwd, arg, arg_buf_len);
+		lftpd_path_resolve(client->base_dir, client->cwd, arg, arg_buf_len);
 	if (ret < 0) {
 		return send_simple_response(client, 500, STATUS_500);
 	}
@@ -409,7 +408,7 @@ static int cmd_mkd(lftpd_client_t* client, char* arg, size_t arg_buf_len) {
 	}
 
 	int ret =
-		lftpd_io_resolve_path(client->base_dir, client->cwd, arg, arg_buf_len);
+		lftpd_path_resolve(client->base_dir, client->cwd, arg, arg_buf_len);
 	if (ret < 0) {
 		return send_simple_response(client, 500, STATUS_500);
 	}
@@ -431,8 +430,8 @@ static int cmd_nlst(lftpd_client_t* client, char* arg, size_t arg_buf_len) {
 
 	const char* path = client->cwd;
 	if (arg) {
-		ret = lftpd_io_resolve_path(client->base_dir, client->cwd, arg,
-									arg_buf_len);
+		ret =
+			lftpd_path_resolve(client->base_dir, client->cwd, arg, arg_buf_len);
 		if (ret < 0) {
 			ret = send_simple_response(client, 553, STATUS_500);
 			goto exit;
@@ -525,8 +524,7 @@ static int cmd_retr(lftpd_client_t* client, char* arg, size_t arg_buf_len) {
 	ret = send_simple_response(client, 150, STATUS_150);
 	if (ret < 0) goto exit;
 
-	ret =
-		lftpd_io_resolve_path(client->base_dir, client->cwd, arg, arg_buf_len);
+	ret = lftpd_path_resolve(client->base_dir, client->cwd, arg, arg_buf_len);
 	if (ret < 0) {
 		ret = send_simple_response(client, 500, STATUS_500);
 		goto exit;
@@ -553,7 +551,7 @@ static int cmd_rmd(lftpd_client_t* client, char* arg, size_t arg_buf_len) {
 	}
 
 	int ret =
-		lftpd_io_resolve_path(client->base_dir, client->cwd, arg, arg_buf_len);
+		lftpd_path_resolve(client->base_dir, client->cwd, arg, arg_buf_len);
 	if (ret < 0) {
 		return send_simple_response(client, 553, STATUS_500);
 	}
@@ -582,7 +580,7 @@ static int cmd_size(lftpd_client_t* client, char* arg, size_t arg_buf_len) {
 	}
 
 	int ret =
-		lftpd_io_resolve_path(client->base_dir, client->cwd, arg, arg_buf_len);
+		lftpd_path_resolve(client->base_dir, client->cwd, arg, arg_buf_len);
 	if (ret < 0) {
 		return send_simple_response(client, 500, STATUS_500);
 	}
@@ -607,8 +605,7 @@ static int cmd_stor(lftpd_client_t* client, char* arg, size_t arg_buf_len) {
 	if (ret < 0) goto exit;
 
 	LOG_DBG("before resolve: %s", arg);
-	ret =
-		lftpd_io_resolve_path(client->base_dir, client->cwd, arg, arg_buf_len);
+	ret = lftpd_path_resolve(client->base_dir, client->cwd, arg, arg_buf_len);
 	if (ret < 0) {
 		ret = send_simple_response(client, 500, STATUS_500);
 		goto exit;
@@ -817,8 +814,8 @@ int lftpd_client_run(lftpd_t* lftpd, lftpd_client_t* client) {
 		.data_socket = -1,
 	};
 
-	int ret = lftpd_io_resolve_path(client->base_dir, client->base_dir,
-									client->cwd, sizeof(client->cwd));
+	int ret = lftpd_path_resolve(client->base_dir, client->base_dir,
+								 client->cwd, sizeof(client->cwd));
 	if (ret < 0) return ret;
 
 	while (true) {

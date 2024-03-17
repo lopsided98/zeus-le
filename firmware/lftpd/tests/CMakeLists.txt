@@ -7,7 +7,7 @@ project(lftpd_tests)
 add_subdirectory(.. lftpd)
 
 target_sources(app PRIVATE 
-    test_lftpd_io.c
+    test_lftpd_path.c
 )
 target_include_directories(app PRIVATE ../private)
 target_link_libraries(app PRIVATE lftpd)

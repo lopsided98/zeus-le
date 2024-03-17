@@ -1,6 +1,6 @@
 add_library(lftpd STATIC
     lftpd_inet.c
-    lftpd_io.c
+    lftpd_path.c
     lftpd_string.c
     lftpd.c
 )

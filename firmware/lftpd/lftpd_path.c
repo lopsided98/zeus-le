@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 
-#include "private/lftpd_io.h"
+#include "private/lftpd_path.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -9,7 +9,7 @@
 
 LOG_MODULE_DECLARE(lftpd, LOG_LEVEL_DBG);
 
-void lftpd_io_trim_trailing_slash(char* path) {
+void lftpd_path_trim_trailing_slash(char* path) {
 	size_t path_len = strlen(path);
 	if (path_len == 0) return;
 	for (size_t i = path_len - 1; i > 0 && path[i] == '/'; --i) {
@@ -17,7 +17,7 @@ void lftpd_io_trim_trailing_slash(char* path) {
 	}
 }
 
-int lftpd_io_prefix(const char* prefix, char* path, size_t path_buf_len) {
+int lftpd_path_prefix(const char* prefix, char* path, size_t path_buf_len) {
 	if (!prefix || !path || path_buf_len == 0) return -EINVAL;
 
 	char* path_buf = path;
@@ -72,7 +72,7 @@ int lftpd_io_prefix(const char* prefix, char* path, size_t path_buf_len) {
 	return 0;
 }
 
-int lftpd_io_resolve_path(const char* base_dir, const char* working_dir,
+int lftpd_path_resolve(const char* base_dir, const char* working_dir,
 						  char* path, size_t path_buf_len) {
 	int ret;
 	if (!base_dir || !working_dir || !path || path_buf_len == 0) {
@@ -90,10 +90,10 @@ int lftpd_io_resolve_path(const char* base_dir, const char* working_dir,
 		prefix = working_dir;
 	}
 
-	ret = lftpd_io_prefix(prefix, path, path_buf_len);
+	ret = lftpd_path_prefix(prefix, path, path_buf_len);
 	if (ret < 0) return ret;
 
-	lftpd_io_trim_trailing_slash(path);
+	lftpd_path_trim_trailing_slash(path);
 
 	return 0;
 }
