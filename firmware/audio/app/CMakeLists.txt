@@ -6,7 +6,7 @@ list(APPEND EXTRA_DTC_OVERLAY_FILE app.overlay)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-if(("${BOARD}" STREQUAL "raytac_mdbt53_db_40_nrf5340_cpuapp") OR
+if(("${BOARD}" STREQUAL "raytac_mdbt53_db_40") OR
     ("${BOARD}" STREQUAL "nrf5340bsim_nrf5340_cpuapp"))
     message(INFO " ${BOARD} used for Application Core")
 else()

@@ -1,6 +1,6 @@
 if("${SB_CONFIG_NET_CORE_BOARD}" STREQUAL "")
 	message(FATAL_ERROR
-	"Target ${BOARD} not supported for this sample. "
+	"Target ${BOARD} not supported for this app. "
 	"There is no remote board selected in Kconfig.sysbuild")
 endif()
 

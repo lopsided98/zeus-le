@@ -22,7 +22,6 @@ static struct sync_timer {
     // Resources
     const nrfx_timer_t timer;
     struct onoff_client hf_cli;
-    struct mbox_channel channel;
     /// DPPI channel for I2S buffer timer capture
     uint8_t i2s_dppi;
     /// DPPI channel for USB SOF timer capture
@@ -54,11 +53,6 @@ int sync_timer_init(void) {
     nrfx_err_t err;
 
     freq_est_init(&t->freq_est, &FREQ_EST_CONFIG);
-
-    const struct device *mbox = DEVICE_DT_GET(DT_NODELABEL(mbox));
-    struct mbox_channel channel;
-
-    mbox_init_channel(&channel, mbox, ZEUS_PACKET_END_MBOX_CHANNEL);
 
     // Setup 32-bit 16 MHz timer to capture on radio end event and I2S sample
     err = nrfx_timer_init(&t->timer,

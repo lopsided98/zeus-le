@@ -18,9 +18,9 @@ in symlinkJoin {
     link = "zephyr";
     path = fetchgit {
         url = "https://github.com/lopsided98/zephyr";
-        rev = "68f24837b0320f4c97b52e010c6084b8d67fbd33";
+        rev = "15564e9340fcb4bdae970d7044f82b7bcb58418f";
         branchName = "manifest-rev";
-        hash = "sha256-glh6idGBnGc24nxD3N/Bcv99z4EO0LltAHU+Fp7I728=";
+        hash = "sha256-F/xPo9pIx7XRnLIaBuJTvPEoVZJXoJp5mM857tdH7FE=";
     };
 })
 
@@ -48,46 +48,46 @@ in symlinkJoin {
     link = "tools/bsim";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/babblesim-manifest";
-        rev = "384a091445c57b44ac8cbd18ebd245b47c71db94";
+        rev = "68f6282c6a7f54641b75f5f9fc953c85e272a983";
         branchName = "manifest-rev";
-        hash = "sha256-bH2eLkhUkw0DwX5TjTIW4kSLksSaoCYiPCLXjD9Rqhg=";
+        hash = "sha256-VF1VPfeQCyQd89DGbQGbePNHLbBo+lWfkjPNj9TSqYo=";
     };
 })
 
 (linkPath {
     link = "tools/bsim/components";
     path = fetchgit {
-        url = "https://github.com/BabbleSim/base.git";
-        rev = "19d62424c0802c6c9fc15528febe666e40f372a1";
+        url = "https://github.com/BabbleSim/base";
+        rev = "4bd907be0b2abec3b31a23fd8ca98db2a07209d2";
         branchName = "manifest-rev";
-        hash = "sha256-/Oi/bDeiZQbZJQYGguQ4UadY9jYq3T8d15/cL/I+UnU=";
+        hash = "sha256-W16Zb7FIHs+/T20WM/usITwgnht1SUrpLiXdSFp8YIw=";
     };
 })
 
 (linkPath {
     link = "tools/bsim/components/ext_2G4_libPhyComv1";
     path = fetchgit {
-        url = "https://github.com/BabbleSim/ext_2G4_libPhyComv1.git";
-        rev = "9018113a362fa6c9e8f4b9cab9e5a8f12cc46b94";
+        url = "https://github.com/BabbleSim/ext_2G4_libPhyComv1";
+        rev = "93f5eba512c438b0c9ebc1b1a947517c865b3643";
         branchName = "manifest-rev";
-        hash = "sha256-KvK9vaY9/aRKcrk/Kx1vtYcprQYxjTJKzyTFsL7sUvw=";
+        hash = "sha256-2t/EU5T2uRao90nRiipaNf0adX4ittlHuugu8zL4NNc=";
     };
 })
 
 (linkPath {
     link = "tools/bsim/components/ext_2G4_phy_v1";
     path = fetchgit {
-        url = "https://github.com/BabbleSim/ext_2G4_phy_v1.git";
-        rev = "d47c6dd90035b41b14f6921785ccb7b8484868e2";
+        url = "https://github.com/BabbleSim/ext_2G4_phy_v1";
+        rev = "1ab9a884621d9ca719ef23536ca47d10494220c6";
         branchName = "manifest-rev";
-        hash = "sha256-S0DLNVIDGuXVYYGg1uxrRFKP+Gt9MN2H3wDLaxof8wY=";
+        hash = "sha256-QJe5gydAYQwyCU2lWJcpaj27wyTUpon6zav7lpKm+FE=";
     };
 })
 
 (linkPath {
     link = "tools/bsim/components/ext_2G4_channel_NtNcable";
     path = fetchgit {
-        url = "https://github.com/BabbleSim/ext_2G4_channel_NtNcable.git";
+        url = "https://github.com/BabbleSim/ext_2G4_channel_NtNcable";
         rev = "20a38c997f507b0aa53817aab3d73a462fff7af1";
         branchName = "manifest-rev";
         hash = "sha256-bh65lHKQ68vBT55Y/TOSC7csNDZ6+1ew+K7eR9Blrxk=";
@@ -97,10 +97,10 @@ in symlinkJoin {
 (linkPath {
     link = "tools/bsim/components/ext_2G4_modem_magic";
     path = fetchgit {
-        url = "https://github.com/BabbleSim/ext_2G4_modem_magic.git";
-        rev = "cb70771794f0bf6f262aa474848611c68ae8f1ed";
+        url = "https://github.com/BabbleSim/ext_2G4_modem_magic";
+        rev = "edfcda2d3937a74be0a59d6cd47e0f50183453da";
         branchName = "manifest-rev";
-        hash = "sha256-/vHHor78Zyqk7lnsbrAtuLQ+J1L+lbFI/MPaChvmHp4=";
+        hash = "sha256-q/GbN+5JNx3a1h1xttnRU8P3xxcB0wB4F6otnQD1F8I=";
     };
 })
 
@@ -128,9 +128,9 @@ in symlinkJoin {
     link = "modules/hal/nordic";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/hal_nordic";
-        rev = "4362d0fcdbac80942212bffc999654beac7ab30e";
+        rev = "13ac55b5b52c905642e9c54f069109d188aa5840";
         branchName = "manifest-rev";
-        hash = "sha256-VJNN0xuGHX1s1VnBRraay5GuQo/7gBxJWFsZdQFxNQM=";
+        hash = "sha256-xvTWG26SS4mL0BtwpnFylQoQpvNbuYCz2Ig9cCfvpCY=";
     };
 })
 
@@ -168,9 +168,9 @@ in symlinkJoin {
     link = "modules/crypto/tinycrypt";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/tinycrypt";
-        rev = "3e9a49d2672ec01435ffbf0d788db6d95ef28de0";
+        rev = "1012a3ebee18c15ede5efc8332ee2fc37817670f";
         branchName = "manifest-rev";
-        hash = "sha256-5gtZbZNx+D/EUkyYk7rPtcxBZaNs4IFGTP/7IXzCoqU=";
+        hash = "sha256-JQmkN+ircGU5Ald1+Q4lysuxhZLg2mJpNQ92+agMoCQ=";
     };
 })
 
