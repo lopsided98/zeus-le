@@ -41,4 +41,4 @@ If:
   PathMatch: firmware/lftpd/tests/.*
 
 CompileFlags:
-  CompilationDatabase: build/firmware/lftpd/tests/nrf5340bsim_nrf5340_cpuapp/tests
+  CompilationDatabase: build/firmware/lftpd/tests/native_sim

@@ -643,7 +643,7 @@ static int handle_control_channel(struct lftpd_conn* conn) {
 		LOG_INF("connection received...");
 	} else {
 		char ip[INET6_ADDRSTRLEN];
-		inet_ntop(AF_INET6, &conn_addr.sin6_addr, ip, INET6_ADDRSTRLEN);
+		zsock_inet_ntop(AF_INET6, &conn_addr.sin6_addr, ip, INET6_ADDRSTRLEN);
 		int port = lftpd_inet_get_socket_port(conn->socket);
 		LOG_INF("connection received from [%s]:%d...", ip, port);
 	}
@@ -769,7 +769,7 @@ int lftpd_run(struct lftpd* lftpd) {
 		LOG_ERR("error getting server IP info");
 	} else {
 		char ip[INET6_ADDRSTRLEN];
-		inet_ntop(AF_INET6, &server_addr.sin6_addr, ip, INET6_ADDRSTRLEN);
+		zsock_inet_ntop(AF_INET6, &server_addr.sin6_addr, ip, INET6_ADDRSTRLEN);
 		int port = lftpd_inet_get_socket_port(lftpd->server_socket);
 		LOG_INF("listening on [%s]:%d...", ip, port);
 	}

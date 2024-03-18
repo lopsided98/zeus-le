@@ -12,7 +12,7 @@
 ZTEST_SUITE(lftpd_path, NULL, NULL, NULL, NULL, NULL);
 
 static void assert_lftpd_path_trim_trailing_slash(const char* path,
-												const char* expected) {
+												  const char* expected) {
 	char path_buf[32];
 	zassert_between_inclusive(strlen(path), 0, sizeof(path_buf) - 1);
 	strcpy(path_buf, path);
@@ -35,14 +35,15 @@ ZTEST(lftpd_path, test_lftpd_path_trim_trailing_slash) {
 }
 
 static void assert_lftpd_path_prefix(const char* prefix, const char* path,
-								   const char* expected) {
+									 const char* expected) {
 	char path_buf[32];
 	zassert_between_inclusive(strlen(path), 0, sizeof(path_buf) - 1);
 	strcpy(path_buf, path);
 	zassert_equal(lftpd_path_prefix(prefix, path_buf, sizeof(path_buf)), 0);
-	zassert_equal_string(path_buf, expected,
-						 "lftpd_path_prefix(\"%s\", \"%s\") == \"%s\" != \"%s\"",
-						 prefix, path, path_buf, expected);
+	zassert_equal_string(
+		path_buf, expected,
+		"lftpd_path_prefix(\"%s\", \"%s\") == \"%s\" != \"%s\"", prefix, path,
+		path_buf, expected);
 }
 
 ZTEST(lftpd_path, test_lftpd_path_prefix) {
