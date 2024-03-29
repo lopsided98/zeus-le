@@ -281,8 +281,16 @@ static int receive_file(int socket, const char* path, char* buf,
 	}
 
 	while ((ret = zsock_recv(socket, buf, buf_len, 0)) > 0) {
-		ret = fs_write(&file, buf, ret);
-		if (ret < 0) goto close;
+		size_t len = ret;
+		ret = fs_write(&file, buf, len);
+		if (ret < 0) {
+			goto close;
+		} else if (ret != len) {
+			// Zephyr never does partial writes except on failure, usually out
+			// of space.
+			ret = -errno;
+			goto close;
+		}
 	}
 	if (ret < 0) goto close;
 
