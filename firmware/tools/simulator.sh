@@ -25,7 +25,9 @@ shift $((OPTIND-1))
 
 board="nrf5340bsim_nrf5340_cpuapp"
 build_dir="${top_dir}/build/firmware/${app}/app/${board}"
-sim="zeus_le"
+sim="zeus-le"
+tmux="zeus-le"
+index=0
 
 function cleanup() {
     "${top_dir}/tools/bsim/components/common/stop_bsim.sh" "${sim}"
@@ -38,12 +40,25 @@ function cleanup() {
 }
 trap cleanup EXIT
 
+function set_app_cmd() {
+  local app="${1}"
+  local build_dir="${top_dir}/build/firmware/${app}/app/${board}"
+  local d="$((index++))"
+  app_cmd=("${build_dir}/app/zephyr/zephyr.exe" "-s=${sim}" "-d=${d}")
+}
+
 "${top_dir}/tools/net-tools/net-setup.sh" \
     --config "${script_dir}/net.conf" \
     up
 
 pushd "${top_dir}/tools/bsim/bin"
-./bs_2G4_phy_v1 -s="${sim}" -D=1 &
+./bs_2G4_phy_v1 -s="${sim}" -D=2 &
 popd
 
-"${build_dir}/app/zephyr/zephyr.exe" -s="${sim}" -d=0 "${@}"
+set_app_cmd central
+tmux new-session -ds "${tmux}" -- "${app_cmd[@]}"
+
+set_app_cmd audio
+tmux split-window -ht "${tmux}" -- "${app_cmd[@]}"
+
+tmux attach-session -t "${tmux}"

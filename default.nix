@@ -48,7 +48,8 @@
 in pkgs'.callPackage ({
   lib, stdenv, linkFarm, makeStaticLibraries, callPackage, buildPackages
 , pkgsBuildBuild, cmake, ninja, makedepend, python3, dtc, python3Packages, git
-, bash-completion, nix-prefetch-git, clang-tools, openocd, gdb, glibc, alsa-lib
+, bash-completion, nix-prefetch-git, clang-tools, gdb, openocd, tmux, glibc
+, alsa-lib
 }: let
   # Zephyr host toolchain only looks for unprefixed tools
   unprefixed-cc = linkFarm "host-cc" (builtins.map (name: {
@@ -94,13 +95,16 @@ in stdenv.mkDerivation {
     pyelftools
     pykwalify
     packaging
-  ]) ++ (lib.optionals dev [
+  ]) ++ lib.optionals dev ([
     bash-completion
     git
     python3Packages.west
     nix-prefetch-git
-    openocd
     gdb
+  ] ++ lib.optionals (platform == "nrf53") [
+    openocd
+  ] ++ lib.optionals (platform == "simulator") [
+    tmux
   ]);
 
   buildInputs = lib.optionals (platform == "simulator") [
