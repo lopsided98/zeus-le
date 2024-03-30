@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+/ {
+	chosen {
+		zephyr,console = &stdio;
+		zephyr,shell-uart = &stdio;
+	};
+
+	stdio: stdio {
+		status = "okay";
+		compatible = "zephyr,native-posix-uart";
+		/* Dummy current-speed entry to comply with serial
+		 * DTS binding
+		 */
+		current-speed = <0>;
+	};
+};

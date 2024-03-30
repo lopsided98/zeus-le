@@ -22,12 +22,16 @@ static struct packet_timer {
     .first_seq = true,
 };
 
+#define LED_ENABLED !IS_ENABLED(CONFIG_ARCH_POSIX)
+
+#if LED_ENABLED
 static const struct gpio_dt_spec led =
     GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
 
 void led_off_work_handler(struct k_work *work) { gpio_pin_set_dt(&led, 0); }
 /* Register the work handler */
 K_WORK_DELAYABLE_DEFINE(led_off_work, led_off_work_handler);
+#endif
 
 void packet_timer_update_handler(struct k_work *work) {
     struct packet_timer *t =
@@ -55,10 +59,12 @@ void packet_timer_ipc_recv(const void *data, size_t len, void *priv) {
     t->last_seq = msg->seq;
     t->first_seq = false;
 
-    LOG_INF("pkt");
+    // LOG_INF("pkt");
 
+#if LED_ENABLED
     gpio_pin_set_dt(&led, 1);
     k_work_schedule(&led_off_work, K_MSEC(50));
+#endif
 
     t->adv_data = (struct zeus_adv_data){
         .seq = msg->seq,
@@ -77,7 +83,9 @@ int packet_timer_init(void) {
     int err;
     k_work_init(&packet_timer.update_work, packet_timer_update_handler);
 
+#if LED_ENABLED
     gpio_pin_configure_dt(&led, GPIO_OUTPUT);
+#endif
 
     const struct device *ipc = DEVICE_DT_GET(DT_NODELABEL(ipc0));
 
