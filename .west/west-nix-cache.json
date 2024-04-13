@@ -1,9 +1,9 @@
 {
   "project_hashes": {
-    "86e2803682848d1c27adab8afcce5b8c93f00c55efac36f32fdefa2116849f8f": {
+    "5d4f02beb4a04f7fe2d92222193ddf7d2e3c8ab6e6987d3468cf30a2c90d6012": {
       "url": "https://github.com/lopsided98/zephyr",
-      "rev": "15564e9340fcb4bdae970d7044f82b7bcb58418f",
-      "hash": "sha256-F/xPo9pIx7XRnLIaBuJTvPEoVZJXoJp5mM857tdH7FE="
+      "rev": "627f9f5d178bd3e0166f852524f7ca820e51b66e",
+      "hash": "sha256-f43EQYxQ2euWqDtUTCSbTuzuGb4r5zXS9BpHdGO36ls="
     },
     "2f0b8175147123daf179982b72353262901abe3894c8b3cedce65fdb5d8ec3ce": {
       "url": "https://github.com/BabbleSim/ext_nRF_hw_models.git",
@@ -30,10 +30,10 @@
       "rev": "93f5eba512c438b0c9ebc1b1a947517c865b3643",
       "hash": "sha256-2t/EU5T2uRao90nRiipaNf0adX4ittlHuugu8zL4NNc="
     },
-    "fa9f9cbedfe9f7aeb70bfb565d5f32a22044e2bd7151d7a2560b171eeb3c982f": {
+    "bdce9c123a609b572c1549e5ffbac5f47e4d0f6439f6bdc74670324f72d12cca": {
       "url": "https://github.com/BabbleSim/ext_2G4_phy_v1",
-      "rev": "1ab9a884621d9ca719ef23536ca47d10494220c6",
-      "hash": "sha256-QJe5gydAYQwyCU2lWJcpaj27wyTUpon6zav7lpKm+FE="
+      "rev": "d8302b8d51409b9e717a1a0ba6b443d3b5552a6c",
+      "hash": "sha256-Tb0su9q5wTCH8M0RJ99gGUwVM2GCl1NimGUe7YSkPug="
     },
     "078c5ddc1c011d466b42e0c2b23983f37df68d12b287e2fa19e37651468bba99": {
       "url": "https://github.com/BabbleSim/ext_2G4_channel_NtNcable",
@@ -55,20 +55,20 @@
       "rev": "427159bf95ea49b7680facffaa29ad506b42709b",
       "hash": "sha256-5l3hJazG8BoLZ0QxfSFc98uKArIGAFD1P8D6tsKMRt4="
     },
-    "443e62f6713a6bba892a40c49a6d6cfbebdbfb03d5744e8ac5dc7e76904fd557": {
+    "14cfe71d1979878ae47a818f48c0a1f0c026c9f01446f4afc2ed7c11a6fab339": {
       "url": "https://github.com/zephyrproject-rtos/hal_nordic",
-      "rev": "13ac55b5b52c905642e9c54f069109d188aa5840",
-      "hash": "sha256-xvTWG26SS4mL0BtwpnFylQoQpvNbuYCz2Ig9cCfvpCY="
+      "rev": "fc2bab706f195c64d40016c9855b8acd7c235ded",
+      "hash": "sha256-UzAXv0J5SfyowmMw4XdD2hkOHbHB4cOmVwR78ymEd6s="
     },
     "0cf11a28de2b230435e3e9d1166a2b69b17fed44aaeb7c70ffb9e94b75912ba0": {
       "url": "https://github.com/zephyrproject-rtos/libmetal",
       "rev": "243eed541b9c211a2ce8841c788e62ddce84425e",
       "hash": "sha256-wCsYllPeDKx4P5gBGEFDcY4QNbMdwrd+5h5GZ8tEsJM="
     },
-    "618d369f7b6b4c27a98edd56f1a07d03c6a21fa04bb9b954474edfcee403741f": {
+    "5216d1108315dff40a92b2b9d8e0276cada1df7f285cbbadbfb8a2017740cd5a": {
       "url": "https://github.com/zephyrproject-rtos/net-tools",
-      "rev": "3a677d355cc7f73e444801a6280d0ccec80a1957",
-      "hash": "sha256-YlaszC8BNXCzSGAusiYhEzzRs55gnWykN/3zb0MGA7w="
+      "rev": "cd2eb1858a1570b49241e18fc1e1cd849a450af2",
+      "hash": "sha256-EkisIg3DJBgULxyIVB7P1muHVlZCqh50KbbV/dfCnlY="
     },
     "1b7ec26a7b96e0779225a88bc3638a1706a1275b157d1c91d720b8ad114be86c": {
       "url": "https://github.com/zephyrproject-rtos/open-amp",

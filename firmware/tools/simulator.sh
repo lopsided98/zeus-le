@@ -23,7 +23,7 @@ while getopts "a:h" name; do
 done
 shift $((OPTIND-1))
 
-board="nrf5340bsim_nrf5340_cpuapp"
+board="nrf5340bsim/nrf5340/cpuapp"
 build_dir="${top_dir}/build/firmware/${app}/app/${board}"
 sim="zeus-le"
 tmux="zeus-le"

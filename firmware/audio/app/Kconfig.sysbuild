@@ -5,4 +5,4 @@ source "share/sysbuild/Kconfig"
 config NET_CORE_BOARD
 string
 	default "raytac_mdbt53_db_40/nrf5340/cpunet" if $(BOARD) = "raytac_mdbt53_db_40"
-	default "nrf5340bsim_nrf5340_cpunet" if $(BOARD) = "nrf5340bsim_nrf5340_cpuapp"
+	default "nrf5340bsim/nrf5340/cpunet" if $(BOARD) = "nrf5340bsim"
