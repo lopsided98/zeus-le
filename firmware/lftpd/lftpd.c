@@ -289,6 +289,8 @@ static int receive_file(int socket, const char* path, char* buf,
 			// Zephyr never does partial writes except on failure, usually out
 			// of space.
 			ret = -errno;
+			// Sometimes errno is zero, unclear why. Assume no space.
+			if (ret == 0) ret = -ENOSPC;
 			goto close;
 		}
 	}

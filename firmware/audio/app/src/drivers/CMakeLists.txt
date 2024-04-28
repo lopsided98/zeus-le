@@ -10,3 +10,7 @@ if(${CONFIG_I2S_ALSA})
     target_link_libraries(app PRIVATE ALSA::ALSA)
     target_sources(app PRIVATE i2s_alsa.c)
 endif()
+
+target_sources_ifdef(CONFIG_I2S_TONE app PRIVATE
+    i2s_tone.c
+)

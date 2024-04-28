@@ -7,7 +7,7 @@
 	};
 
 	aliases {
-		i2s = &alsa_i2s;
+		i2s = &tone_i2s;
 		codec = &dummy_codec;
 	};
 
@@ -54,8 +54,9 @@
 		cache-size = <512>;
 	};
 
-	alsa_i2s: alsa-i2s {
-		compatible = "linux,alsa-i2s";
+	tone_i2s: tone-i2s {
+		compatible = "zephyr,tone-i2s";
+		//frequency = <500>;
 	};
 
 	dummy_codec: dummy-codec {

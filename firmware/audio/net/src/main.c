@@ -34,10 +34,5 @@ int main(void) {
 
     LOG_INF("Booted");
 
-    nrf_clock_hfclk_t type;
-    bool running =
-        nrf_clock_is_running(NRF_CLOCK, NRF_CLOCK_DOMAIN_HFCLK, &type);
-    LOG_INF("net HFCLK: running: %d, type: %d", running, type);
-
     return 0;
 }

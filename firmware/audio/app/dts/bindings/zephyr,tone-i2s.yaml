@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+description: Simulated I2S with constant frequency sine tone
+
+compatible: "zephyr,tone-i2s"
+
+properties:
+  frequency:
+    type: int
+    default: 440
+    description: Tone frequency in Hz

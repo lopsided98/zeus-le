@@ -8,8 +8,11 @@ target_sources(app PRIVATE
     freq_est.c
     ftp.c
     main.c
+    mgr.cpp
     net_audio.c
+    record.c
     sd_card.c
+    shell.c
     sync_timer.c
     wav.c
 )

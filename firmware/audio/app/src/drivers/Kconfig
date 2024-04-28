@@ -11,6 +11,12 @@ config I2S_ALSA
 	help
 	  Enable simulated I2S support using ALSA
 
+config I2S_TONE
+	bool "Simulated I2S with constant frequency tone"
+	depends on DT_HAS_ZEPHYR_TONE_I2S_ENABLED
+	help
+	  Enable simulated I2S driver that outputs a constant frequency tone
+
 config AUDIO_SGTL5000
 	bool "SGTL5000 codec support"
 	depends on DT_HAS_NXP_SGTL5000_ENABLED

@@ -18,5 +18,9 @@ project(zeus_le_central LANGUAGES C)
 add_subdirectory(../../common common)
 add_subdirectory(../common central_common)
 
-target_sources(app PRIVATE src/main.c)
-target_link_libraries(app PRIVATE zeus_common zeus_central_common)
+add_subdirectory(src)
+
+target_link_libraries(app PRIVATE
+    zeus_common
+    zeus_central_common
+)

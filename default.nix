@@ -131,7 +131,7 @@ in stdenv.mkDerivation {
     "-DBOARD=raytac_mdbt53_db_40_nrf5340_cpuapp"
     "-DAPP_DIR=../firmware/central/app"
     # TODO: generate dynamically
-    "-DBUILD_VERSION=zephyr-v3.6.0-1131-g15564e9340fc"
+    "-DBUILD_VERSION=zephyr-v3.6.0-3130-g66593873f98e"
   ];
 
   preConfigure = ''

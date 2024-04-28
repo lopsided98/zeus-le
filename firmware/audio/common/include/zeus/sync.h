@@ -5,7 +5,7 @@
 
 #define ZEUS_PACKET_END_MBOX_CHANNEL 4
 
-struct zeus_packet_timer_msg {
+struct zeus_sync_msg {
     uint8_t seq;
     uint32_t time;
 };

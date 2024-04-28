@@ -15,6 +15,7 @@
 #include "freq_ctlr.h"
 #include "freq_est.h"
 #include "net_audio.h"
+#include "record.h"
 #include "sync_timer.h"
 
 LOG_MODULE_REGISTER(audio);
@@ -32,17 +33,22 @@ NET_BUF_POOL_DEFINE(audio_pool, AUDIO_BLOCK_COUNT, 0, 0, audio_pool_destroy);
 static K_SEM_DEFINE(audio_started, 0, 1);
 static K_THREAD_STACK_DEFINE(audio_thread_stack, 1024);
 
+#define AUDIO_SYNC_ENABLED IS_ENABLED(CONFIG_I2S_NRFX)
+
 #define AUDIO_EGU_IDX 0
 #define AUDIO_EGU_IRQ NRFX_IRQ_NUMBER_GET(NRF_EGU_INST_GET(AUDIO_EGU_IDX))
-
-#define AUDIO_SYNC_ENABLED                                          \
-    (IS_ENABLED(CONFIG_I2S_NRFX) && IS_ENABLED(CONFIG_NRFX_DPPI) && \
-     IS_ENABLED(CONFIG_NRFX_EGU0))
+#if AUDIO_SYNC_ENABLED
+#define AUDIO_EGU_IRQ_PRIO IRQ_PRIO_LOWEST
+#else
+#define AUDIO_EGU_IRQ_PRIO 0
+#endif
 
 #if AUDIO_SYNC_ENABLED
-
 #define AUDIO_HFCLKAUDIO_FREQ_NOMINAL \
     DT_PROP(DT_NODELABEL(clock), hfclkaudio_frequency)
+#else
+#define AUDIO_HFCLKAUDIO_FREQ_NOMINAL 11289600
+#endif
 
 #define AUDIO_HFCLKAUDIO_FREQ_REG_MIN 12519
 #define AUDIO_HFCLKAUDIO_FREQ_REG_MAX 18068
@@ -50,7 +56,7 @@ static K_THREAD_STACK_DEFINE(audio_thread_stack, 1024);
 static void audio_sync_work_handler(struct k_work *);
 static K_WORK_DEFINE(audio_sync_work, audio_sync_work_handler);
 
-#endif
+K_MSGQ_DEFINE(audio_block_time_queue, sizeof(uint32_t), AUDIO_BLOCK_COUNT, 1);
 
 static struct audio {
     // Resources
@@ -61,23 +67,31 @@ static struct audio {
     struct k_sem *const started;
     struct k_thread thread;
 
-#if AUDIO_SYNC_ENABLED
     const struct freq_est_config freq_est_cfg;
     struct freq_est freq_est;
     const struct freq_ctlr freq_ctlr;
+
     struct k_work *const sync_work;
+    struct k_msgq *const block_time_queue;
 
     // State
     /// Time increment per buffer
-    qu32_32 time_increment;
-    ///
+    qu32_32 block_duration;
+    /// Number of timer ticks (as Q32.32) that should have elapsed from the time
+    /// I2S was started to the end of the latest I2S buffer.
     qu32_32 time;
+    /// Local timer count captured at the end of the latest I2S buffer. This is
+    /// a local timestamp, before correction by the state estimator.
     qu32_32 ref_time;
+    /// Set to true when target_theta has been initialized
     bool target_locked;
+    /// Controller target phase difference between the elapsed ticks counter
+    /// (`time` variable) and central time (recovered via state estimator). This
+    /// is set once after both I2S has started and the state estimator is
+    /// initialized.
     qu32_32 target_theta;
     /// Last controller input
     int16_t hfclkaudio_increment;
-#endif
 } audio = {
     .codec = DEVICE_DT_GET(DT_ALIAS(codec)),
     .i2s = DEVICE_DT_GET(DT_ALIAS(i2s)),
@@ -85,10 +99,9 @@ static struct audio {
     .pool = &audio_pool,
     .started = &audio_started,
 
-#if AUDIO_SYNC_ENABLED
     .freq_est_cfg =
         {
-            .nominal_freq = SYNC_TIMER_FREQ,
+            .nominal_freq = ZEUS_TIME_NOMINAL_FREQ,
             .k_u = 32e6 / (12.0 * (1 << 16) * AUDIO_HFCLKAUDIO_FREQ_NOMINAL),
             .q_theta = 0.0,
             .q_f = 256.0,
@@ -102,7 +115,7 @@ static struct audio {
             .max_step = 1000,
         },
     .sync_work = &audio_sync_work,
-#endif
+    .block_time_queue = &audio_block_time_queue,
 };
 
 static void audio_pool_destroy(struct net_buf *buf) {
@@ -124,34 +137,51 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
     }
 
     while (true) {
-        void *block = NULL;
+        void *block_buf = NULL;
         uint32_t block_size;
 
-        err = i2s_read(a->i2s, &block, &block_size);
+        err = i2s_read(a->i2s, &block_buf, &block_size);
         if (err) {
             LOG_ERR("failed to read I2S (err %d)", err);
             break;
         }
-        k_sem_give(a->started);
 
-        struct net_buf *buf =
-            net_buf_alloc_with_data(a->pool, block, block_size, K_NO_WAIT);
-        if (!buf) {
-            LOG_ERR("failed to allocate audio net buf");
-            break;
+        uint32_t block_start_time;
+        if (AUDIO_SYNC_ENABLED) {
+            err = k_msgq_get(a->block_time_queue, &block_start_time, K_FOREVER);
+            if (err) {
+                // If this happens, work item queued by EGU interrupt never ran
+                LOG_ERR("did not receive block timestamp (err %d)", err);
+                break;
+            }
+        } else {
+            block_start_time = qu32_32_whole(sync_timer_get_central_time() -
+                                             a->block_duration);
         }
 
-        // net_audio_send(buf);
+        k_sem_give(a->started);
+        k_yield();
 
-        net_buf_unref(buf);
+        const struct audio_block block = {
+            .buf = block_buf,
+            .len = block_size,
+            .start_time = block_start_time,
+            .duration = qu32_32_whole(a->block_duration),
+            // TODO: don't hardcode
+            .bytes_per_frame = 2,
+        };
+
+        record_buffer(&block);
+
+        k_mem_slab_free(a->slab, block_buf);
     }
 }
 
-#if AUDIO_SYNC_ENABLED
 static void audio_sync_work_handler(struct k_work *item) {
     struct audio *a = &audio;
+    int err;
     irq_disable(AUDIO_EGU_IRQ);
-    qu32_32 time = a->time;
+    qu32_32 block_end_time_local = a->time;
     qu32_32 ref_time = a->ref_time;
     irq_enable(AUDIO_EGU_IRQ);
 
@@ -159,13 +189,27 @@ static void audio_sync_work_handler(struct k_work *item) {
         return;
     }
 
-    freq_est_update(&a->freq_est, time, ref_time, a->hfclkaudio_increment);
+    freq_est_update(&a->freq_est, block_end_time_local, ref_time,
+                    a->hfclkaudio_increment);
 
     struct freq_est_state state = freq_est_get_state(&a->freq_est);
     if (!a->target_locked) {
         a->target_theta = state.theta;
         a->target_locked = true;
     }
+
+    // Calculate central node block timestamp assuming the controller is
+    // maintaining the setpoint perfectly. If the controller is still
+    // converging, this means the start of the recording may not be perfectly in
+    // sync, but it will gradually synchronize over time.
+    uint32_t block_start_time = qu32_32_whole(
+        block_end_time_local + a->target_theta - a->block_duration);
+    err = k_msgq_put(a->block_time_queue, &block_start_time, K_NO_WAIT);
+    if (err) {
+        // Really shouldn't happen
+        LOG_WRN("block time queue failed (err %d)", err);
+    }
+
     a->hfclkaudio_increment =
         freq_ctlr_update(&a->freq_ctlr, a->target_theta, state);
 
@@ -190,11 +234,10 @@ static void audio_sync_work_handler(struct k_work *item) {
 
 static void audio_egu_handler(uint8_t event_idx, void *p_context) {
     struct audio *a = p_context;
-    a->time += a->time_increment;
+    a->time += a->block_duration;
     a->ref_time = qu32_32_from_int(sync_timer_get_i2s_time());
     k_work_submit(a->sync_work);
 }
-#endif
 
 int audio_init() {
     int err;
@@ -230,12 +273,11 @@ int audio_init() {
             },
     };
 
-#if AUDIO_SYNC_ENABLED
     // TODO: allow sample-rates that aren't a multiple of sample/block.
     // Naive implementation overflows 64-bit integer with intermediate
     // result.
-    a->time_increment =
-        qu32_32_from_int((uint64_t)SYNC_TIMER_FREQ *
+    a->block_duration =
+        qu32_32_from_int((uint64_t)ZEUS_TIME_NOMINAL_FREQ *
                          (AUDIO_BLOCK_SIZE / cfg.dai_cfg.i2s.channels /
                           2 /* bytes per sample */) /
                          cfg.dai_cfg.i2s.frame_clk_freq);
@@ -244,7 +286,7 @@ int audio_init() {
 
     nrfx_egu_t egu = NRFX_EGU_INSTANCE(AUDIO_EGU_IDX);
 
-    IRQ_CONNECT(AUDIO_EGU_IRQ, IRQ_PRIO_LOWEST,
+    IRQ_CONNECT(AUDIO_EGU_IRQ, AUDIO_EGU_IRQ_PRIO,
                 NRFX_EGU_INST_HANDLER_GET(AUDIO_EGU_IDX), 0, 0);
 
     nrfx_err_t nerr =
@@ -254,12 +296,13 @@ int audio_init() {
         return -EALREADY;
     }
 
-    uint8_t i2s_dppi = sync_timer_get_i2s_dppi();
-    nrf_i2s_publish_set(NRF_I2S0, NRF_I2S_EVENT_RXPTRUPD, i2s_dppi);
-    nrf_egu_subscribe_set(egu.p_reg, NRF_EGU_TASK_TRIGGER0, i2s_dppi);
-    nrfx_egu_int_enable(&egu, NRF_EGU_INT_TRIGGERED0);
-    nrfx_dppi_channel_enable(i2s_dppi);
-#endif
+    if (AUDIO_SYNC_ENABLED) {
+        uint8_t i2s_dppi = sync_timer_get_i2s_dppi();
+        nrf_i2s_publish_set(NRF_I2S0, NRF_I2S_EVENT_RXPTRUPD, i2s_dppi);
+        nrf_egu_subscribe_set(egu.p_reg, NRF_EGU_TASK_TRIGGER0, i2s_dppi);
+        nrfx_egu_int_enable(&egu, NRF_EGU_INT_TRIGGERED0);
+        nrfx_dppi_channel_enable(i2s_dppi);
+    }
 
     err = i2s_configure(a->i2s, I2S_DIR_RX, &cfg.dai_cfg.i2s);
     if (err < 0) {
@@ -272,7 +315,7 @@ int audio_init() {
                     NULL, NULL, NULL, K_PRIO_COOP(7), 0, K_NO_WAIT);
     k_thread_name_set(&a->thread, "audio");
 
-    err = k_sem_take(a->started, K_MSEC(500));
+    err = k_sem_take(a->started, K_MSEC(2000));
     if (err < 0) {
         LOG_ERR("audio did not start");
         return err;
@@ -292,8 +335,4 @@ int audio_init() {
     }
 
     return 0;
-}
-
-int audio_start(struct audio *a) {
-    return i2s_trigger(a->i2s, I2S_DIR_RX, I2S_TRIGGER_START);
 }

@@ -4,8 +4,10 @@
 #include <hal/nrf_i2s.h>
 #include <hal/nrf_ipc.h>
 #include <nrfx_dppi.h>
+#include <nrfx_timer.h>
 #include <zephyr/drivers/clock_control/nrf_clock_control.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/onoff.h>
 
 #include "zeus/protocol.h"
 #include "zeus/sync.h"
@@ -14,13 +16,16 @@ LOG_MODULE_REGISTER(sync_timer);
 
 #define SYNC_TIMER_INDEX 2
 
-#define SYNC_TIMER_CAPTURE_CHANNEL_ADV 0
-#define SYNC_TIMER_CAPTURE_CHANNEL_I2S 1
-#define SYNC_TIMER_CAPTURE_CHANNEL_USB_SOF 2
+enum {
+    SYNC_TIMER_CAPTURE_CHANNEL_ADV,
+    SYNC_TIMER_CAPTURE_CHANNEL_I2S,
+    SYNC_TIMER_CAPTURE_CHANNEL_USB_SOF,
+    SYNC_TIMER_CAPTURE_CHANNEL_MANUAL
+};
 
 static struct sync_timer {
     // Resources
-    const nrfx_timer_t timer;
+    nrfx_timer_t timer;
     struct onoff_client hf_cli;
     /// DPPI channel for I2S buffer timer capture
     uint8_t i2s_dppi;
@@ -41,7 +46,7 @@ static struct sync_timer {
 };
 
 static const struct freq_est_config FREQ_EST_CONFIG = {
-    .nominal_freq = SYNC_TIMER_FREQ,
+    .nominal_freq = ZEUS_TIME_NOMINAL_FREQ,
     .q_theta = 0.0,
     .q_f = 256.0,
     .r = 390625.0,
@@ -57,12 +62,12 @@ int sync_timer_init(void) {
     // Setup 32-bit 16 MHz timer to capture on radio end event and I2S sample
     err = nrfx_timer_init(&t->timer,
                           &(nrfx_timer_config_t){
-                              .frequency = SYNC_TIMER_FREQ,
+                              .frequency = ZEUS_TIME_NOMINAL_FREQ,
                               .mode = NRF_TIMER_MODE_TIMER,
                               .bit_width = NRF_TIMER_BIT_WIDTH_32,
                           },
                           NULL);
-    NRFX_ASSERT(NRFX_SUCCESS == nerr);
+    NRFX_ASSERT(NRFX_SUCCESS == err);
 
     uint8_t adv_dppi;
     err = nrfx_dppi_channel_alloc(&adv_dppi);
@@ -117,21 +122,21 @@ int sync_timer_init(void) {
     return 0;
 }
 
-void sync_timer_recv_adv(const struct zeus_adv_data *data) {
+void sync_timer_recv_adv(const struct zeus_adv_header *hdr) {
     struct sync_timer *t = &sync_timer;
 
-    if (t->last_adv_valid && data->seq == t->last_adv_seq) {
+    if (t->last_adv_valid && hdr->seq == t->last_adv_seq) {
         // printk("sync,%" PRIu32 ",%" PRIu32 "\n", t->last_adv_time,
-        // data->time);
+        // hdr->time);
         freq_est_update(&t->freq_est, qu32_32_from_int(t->last_adv_time),
-                        qu32_32_from_int(data->time), 0);
+                        qu32_32_from_int(hdr->time), 0);
     }
 
     uint32_t time =
         nrfx_timer_capture_get(&t->timer, SYNC_TIMER_CAPTURE_CHANNEL_ADV);
 
     t->last_adv_valid = true;
-    t->last_adv_seq = data->seq + 1;
+    t->last_adv_seq = hdr->seq + 1;
     t->last_adv_time = time;
 }
 
@@ -152,7 +157,16 @@ uint32_t sync_timer_get_i2s_time(void) {
 
 uint32_t sync_timer_get_usb_sof_time(void) {
     struct sync_timer *t = &sync_timer;
-    return nrfx_timer_capture_get(&t->timer, SYNC_TIMER_CAPTURE_CHANNEL_USB_SOF);
+    return nrfx_timer_capture_get(&t->timer,
+                                  SYNC_TIMER_CAPTURE_CHANNEL_USB_SOF);
+}
+
+qu32_32 sync_timer_get_central_time(void) {
+    struct sync_timer *t = &sync_timer;
+    qu32_32 time = qu32_32_from_int(
+        nrfx_timer_capture(&t->timer, SYNC_TIMER_CAPTURE_CHANNEL_MANUAL));
+    sync_timer_correct_time(&time);
+    return time;
 }
 
 bool sync_timer_correct_time(qu32_32 *time) {

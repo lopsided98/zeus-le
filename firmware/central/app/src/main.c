@@ -1,204 +1,183 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <inttypes.h>
 #include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/drivers/gpio.h>
-#include <zephyr/ipc/ipc_service.h>
+#include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/settings/settings.h>
+#include <zephyr/shell/shell.h>
 
+#include "sync.h"
 #include "zeus/protocol.h"
-#include "zeus/sync.h"
 
-LOG_MODULE_REGISTER(central);
+LOG_MODULE_REGISTER(central, LOG_LEVEL_DBG);
 
-static struct packet_timer {
-    struct ipc_ept ept;
-    struct bt_le_ext_adv *adv;
-    struct zeus_adv_data adv_data;
-    struct k_work update_work;
-    uint8_t last_seq;
-    bool first_seq;
-} packet_timer = {
-    .first_seq = true,
+enum central_state {
+    STATE_IDLE,
+    STATE_PAIRING,
+    STATE_RECORDING,
 };
 
-#define LED_ENABLED !IS_ENABLED(CONFIG_ARCH_POSIX)
-
-#if LED_ENABLED
-static const struct gpio_dt_spec led =
-    GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
-
-void led_off_work_handler(struct k_work *work) { gpio_pin_set_dt(&led, 0); }
-/* Register the work handler */
-K_WORK_DELAYABLE_DEFINE(led_off_work, led_off_work_handler);
-#endif
-
-void packet_timer_update_handler(struct k_work *work) {
-    struct packet_timer *t =
-        CONTAINER_OF(work, struct packet_timer, update_work);
-
-    struct bt_data ad[] = {
-        BT_DATA(BT_DATA_MANUFACTURER_DATA, &t->adv_data, sizeof(t->adv_data)),
-    };
-
-    int err = bt_le_per_adv_set_data(t->adv, ad, ARRAY_SIZE(ad));
-    if (err < 0) {
-        LOG_ERR("Failed to set advertising data (err %d)\n", err);
-        return;
-    }
-}
-
-void packet_timer_ipc_recv(const void *data, size_t len, void *priv) {
-    struct packet_timer *t = priv;
-    const struct zeus_packet_timer_msg *msg = data;
-
-    if (msg->seq != (uint8_t)(t->last_seq + 1) && !t->first_seq) {
-        LOG_WRN("seq mismatch: %" PRIu8 " != %" PRIu8, msg->seq,
-                t->last_seq + 1);
-    }
-    t->last_seq = msg->seq;
-    t->first_seq = false;
-
-    // LOG_INF("pkt");
-
-#if LED_ENABLED
-    gpio_pin_set_dt(&led, 1);
-    k_work_schedule(&led_off_work, K_MSEC(50));
-#endif
-
-    t->adv_data = (struct zeus_adv_data){
-        .seq = msg->seq,
-        .time = msg->time,
-    };
-    k_work_submit(&t->update_work);
-}
-
-static const struct ipc_ept_cfg packet_timer_ept_cfg = {
-    .name = "packet_timer",
-    .cb.received = packet_timer_ipc_recv,
-    .priv = &packet_timer,
+static const struct bt_data ad[] = {
+    BT_DATA_BYTES(BT_DATA_UUID128_SOME, ZEUS_BT_UUID_VAL),
 };
 
-int packet_timer_init(void) {
-    int err;
-    k_work_init(&packet_timer.update_work, packet_timer_update_handler);
-
-#if LED_ENABLED
-    gpio_pin_configure_dt(&led, GPIO_OUTPUT);
-#endif
-
-    const struct device *ipc = DEVICE_DT_GET(DT_NODELABEL(ipc0));
-
-    err = ipc_service_open_instance(ipc);
-    if (err < 0 && err != -EALREADY) {
-        LOG_ERR("failed to initialize IPC (err %d)\n", err);
-        return err;
-    }
-    err = ipc_service_register_endpoint(ipc, &packet_timer.ept,
-                                        &packet_timer_ept_cfg);
-    if (err < 0) {
-        LOG_ERR("failed to register IPC endpoint (err %d)\n", err);
-        return err;
-    }
-
-    return 0;
-}
-
-int connect_adv_init(void) {
-    struct bt_le_adv_param adv_param = {
-        .id = BT_ID_DEFAULT,
-        .sid = 0,
-        .secondary_max_skip = 0,
-        .options = BT_LE_ADV_OPT_EXT_ADV | BT_LE_ADV_OPT_USE_IDENTITY |
-                   BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_USE_NAME,
-        .interval_min = BT_GAP_ADV_SLOW_INT_MIN,
-        .interval_max = BT_GAP_ADV_SLOW_INT_MAX,
-        .peer = NULL,
-    };
-
+static struct central {
+    enum central_state state;
+    struct bt_le_adv_param adv_param;
     struct bt_le_ext_adv *adv;
-    int err = bt_le_ext_adv_create(&adv_param, NULL, &adv);
-    if (err) {
-        LOG_ERR("Failed to create advertising set (err %d)\n", err);
-        return err;
+} central = {
+    .state = STATE_IDLE,
+    .adv_param =
+        {
+            .id = BT_ID_DEFAULT,
+            .sid = 0,
+            .secondary_max_skip = 0,
+            .options = BT_LE_ADV_OPT_EXT_ADV | BT_LE_ADV_OPT_USE_IDENTITY |
+                       BT_LE_ADV_OPT_CONNECTABLE | BT_LE_ADV_OPT_USE_NAME |
+                       BT_LE_ADV_OPT_FILTER_CONN |
+                       BT_LE_ADV_OPT_FILTER_SCAN_REQ,
+            .interval_min = BT_GAP_ADV_SLOW_INT_MIN,
+            .interval_max = BT_GAP_ADV_SLOW_INT_MAX,
+            .peer = NULL,
+        },
+};
+
+static void add_bonded_addr_to_filter_list(const struct bt_bond_info *info,
+                                           void *data) {
+    char addr_str[BT_ADDR_LE_STR_LEN];
+
+    bt_le_filter_accept_list_add(&info->addr);
+    bt_addr_le_to_str(&info->addr, addr_str, sizeof(addr_str));
+    LOG_DBG("added %s to advertising accept filter list\n", addr_str);
+}
+
+static int connect_adv_init(void) {
+    struct central *c = &central;
+
+    bt_foreach_bond(BT_ID_DEFAULT, add_bonded_addr_to_filter_list, NULL);
+
+    int ret = bt_le_ext_adv_create(&c->adv_param, NULL, &c->adv);
+    if (ret) {
+        LOG_ERR("failed to create advertising set (err %d)", ret);
+        return ret;
     }
 
-    err = bt_le_ext_adv_start(adv, BT_LE_EXT_ADV_START_DEFAULT);
-    if (err) {
-        LOG_ERR("Failed to start extended advertising (err %d)\n", err);
-        return err;
+    ret = bt_le_ext_adv_set_data(c->adv, ad, ARRAY_SIZE(ad), NULL, 0);
+    if (ret) {
+        LOG_ERR("failed to set advertising data (err %d)", ret);
+        return ret;
+    }
+
+    ret = bt_le_ext_adv_start(c->adv, BT_LE_EXT_ADV_START_DEFAULT);
+    if (ret) {
+        LOG_ERR("failed to start extended advertising (err %d)", ret);
+        return ret;
     }
 
     return 0;
 }
 
-/// Initialize periodic advertisements for syncing
-int sync_adv_init(void) {
-    struct bt_le_adv_param adv_param = {
-        .id = BT_ID_DEFAULT,
-        .sid = 1,
-        .secondary_max_skip = 0,
-        .options = BT_LE_ADV_OPT_EXT_ADV | BT_LE_ADV_OPT_USE_IDENTITY,
-        .interval_min = BT_GAP_ADV_SLOW_INT_MIN,
-        .interval_max = BT_GAP_ADV_SLOW_INT_MAX,
-        .peer = NULL,
-    };
+static int connect_adv_set_pairing(bool pairing) {
+    struct central *c = &central;
 
-    int err = bt_le_ext_adv_create(&adv_param, NULL, &packet_timer.adv);
-    if (err) {
-        LOG_ERR("Failed to create sync advertising set (err %d)\n", err);
-        return err;
+    // Allow connections from any device while pairing
+    if (pairing) {
+        c->adv_param.options &=
+            ~(BT_LE_ADV_OPT_FILTER_CONN | BT_LE_ADV_OPT_FILTER_SCAN_REQ);
+    } else {
+        c->adv_param.options |=
+            BT_LE_ADV_OPT_FILTER_CONN | BT_LE_ADV_OPT_FILTER_SCAN_REQ;
     }
 
-    // Set periodic advertising parameters
-    err = bt_le_per_adv_set_param(
-        packet_timer.adv, BT_LE_PER_ADV_PARAM(BT_GAP_PER_ADV_FAST_INT_MIN_2,
-                                              BT_GAP_PER_ADV_FAST_INT_MAX_2,
-                                              BT_LE_PER_ADV_OPT_NONE));
-    if (err) {
-        LOG_ERR("Failed to set periodic sync advertising parameters (err %d)\n",
-                err);
-        return err;
+    return bt_le_ext_adv_update_param(c->adv, &c->adv_param);
+}
+
+static int central_pair(void) {
+    struct central *c = &central;
+    int ret;
+
+    if (c->state != STATE_IDLE) {
+        return -EALREADY;
     }
 
-    // Enable Periodic Advertising
-    err = bt_le_per_adv_start(packet_timer.adv);
-    if (err) {
-        LOG_ERR("Failed to enable periodic sync advertising (err %d)\n", err);
-        return err;
+    ret = bt_le_ext_adv_stop(c->adv);
+    if (ret) {
+        LOG_INF("failed to stop advertising (err %d)", ret);
+        return ret;
     }
 
-    err = bt_le_ext_adv_start(packet_timer.adv, BT_LE_EXT_ADV_START_DEFAULT);
-    if (err) {
-        LOG_ERR("Failed to start sync advertising (err %d)\n", err);
-        return err;
+    ret = connect_adv_set_pairing(true);
+    if (ret) {
+        LOG_INF("failed to enable pairing (err %d)", ret);
+        return ret;
     }
 
+    ret = bt_le_ext_adv_start(c->adv, BT_LE_EXT_ADV_START_DEFAULT);
+    if (ret) {
+        LOG_INF("failed to start advertising (err %d)", ret);
+        return ret;
+    }
+
+    c->state = STATE_PAIRING;
+    LOG_INF("pairing started...");
     return 0;
 }
+
+static int cmd_pair(const struct shell *sh, size_t argc, char **argv) {
+    shell_print(sh, "start pairing command");
+    return central_pair();
+}
+
+static int cmd_start(const struct shell *sh, size_t argc, char **argv) {
+    shell_print(sh, "start recording command");
+    int ret = sync_cmd_start();
+    if (ret) {
+        shell_fprintf(sh, SHELL_ERROR, "failed to send start command (err %d)",
+                      ret);
+    }
+    return ret;
+}
+
+static int cmd_stop(const struct shell *sh, size_t argc, char **argv) {
+    shell_print(sh, "stop recording command");
+    int ret = sync_cmd_stop();
+    if (ret) {
+        shell_fprintf(sh, SHELL_ERROR, "failed to send stop command (err %d)",
+                      ret);
+    }
+    return ret;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(
+    sub_zeus, SHELL_CMD(pair, NULL, "Pair new audio node", cmd_pair),
+    SHELL_CMD(start, NULL, "Start recording", cmd_start),
+    SHELL_CMD(stop, NULL, "Stop recording", cmd_stop), SHELL_SUBCMD_SET_END);
+SHELL_CMD_REGISTER(zeus, &sub_zeus, "Zeus commands", NULL);
 
 int main(void) {
-    int err;
+    int ret;
 
     // Initialize the Bluetooth Subsystem
-    err = bt_enable(NULL);
-    if (err) {
-        LOG_ERR("failed to enable Bluetooth (err %d)\n", err);
+    ret = bt_enable(NULL);
+    if (ret) {
+        LOG_ERR("failed to enable Bluetooth (err %d)", ret);
         return 0;
     }
 
-    err = packet_timer_init();
-    if (err) {
+    ret = settings_load();
+    if (ret) {
+        LOG_WRN("failed to load settings (err %d)", ret);
+        // No return, settings failure is not fatal
+    }
+
+    ret = connect_adv_init();
+    if (ret) {
         return 0;
     }
 
-    err = connect_adv_init();
-    if (err) {
-        return 0;
-    }
-
-    err = sync_adv_init();
-    if (err) {
+    ret = sync_init();
+    if (ret) {
         return 0;
     }
 

@@ -9,6 +9,7 @@
 
 #include "hci_ipc.h"
 #include "zeus/sync.h"
+#include "zeus/protocol.h"
 
 // Zephyr internal headers, order is important
 // clang-format off
@@ -48,7 +49,7 @@ static void packet_timer_isr(uint8_t event_idx, void* context) {
     // advertising packets except the periodic packet have a header.
     if (pdu->adv_ext_ind.ext_hdr_len != 0) return;
 
-    const struct zeus_packet_timer_msg msg = {
+    const struct zeus_sync_msg msg = {
         .seq = t->seq++,
         .time = nrfx_timer_capture_get(&t->timer, NRF_TIMER_CC_CHANNEL0),
     };
@@ -78,7 +79,7 @@ static int packet_timer_init(void) {
     // Setup 32-bit 16 MHz timer to capture on radio end event
     nerr = nrfx_timer_init(&packet_timer.timer,
                            &(nrfx_timer_config_t){
-                               .frequency = 16000000,
+                               .frequency = ZEUS_TIME_NOMINAL_FREQ,
                                .mode = NRF_TIMER_MODE_TIMER,
                                .bit_width = NRF_TIMER_BIT_WIDTH_32,
                            },
@@ -130,12 +131,6 @@ int main(void) {
     }
 
     LOG_INF("Booted");
-
-    nrf_clock_hfclk_t type;
-    bool running =
-        nrf_clock_is_running(NRF_CLOCK, NRF_CLOCK_DOMAIN_HFCLK, &type);
-    LOG_INF("HFCLK: running: %d, type: %d, expected: %d", running, type,
-            NRF_CLOCK_HFCLK_HIGH_ACCURACY);
 
     return 0;
 }
