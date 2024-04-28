@@ -127,6 +127,8 @@ int wav_write(struct fs_file_t* fp, const uint8_t* buf, size_t len) {
             write_errno = ENOSPC;
         }
 
+        // FIXME: what will happen if part of the last frame was cut off
+
         // Update the size anyway
         ret = wav_update_size(fp);
         if (ret < 0) return ret;

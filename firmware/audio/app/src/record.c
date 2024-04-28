@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <zephyr/fs/fs.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -14,6 +15,9 @@ LOG_MODULE_REGISTER(record, LOG_LEVEL_DBG);
 #define RECORD_FILE_DIR "/SD:"
 #define RECORD_FILE_NAME_PREFIX "REC_"
 #define RECORD_FILE_PATH_PREFIX RECORD_FILE_DIR "/" RECORD_FILE_NAME_PREFIX
+
+// 2 GiB, because some programs use a signed 32-bit integer
+#define RECORD_MAX_FILE_BYTES UINT32_C((1 << 31) - 1)
 
 enum record_state {
     RECORD_STOPPED,
@@ -29,6 +33,8 @@ static struct record {
 
     /// Current open file
     struct fs_file_t file;
+    /// Length of current file
+    uint32_t file_len;
     /// Next unused file index
     uint32_t file_index;
     enum record_state state;
@@ -53,18 +59,39 @@ static int record_get_next_file_index(uint32_t *next_file_index) {
         ret = fs_readdir(&dir, &entry);
         if (ret < 0) goto exit;
 
-        if (entry.name[0] == 0) break;
+        size_t name_len = strlen(entry.name);
+        if (name_len == 0) break;
 
-        uint32_t file_index;
-        size_t scan_len;
-        ret = sscanf(entry.name, RECORD_FILE_NAME_PREFIX "%" SCNu32 ".wav%zn",
-                     &file_index, &scan_len);
-        if (ret < 0) return ret;
+        const size_t name_prefix_len = sizeof(RECORD_FILE_NAME_PREFIX) - 1;
+        if (name_len < name_prefix_len) {
+            // Too short
+            continue;
+        }
+        if (memcmp(entry.name, RECORD_FILE_NAME_PREFIX, name_prefix_len) != 0) {
+            // Prefix didn't match
+            continue;
+        }
 
-        // Didn't match file index
-        if (ret != 1) continue;
-        // Didn't match entire file name
-        if (scan_len != strlen(entry.name)) continue;
+        const char *index_start = entry.name + name_prefix_len;
+        char *suffix_start;
+        BUILD_ASSERT(sizeof(unsigned long) == sizeof(uint32_t),
+                     "Cannot use strtoul() to parse uint32_t");
+        uint32_t file_index =
+            strtoul(entry.name + name_prefix_len, &suffix_start, 10);
+        if (suffix_start == index_start) {
+            // Did not parse any number
+            continue;
+        }
+        if (file_index == ULONG_MAX) {
+            // Index out of range, no available next index
+            ret = -ERANGE;
+            goto exit;
+        }
+
+        if (strcmp(suffix_start, ".wav") != 0) {
+            // Suffix didn't match
+            continue;
+        }
 
         // +1 to record the next free index
         if ((file_index + 1) > *next_file_index) {
@@ -143,10 +170,13 @@ int record_buffer(const struct audio_block *block) {
 
     // LOG_INF("state: %d", r->state);
     switch (r->state) {
+        default:
         case RECORD_STOPPED:
+            ret = 0;
             goto unlock;
         case RECORD_WAITING_NEW_FILE:
             old_file = true;
+            // fallthrough
         case RECORD_WAITING_START: {
             uint32_t wait_time = r->start_time - block->start_time;
             LOG_INF("waiting: %" PRIu32, wait_time);
@@ -162,11 +192,21 @@ int record_buffer(const struct audio_block *block) {
                 split_offset = block->len;
             }
         } break;
-        case RECORD_RUNNING:
+        case RECORD_RUNNING: {
             old_file = true;
-            new_file = false;
-            split_offset = block->len;
-            break;
+
+            // Split file when it exceeds the max size
+            uint32_t max_file_bytes =
+                ROUND_DOWN(RECORD_MAX_FILE_BYTES, block->bytes_per_frame);
+
+            if (r->file_len + block->len > max_file_bytes) {
+                new_file = true;
+                split_offset = max_file_bytes - r->file_len;
+            } else {
+                new_file = false;
+                split_offset = block->len;
+            }
+        } break;
     }
 
     if (old_file) {
@@ -175,12 +215,15 @@ int record_buffer(const struct audio_block *block) {
             LOG_ERR("WAV write failed (err %d)", ret);
             goto file_error;
         }
+        r->file_len += split_offset;
     }
     if (new_file) {
         if (old_file) {
             // Ignore error, what am I going to do?
             fs_close(&r->file);
         }
+        r->file_len = 0;
+
         char file_name[sizeof(RECORD_FILE_PATH_PREFIX) /* includes terminator */
                        + 10 /* max digits */ + 4 /*.wav*/];
         ret = snprintf(file_name, sizeof(file_name),
@@ -211,12 +254,13 @@ int record_buffer(const struct audio_block *block) {
             goto file_error;
         }
 
-        ret = wav_write(&r->file, block->buf + split_offset,
-                        block->len - split_offset);
+        size_t write_len = block->len - split_offset;
+        ret = wav_write(&r->file, block->buf + split_offset, write_len);
         if (ret) {
             LOG_ERR("WAV write failed (err %d)", ret);
             goto file_error;
         }
+        r->file_len += write_len;
 
         r->state = RECORD_RUNNING;
     }
