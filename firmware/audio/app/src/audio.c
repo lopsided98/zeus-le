@@ -170,7 +170,7 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
             .start_time = block_start_time,
             .duration = qu32_32_whole(a->block_duration),
             // TODO: don't hardcode
-            .bytes_per_frame = 2,
+            .bytes_per_frame = 4,
         };
 
         record_buffer(&block);
