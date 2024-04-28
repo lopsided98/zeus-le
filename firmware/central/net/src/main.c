@@ -8,8 +8,8 @@
 #include <zephyr/logging/log.h>
 
 #include "hci_ipc.h"
-#include "zeus/sync.h"
 #include "zeus/protocol.h"
+#include "zeus/sync.h"
 
 // Zephyr internal headers, order is important
 // clang-format off
@@ -95,9 +95,8 @@ static int packet_timer_init(void) {
 
     nrfx_egu_init(&egu, NRFX_EGU_DEFAULT_CONFIG_IRQ_PRIORITY, packet_timer_isr,
                   &packet_timer);
-    IRQ_DIRECT_CONNECT(
-        NRFX_IRQ_NUMBER_GET(NRF_EGU_INST_GET(PACKET_TIMER_EGU_IDX)), 5,
-        NRFX_EGU_INST_HANDLER_GET(PACKET_TIMER_EGU_IDX), 0);
+    IRQ_CONNECT(NRFX_IRQ_NUMBER_GET(NRF_EGU_INST_GET(PACKET_TIMER_EGU_IDX)), 5,
+                NRFX_EGU_INST_HANDLER_GET(PACKET_TIMER_EGU_IDX), 0, 0);
 
     // Use EGU to fire interrupt when packet is transmitted
     nrf_egu_subscribe_set(egu.p_reg, NRF_EGU_TASK_TRIGGER0,

@@ -55,21 +55,32 @@ int usb_init(void) {
         return ret;
     }
 
-    ret = usbd_add_configuration(u->ctx, &usb_config);
+    ret = usbd_add_configuration(u->ctx, USBD_SPEED_FS, &usb_config);
     if (ret < 0) {
         LOG_ERR("failed to add USB configuration (err %d)", ret);
         return ret;
     }
 
-    STRUCT_SECTION_FOREACH(usbd_class_node, node) {
+    STRUCT_SECTION_FOREACH_ALTERNATE(usbd_class_fs, usbd_class_node, node) {
         // Pull everything that is enabled in our configuration.
-        ret = usbd_register_class(u->ctx, node->name, 1);
+        ret = usbd_register_class(u->ctx, node->c_data->name, USBD_SPEED_FS, 1);
         if (ret < 0) {
-            LOG_ERR("failed to register %s (err %d)", node->name, ret);
+            LOG_ERR("failed to register %s (err %d)", node->c_data->name, ret);
             return ret;
         }
 
-        LOG_DBG("register %s", node->name);
+        LOG_DBG("register %s", node->c_data->name);
+    }
+
+    STRUCT_SECTION_FOREACH_ALTERNATE(usbd_class_hs, usbd_class_node, node) {
+        // Pull everything that is enabled in our configuration.
+        ret = usbd_register_class(u->ctx, node->c_data->name, USBD_SPEED_HS, 1);
+        if (ret < 0) {
+            LOG_ERR("failed to register %s (err %d)", node->c_data->name, ret);
+            return ret;
+        }
+
+        LOG_DBG("register %s", node->c_data->name);
     }
 
     /*
@@ -77,7 +88,8 @@ int usb_init(void) {
      * Association Descriptor available, use an appropriate triple
      * to indicate it.
      */
-    usbd_device_set_code_triple(u->ctx, USB_BCC_MISCELLANEOUS, 0x02, 0x01);
+    usbd_device_set_code_triple(u->ctx, USBD_SPEED_FS, USB_BCC_MISCELLANEOUS,
+                                0x02, 0x01);
 
     ret = usbd_init(u->ctx);
     if (ret) {
