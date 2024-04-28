@@ -75,7 +75,9 @@ static struct audio {
     struct k_msgq *const block_time_queue;
 
     // State
-    /// Time increment per buffer
+    /// Audio sampling period (Q32.32)
+    qu32_32 sample_period;
+    /// Time increment per buffer (Q32.32)
     qu32_32 block_duration;
     /// Number of timer ticks (as Q32.32) that should have elapsed from the time
     /// I2S was started to the end of the latest I2S buffer.
@@ -194,7 +196,10 @@ static void audio_sync_work_handler(struct k_work *item) {
 
     struct freq_est_state state = freq_est_get_state(&a->freq_est);
     if (!a->target_locked) {
-        a->target_theta = state.theta;
+        // Round target phase to multiple of sample period. This will
+        // synchronize the sampling times of all devices.
+        a->target_theta =
+            DIV_ROUND_CLOSEST(state.theta, a->sample_period) * a->sample_period;
         a->target_locked = true;
     }
 
@@ -273,13 +278,16 @@ int audio_init() {
             },
     };
 
-    // TODO: allow sample-rates that aren't a multiple of sample/block.
+    a->sample_period = qu32_32_from_int(ZEUS_TIME_NOMINAL_FREQ) /
+                       cfg.dai_cfg.i2s.frame_clk_freq;
+
+    uint32_t frames_per_block = AUDIO_BLOCK_SIZE / cfg.dai_cfg.i2s.channels /
+                                (cfg.dai_cfg.i2s.word_size / 8);
+    // TODO: allow sample-rates that aren't a multiple of frame/block.
     // Naive implementation overflows 64-bit integer with intermediate
     // result.
     a->block_duration =
-        qu32_32_from_int((uint64_t)ZEUS_TIME_NOMINAL_FREQ *
-                         (AUDIO_BLOCK_SIZE / cfg.dai_cfg.i2s.channels /
-                          2 /* bytes per sample */) /
+        qu32_32_from_int((uint64_t)ZEUS_TIME_NOMINAL_FREQ * frames_per_block /
                          cfg.dai_cfg.i2s.frame_clk_freq);
 
     freq_est_init(&a->freq_est, &a->freq_est_cfg);
