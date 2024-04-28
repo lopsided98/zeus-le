@@ -1,14 +1,14 @@
 {
   "project_hashes": {
-    "5d4f02beb4a04f7fe2d92222193ddf7d2e3c8ab6e6987d3468cf30a2c90d6012": {
+    "b3d6beb4329e538089ff0aa4e06d8d6d40a6c04d4a132d6fa7e49062dcee81e5": {
       "url": "https://github.com/lopsided98/zephyr",
-      "rev": "627f9f5d178bd3e0166f852524f7ca820e51b66e",
-      "hash": "sha256-f43EQYxQ2euWqDtUTCSbTuzuGb4r5zXS9BpHdGO36ls="
+      "rev": "66593873f98ef1a503b96521d699d2db85c6571e",
+      "hash": "sha256-8U5Byn6fLfHk+yIaaIKWGDSy+FrIX3LbhNjFmrKHAgs="
     },
-    "2f0b8175147123daf179982b72353262901abe3894c8b3cedce65fdb5d8ec3ce": {
+    "2935a7ffc5845ab55b982a9fc118e3cebedf4199dcaf6c12a4f02249836b8623": {
       "url": "https://github.com/BabbleSim/ext_nRF_hw_models.git",
-      "rev": "9b985ea6bc237b6ae06f48eb228f2ac7f6e3b96b",
-      "hash": "sha256-O+S091IKpA7KlOEsTyAqFAwAdyG1nsgMjLZsn7aJQ/Q="
+      "rev": "e55aaff1359d8854856f910ae0ba0acf8ed19a37",
+      "hash": "sha256-8RylIgzal8lHoqRA581iTGF0BwACoY4u3QPZvGAaruQ="
     },
     "cc39eba8608d9e39ea92294e38fcf5467ad864471d791edfadd272372e0bbb36": {
       "url": "https://github.com/lopsided98/west-nix",
@@ -55,10 +55,10 @@
       "rev": "427159bf95ea49b7680facffaa29ad506b42709b",
       "hash": "sha256-5l3hJazG8BoLZ0QxfSFc98uKArIGAFD1P8D6tsKMRt4="
     },
-    "14cfe71d1979878ae47a818f48c0a1f0c026c9f01446f4afc2ed7c11a6fab339": {
+    "30480db20cb926c361ae3606ef2e0f279f1ccc98c4d81b9fcd2c8bf311ee58d9": {
       "url": "https://github.com/zephyrproject-rtos/hal_nordic",
-      "rev": "fc2bab706f195c64d40016c9855b8acd7c235ded",
-      "hash": "sha256-UzAXv0J5SfyowmMw4XdD2hkOHbHB4cOmVwR78ymEd6s="
+      "rev": "827224f29e99972cd3b999dba913ae4649790671",
+      "hash": "sha256-Kcol3sMPSEuza2CPPYIaJptp76hUrzRkSWtrjRfjAbQ="
     },
     "0cf11a28de2b230435e3e9d1166a2b69b17fed44aaeb7c70ffb9e94b75912ba0": {
       "url": "https://github.com/zephyrproject-rtos/libmetal",
