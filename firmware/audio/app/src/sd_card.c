@@ -8,10 +8,15 @@
 LOG_MODULE_REGISTER(sd_card);
 
 static struct sd_card {
+    // Config
     const char* name;
-    struct fs_mount_t mount;
 
+    // Resources
+    struct fs_mount_t mount;
     FATFS fat_fs;
+
+    // State
+    bool init;
 } sd_card = {
     .name = "SD",
     .mount =
@@ -22,7 +27,7 @@ static struct sd_card {
         },
 };
 
-int sd_card_print_info(const char* disk_pdrv) {
+static int sd_card_print_info(const char* disk_pdrv) {
     uint32_t sector_count;
     int ret = disk_access_ioctl(disk_pdrv, DISK_IOCTL_GET_SECTOR_COUNT,
                                 &sector_count);
@@ -56,6 +61,7 @@ int sd_card_print_info(const char* disk_pdrv) {
 
 int sd_card_init(void) {
     struct sd_card* s = &sd_card;
+    if (s->init) return -EALREADY;
 
     int ret = disk_access_init(s->name);
     if (ret < 0) {
@@ -72,5 +78,6 @@ int sd_card_init(void) {
         return -ENODEV;
     }
 
+    s->init = true;
     return 0;
 }

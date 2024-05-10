@@ -31,6 +31,7 @@ K_MUTEX_DEFINE(record_mutex);
 static struct record {
     struct k_mutex *mutex;
 
+    bool init;
     /// Current open file
     struct fs_file_t file;
     /// Length of current file
@@ -108,21 +109,32 @@ exit:
 
 int record_init(void) {
     struct record *r = &record;
+    k_mutex_lock(r->mutex, K_FOREVER);
     int ret;
+    if (r->init) {
+        ret = -EALREADY;
+        goto unlock;
+    }
 
     fs_file_t_init(&r->file);
 
     ret = record_get_next_file_index(&r->file_index);
     if (ret < 0) {
         LOG_WRN("failed to get next file index (err %d)", ret);
+        goto unlock;
     }
 
-    return 0;
+    r->init = true;
+
+unlock:
+    k_mutex_unlock(r->mutex);
+    return ret;
 }
 
-void record_start(uint32_t time) {
+int record_start(uint32_t time) {
     struct record *r = &record;
     k_mutex_lock(r->mutex, K_FOREVER);
+    if (!r->init) return -EINVAL;
 
     switch (r->state) {
         case RECORD_STOPPED:
@@ -138,11 +150,13 @@ void record_start(uint32_t time) {
     LOG_INF("start");
 
     k_mutex_unlock(r->mutex);
+    return 0;
 }
 
-void record_stop(void) {
+int record_stop(void) {
     struct record *r = &record;
     k_mutex_lock(r->mutex, K_FOREVER);
+    if (!r->init) return -EINVAL;
 
     switch (r->state) {
         case RECORD_STOPPED:
@@ -157,18 +171,23 @@ void record_stop(void) {
     r->state = RECORD_STOPPED;
 
     k_mutex_unlock(r->mutex);
+    return 0;
 }
 
 int record_buffer(const struct audio_block *block) {
     struct record *r = &record;
-    int ret;
-
     k_mutex_lock(r->mutex, K_FOREVER);
+
+    int ret;
+    if (!r->init) {
+        ret = -EINVAL;
+        goto unlock;
+    }
+
     bool old_file = false;
     bool new_file;
     size_t split_offset;
 
-    // LOG_INF("state: %d", r->state);
     switch (r->state) {
         default:
         case RECORD_STOPPED:

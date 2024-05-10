@@ -10,9 +10,9 @@ extern "C" {
 
 int record_init(void);
 
-void record_start(uint32_t time);
+int record_start(uint32_t time);
 
-void record_stop(void);
+int record_stop(void);
 
 int record_buffer(const struct audio_block *block);
 

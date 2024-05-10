@@ -35,6 +35,7 @@ static struct sync_timer {
     struct freq_est freq_est;
 
     // State
+    bool init;
     /// True if a previous advertisment has been received
     bool last_adv_valid;
     /// Sequence number of the advertisment whose time is captured in last_time.
@@ -55,6 +56,8 @@ static const struct freq_est_config FREQ_EST_CONFIG = {
 
 int sync_timer_init(void) {
     struct sync_timer *t = &sync_timer;
+    if (t->init) return -EALREADY;
+
     nrfx_err_t err;
 
     freq_est_init(&t->freq_est, &FREQ_EST_CONFIG);
@@ -119,11 +122,13 @@ int sync_timer_init(void) {
     // Start the timer
     nrfx_timer_enable(&t->timer);
 
+    t->init = true;
     return 0;
 }
 
 void sync_timer_recv_adv(const struct zeus_adv_header *hdr) {
     struct sync_timer *t = &sync_timer;
+    if (!t->init) return;
 
     if (t->last_adv_valid && hdr->seq == t->last_adv_seq) {
         // printk("sync,%" PRIu32 ",%" PRIu32 "\n", t->last_adv_time,
@@ -171,6 +176,8 @@ qu32_32 sync_timer_get_central_time(void) {
 
 bool sync_timer_correct_time(qu32_32 *time) {
     struct sync_timer *t = &sync_timer;
+    if (!t->init) return false;
+
     if (t->freq_est.status != FREQ_EST_STATUS_RESET) {
         qu32_32 theta = freq_est_predict(&t->freq_est, *time);
         *time += theta;

@@ -12,18 +12,20 @@ static struct net_audio {
     int socket;
     struct k_fifo *const fifo;
 
+    bool init;
     const char *addr_str;
     uint16_t mtu;
 } net_audio = {
     .socket = -1,
     .fifo = &net_audio_fifo,
 
-    .addr_str = "fe80::cf73:fd64:8977:ea79",
+    .addr_str = "fe80::8854:88ff:fea9:23a6",
 };
 
 int net_audio_init(void) {
     int ret;
     struct net_audio *n = &net_audio;
+    if (n->init) return -EALREADY;
 
     struct net_if *iface = net_if_get_default();
     if (!iface) {
@@ -68,17 +70,19 @@ int net_audio_init(void) {
 
     n->mtu = net_if_get_mtu(iface) - 48;
 
+    n->init = true;
     return 0;
 }
 
-int net_audio_send(struct net_buf *buf) {
+int net_audio_send(const uint8_t *buf, size_t len) {
     struct net_audio *n = &net_audio;
-    if (n->socket < 0) return -EINVAL;
+    if (!n->init) return -EINVAL;
 
-    while (buf->len > 0) {
-        size_t len = MIN(n->mtu, buf->len);
-        void *pkt = net_buf_pull_mem(buf, len);
-        zsock_send(n->socket, pkt, len, 0);
+    while (len > 0) {
+        size_t pkt_len = MIN(n->mtu, len);
+        zsock_send(n->socket, buf, pkt_len, 0);
+        len -= pkt_len;
+        buf += pkt_len;
     }
 
     return 0;

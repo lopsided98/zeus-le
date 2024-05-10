@@ -18,11 +18,18 @@
 #include "record.h"
 #include "sync_timer.h"
 
-LOG_MODULE_REGISTER(audio);
+LOG_MODULE_REGISTER(audio, LOG_LEVEL_DBG);
+
+struct audio_block_time {
+    /// Block start timestamp
+    uint32_t time;
+    /// Whether timestamp is valid, ie. we have a reference from the central
+    bool valid;
+};
 
 // TODO: sample rate must currently be divisible by the number of samples
 #define AUDIO_BLOCK_SIZE 17640
-#define AUDIO_BLOCK_COUNT 4
+#define AUDIO_BLOCK_COUNT 8
 
 K_MEM_SLAB_DEFINE_STATIC(audio_slab, AUDIO_BLOCK_SIZE, AUDIO_BLOCK_COUNT, 4);
 
@@ -31,7 +38,7 @@ static void audio_pool_destroy(struct net_buf *buf);
 NET_BUF_POOL_DEFINE(audio_pool, AUDIO_BLOCK_COUNT, 0, 0, audio_pool_destroy);
 
 static K_SEM_DEFINE(audio_started, 0, 1);
-static K_THREAD_STACK_DEFINE(audio_thread_stack, 1024);
+static K_THREAD_STACK_DEFINE(audio_thread_stack, 1536);
 
 #define AUDIO_SYNC_ENABLED IS_ENABLED(CONFIG_I2S_NRFX)
 
@@ -40,6 +47,7 @@ static K_THREAD_STACK_DEFINE(audio_thread_stack, 1024);
 #if AUDIO_SYNC_ENABLED
 #define AUDIO_EGU_IRQ_PRIO IRQ_PRIO_LOWEST
 #else
+// Dummy for simulator
 #define AUDIO_EGU_IRQ_PRIO 0
 #endif
 
@@ -56,7 +64,8 @@ static K_THREAD_STACK_DEFINE(audio_thread_stack, 1024);
 static void audio_sync_work_handler(struct k_work *);
 static K_WORK_DEFINE(audio_sync_work, audio_sync_work_handler);
 
-K_MSGQ_DEFINE(audio_block_time_queue, sizeof(uint32_t), AUDIO_BLOCK_COUNT, 1);
+K_MSGQ_DEFINE(audio_block_time_queue, sizeof(struct audio_block_time),
+              AUDIO_BLOCK_COUNT, 1);
 
 static struct audio {
     // Resources
@@ -75,6 +84,7 @@ static struct audio {
     struct k_msgq *const block_time_queue;
 
     // State
+    bool init;
     /// Audio sampling period (Q32.32)
     qu32_32 sample_period;
     /// Time increment per buffer (Q32.32)
@@ -94,6 +104,7 @@ static struct audio {
     qu32_32 target_theta;
     /// Last controller input
     int16_t hfclkaudio_increment;
+    int64_t max_record_time;
 } audio = {
     .codec = DEVICE_DT_GET(DT_ALIAS(codec)),
     .i2s = DEVICE_DT_GET(DT_ALIAS(i2s)),
@@ -148,32 +159,46 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
             break;
         }
 
-        uint32_t block_start_time;
+        struct audio_block_time block_time;
         if (AUDIO_SYNC_ENABLED) {
-            err = k_msgq_get(a->block_time_queue, &block_start_time, K_FOREVER);
+            err = k_msgq_get(a->block_time_queue, &block_time, K_FOREVER);
             if (err) {
                 // If this happens, work item queued by EGU interrupt never ran
                 LOG_ERR("did not receive block timestamp (err %d)", err);
                 break;
             }
         } else {
-            block_start_time = qu32_32_whole(sync_timer_get_central_time() -
-                                             a->block_duration);
+            block_time = (struct audio_block_time){
+                .time = qu32_32_whole(sync_timer_get_central_time() -
+                                      a->block_duration),
+                .valid = true,
+            };
         }
 
         k_sem_give(a->started);
-        k_yield();
 
-        const struct audio_block block = {
-            .buf = block_buf,
-            .len = block_size,
-            .start_time = block_start_time,
-            .duration = qu32_32_whole(a->block_duration),
-            // TODO: don't hardcode
-            .bytes_per_frame = 4,
-        };
+        int64_t record_start_time = k_uptime_get();
+        // net_audio_send(block_buf, block_size);
 
-        record_buffer(&block);
+        // Don't pass buffer to recording module if we don't have a valid
+        // timestamp for it
+        if (block_time.valid) {
+            const struct audio_block block = {
+                .buf = block_buf,
+                .len = block_size,
+                .start_time = block_time.time,
+                .duration = qu32_32_whole(a->block_duration),
+                // TODO: don't hardcode
+                .bytes_per_frame = 4,
+            };
+
+            record_buffer(&block);
+        }
+        int64_t record_time = k_uptime_delta(&record_start_time);
+        if (record_time > a->max_record_time) {
+            a->max_record_time = record_time;
+            LOG_INF("record time: %" PRIi64 " ms", record_time);
+        }
 
         k_mem_slab_free(a->slab, block_buf);
     }
@@ -188,6 +213,15 @@ static void audio_sync_work_handler(struct k_work *item) {
     irq_enable(AUDIO_EGU_IRQ);
 
     if (!sync_timer_correct_time(&ref_time)) {
+        // No reference from central yet, tell audio thread
+        err = k_msgq_put(a->block_time_queue,
+                         &(struct audio_block_time){.time = 0, .valid = false},
+                         K_NO_WAIT);
+        if (err) {
+            // Shouldn't happen; if audio thread gets stuck, I2S driver should
+            // overflow first
+            LOG_WRN("block time queue failed (err %d)", err);
+        }
         return;
     }
 
@@ -209,9 +243,15 @@ static void audio_sync_work_handler(struct k_work *item) {
     // sync, but it will gradually synchronize over time.
     uint32_t block_start_time = qu32_32_whole(
         block_end_time_local + a->target_theta - a->block_duration);
-    err = k_msgq_put(a->block_time_queue, &block_start_time, K_NO_WAIT);
+    err = k_msgq_put(a->block_time_queue,
+                     &(struct audio_block_time){
+                         .time = block_start_time,
+                         .valid = true,
+                     },
+                     K_NO_WAIT);
     if (err) {
-        // Really shouldn't happen
+        // Shouldn't happen; if audio thread gets stuck, I2S driver should
+        // overflow first
         LOG_WRN("block time queue failed (err %d)", err);
     }
 
@@ -247,6 +287,7 @@ static void audio_egu_handler(uint8_t event_idx, void *p_context) {
 int audio_init() {
     int err;
     struct audio *a = &audio;
+    if (a->init) return -EALREADY;
 
     if (!device_is_ready(a->codec)) {
         LOG_ERR("%s is not ready\n", a->codec->name);
@@ -342,5 +383,6 @@ int audio_init() {
         return err;
     }
 
+    a->init = true;
     return 0;
 }

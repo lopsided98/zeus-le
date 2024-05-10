@@ -38,29 +38,14 @@ int main(void) {
         // No return, settings failure is not fatal
     }
 
-    ret = usb_init();
-    if (ret < 0) return 0;
-
-    ret = sd_card_init();
-    if (ret < 0) return 0;
-
-    ret = ftp_init();
-    if (ret < 0) return 0;
-
-    ret = net_audio_init();
-    if (ret < 0) return 0;
-
-    ret = sync_timer_init();
-    if (ret < 0) return 0;
-
-    ret = record_init();
-    if (ret < 0) return 0;
-
-    ret = audio_init();
-    if (ret < 0) return 0;
-
-    ret = mgr_init();
-    if (ret < 0) return 0;
+    usb_init();
+    sd_card_init();
+    ftp_init();
+    net_audio_init();
+    sync_timer_init();
+    record_init();
+    audio_init();
+    mgr_init();
 
     LOG_INF("Booted");
 

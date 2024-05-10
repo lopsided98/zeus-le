@@ -17,6 +17,8 @@ static struct ftp {
     struct k_thread conn_threads[FTP_MAX_CONN];
     struct lftpd lftp;
     struct lftpd_conn conn[FTP_MAX_CONN];
+
+    bool init;
 } ftp;
 
 static void ftp_server_run(void *p1, void *p2, void *p3) {
@@ -32,6 +34,7 @@ static void ftp_conn_run(void *p1, void *p2, void *p3) {
 
 int ftp_init(void) {
     struct ftp *f = &ftp;
+    if (f->init) return -EALREADY;
 
     int ret = lftpd_init(&f->lftp, "/", 21);
     if (ret < 0) {
@@ -52,5 +55,6 @@ int ftp_init(void) {
         k_thread_name_set(&f->conn_threads[i], "lftpd conn");
     }
 
+    f->init = true;
     return 0;
 }

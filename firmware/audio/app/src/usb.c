@@ -23,12 +23,17 @@ USBD_CONFIGURATION_DEFINE(usb_config, 0, 125 /* mA */);
 static struct usb {
     // Resources
     struct usbd_contex* const ctx;
+
+    // State
+    bool init;
 } usb = {
     .ctx = &usbd,
 };
 
 int usb_init(void) {
     struct usb* u = &usb;
+    if (u->init) return -EALREADY;
+
     int ret;
 
     ret = usbd_add_descriptor(u->ctx, &usb_lang);
@@ -72,17 +77,6 @@ int usb_init(void) {
         LOG_DBG("register %s", node->c_data->name);
     }
 
-    STRUCT_SECTION_FOREACH_ALTERNATE(usbd_class_hs, usbd_class_node, node) {
-        // Pull everything that is enabled in our configuration.
-        ret = usbd_register_class(u->ctx, node->c_data->name, USBD_SPEED_HS, 1);
-        if (ret < 0) {
-            LOG_ERR("failed to register %s (err %d)", node->c_data->name, ret);
-            return ret;
-        }
-
-        LOG_DBG("register %s", node->c_data->name);
-    }
-
     /*
      * Class with multiple interfaces have an Interface
      * Association Descriptor available, use an appropriate triple
@@ -103,5 +97,6 @@ int usb_init(void) {
         return ret;
     }
 
+    u->init = true;
     return 0;
 }

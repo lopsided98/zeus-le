@@ -108,15 +108,15 @@ struct mgr_auth_event {
 };
 
 struct mgr {
-    mgr_cmd cmd = mgr_cmd::NONE;
-    bool cancel_command = false;
-
     co_loan<const struct mgr_scan_recv_event> scan_recv;
     co_loan<const struct mgr_per_adv_sync_event> per_adv_sync;
     co_loan<const struct mgr_connection_event> connected;
     co_loan<const struct mgr_connection_event> disconnected;
     co_loan<const struct mgr_auth_event> auth;
     co_sync<mgr_run> run;
+
+    mgr_cmd cmd = mgr_cmd::NONE;
+    bool cancel_command = false;
 } mgr;
 
 void mgr_scan_recv(const struct bt_le_scan_recv_info* info,
@@ -583,8 +583,8 @@ CO_DEFINE(int, mgr_sync, const bt_addr_le_t& addr, bool cancel) {
     CO_BEGIN;
     int ret;
 
-    ret = mgr_set_auto_connect();
-    if (ret) goto exit;
+    // ret = mgr_set_auto_connect();
+    // if (ret) goto exit;
 
     ret = CO_AWAIT(mgr_scan_for_sync(addr, sid, cancel));
     if (ret) {
@@ -656,7 +656,10 @@ CO_DEFINE(int, mgr_run) {
     bt_le_scan_cb_register(&mgr_scan_cb);
     bt_le_per_adv_sync_cb_register(&mgr_per_adv_sync_cb);
     ret = bt_conn_auth_info_cb_register(&mgr_auth_info_cb);
-    if (ret) CO_RETURN(ret);
+    if (ret) {
+        LOG_ERR("failed to register auth info callbacks (err %d)", ret);
+        CO_RETURN(ret);
+    }
 
     while (true) {
         m.cancel_command = false;
