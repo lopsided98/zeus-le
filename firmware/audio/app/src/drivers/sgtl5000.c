@@ -119,8 +119,17 @@ static int codec_configure_power(const struct device *dev,
     ret = codec_write_reg(dev, CHIP_DIG_POWER, val);
     if (ret < 0) return ret;
 
+    /* Force charge pump supply to VDDIO */
+    val = CHIP_LINREG_CTRL_VDDC_ASSN_OVRD | CHIP_LINREG_CTRL_VDDC_MAN_ASSN |
+          /* Not clear what this does, since VDDD is supplied externally, but
+           * signal amplitude is tiny with default value (1.6 V). Proper value
+           * taken from programming examples. */
+          FIELD_PREP(CHIP_LINREG_CTRL_D_PROGRAMMING, 0xC /* 1.0 V */);
+    ret = codec_write_reg(dev, CHIP_LINREG_CTRL, val);
+    if (ret < 0) return ret;
+
     val = 0;
-    if (cfg->dai_cfg.i2s.channels == 1) {
+    if (cfg->dai_cfg.i2s.channels > 1) {
         val |= CHIP_ANA_POWER_ADC_MONO;
     }
     ret = codec_write_reg(dev, CHIP_ANA_POWER, val);
@@ -128,16 +137,10 @@ static int codec_configure_power(const struct device *dev,
     /* Base CHIP_ANA_POWER configuration to modify when starting ADC */
     dev_data->chip_ana_power_base = val;
 
-    /* Force charge pump supply to VDDIO */
-    val = CHIP_LINREG_CTRL_VDDC_ASSN_OVRD | CHIP_LINREG_CTRL_VDDC_MAN_ASSN;
-    ret = codec_write_reg(dev, CHIP_LINREG_CTRL, val);
-    if (ret < 0) return ret;
-
-    val = FIELD_PREP(CHIP_REF_CTRL_VAG_VAL, 0x1F /* 1.575 V */) |
-          CHIP_REF_CTRL_SMALL_POP;
-    ret = codec_write_reg(dev, CHIP_REF_CTRL, val);
-    if (ret < 0) return ret;
-
+    val = FIELD_PREP(CHIP_REF_CTRL_VAG_VAL,
+                     CHIP_REF_CTRL_VAG_VAL_MILLIVOLT(1575)) |
+          /* Teensy Audio library uses this, not sure why */
+          FIELD_PREP(CHIP_REF_CTRL_BIAS_CTRL, 0x2 /* +12.5% bias current */);
     ret = codec_write_reg(dev, CHIP_REF_CTRL, val);
     if (ret < 0) return ret;
 
@@ -303,7 +306,8 @@ static int codec_configure_dai(const struct device *dev, audio_dai_cfg_t *cfg) {
 static int codec_configure_input(const struct device *dev) {
     const struct codec_driver_config *const dev_cfg = dev->config;
 
-    int ret = codec_write_source_and_mute(dev, INPUT_CODEC_SOURCE_MIC, true);
+    int ret =
+        codec_write_source_and_mute(dev, INPUT_CODEC_SOURCE_LINE_IN, true);
     if (ret < 0) return ret;
 
     uint8_t bias_resistor = LOG2CEIL(dev_cfg->micbias_resistor_k_ohms);
@@ -359,7 +363,7 @@ static int codec_configure(const struct device *dev,
 static int codec_start_input(const struct device *dev) {
     struct codec_driver_data *const dev_data = dev->data;
     /* Turn on analog blocks */
-    uint16_t val = dev_data->chip_ana_power_base |
+    uint16_t val = dev_data->chip_ana_power_base | CHIP_ANA_POWER_VAG_POWERUP |
                    CHIP_ANA_POWER_REFTOP_POWERUP | CHIP_ANA_POWER_ADC_POWERUP;
     int ret = codec_write_reg(dev, CHIP_ANA_POWER, val);
     if (ret < 0) return ret;

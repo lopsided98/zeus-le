@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#include <zephyr/sys/util.h>
+
 #define CHIP_ID_ADDR 0x0000
 #define CHIP_ID_PARTID GENMASK(15, 8)
 #define CHIP_ID_REVID GENMASK(7, 0)
@@ -112,6 +114,8 @@
 
 #define CHIP_REF_CTRL 0x0028
 #define CHIP_REF_CTRL_VAG_VAL GENMASK(8, 4)
+#define CHIP_REF_CTRL_VAG_VAL_MILLIVOLT(mv) \
+    CLAMP(DIV_ROUND_CLOSEST(mv - 800, 25), 0x00, 0x1F)
 #define CHIP_REF_CTRL_BIAS_CTRL GENMASK(3, 1)
 #define CHIP_REF_CTRL_SMALL_POP BIT(0)
 
