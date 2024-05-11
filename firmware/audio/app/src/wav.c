@@ -14,7 +14,14 @@ static int wav_write_buf(struct fs_file_t* fp, const void* buf, size_t len) {
     if (ret < 0) {
         return ret;
     } else if (ret != len) {
-        return -errno;
+        // Zephyr never does partial writes except on failure, normally out
+        // of space.
+        int write_errno = errno;
+        // Sometimes errno is zero, unclear why. Assume no space.
+        if (write_errno == 0) {
+            write_errno = ENOSPC;
+        }
+        return -write_errno;
     } else {
         return 0;
     }
@@ -30,35 +37,6 @@ static int wav_write_u32(struct fs_file_t* fp, uint32_t val) {
     uint8_t buf[sizeof(val)];
     sys_put_le32(val, buf);
     return wav_write_buf(fp, buf, sizeof(buf));
-}
-
-static int wav_update_size(struct fs_file_t* fp) {
-    int ret = fs_seek(fp, 0, FS_SEEK_END);
-    if (ret < 0) return ret;
-
-    off_t size = fs_tell(fp);
-    if (size < 0) return size;
-
-    if (size < WAV_HEADER_SIZE) {
-        return -EINVAL;
-    } else if (size > UINT32_MAX) {
-        return -EFBIG;
-    }
-
-    ret = fs_seek(fp, WAV_CHUNK_SIZE_OFFSET, FS_SEEK_SET);
-    if (ret < 0) return ret;
-    ret = wav_write_u32(fp, size - 8);
-    if (ret < 0) return ret;
-
-    ret = fs_seek(fp, WAV_SUBCHUNK_2_SIZE_OFFSET, FS_SEEK_SET);
-    if (ret < 0) return ret;
-    ret = wav_write_u32(fp, size - WAV_HEADER_SIZE);
-    if (ret < 0) return ret;
-
-    ret = fs_seek(fp, 0, FS_SEEK_END);
-    if (ret < 0) return ret;
-
-    return 0;
 }
 
 int wav_init(struct fs_file_t* fp, const struct wav_format* fmt) {
@@ -115,26 +93,44 @@ int wav_init(struct fs_file_t* fp, const struct wav_format* fmt) {
 }
 
 int wav_write(struct fs_file_t* fp, const uint8_t* buf, size_t len) {
-    int ret = fs_write(fp, buf, len);
+    int ret = wav_write_buf(fp, buf, len);
     if (ret < 0) {
-        return ret;
-    } else if (ret != len) {
-        // Zephyr never does partial writes except on failure, normally out
-        // of space.
-        int write_errno = errno;
-        // Sometimes errno is zero, unclear why. Assume no space.
-        if (write_errno == 0) {
-            write_errno = ENOSPC;
+        if (ret == -ENOSPC) {
+            // Update the size anyway
+            // FIXME: what will happen if part of the last frame was cut off
+            int ret_update = wav_update_size(fp);
+            if (ret_update < 0) return ret_update;
         }
+        return ret;
+    }
+    return 0;
+}
 
-        // FIXME: what will happen if part of the last frame was cut off
+int wav_update_size(struct fs_file_t* fp) {
+    int ret = fs_seek(fp, 0, FS_SEEK_END);
+    if (ret < 0) return ret;
 
-        // Update the size anyway
-        ret = wav_update_size(fp);
-        if (ret < 0) return ret;
+    off_t size = fs_tell(fp);
+    if (size < 0) return size;
 
-        return -write_errno;
+    if (size < WAV_HEADER_SIZE) {
+        return -EINVAL;
+    } else if (size > UINT32_MAX) {
+        return -EFBIG;
     }
 
-    return wav_update_size(fp);
+    ret = fs_seek(fp, WAV_CHUNK_SIZE_OFFSET, FS_SEEK_SET);
+    if (ret < 0) return ret;
+    ret = wav_write_u32(fp, size - 8);
+    if (ret < 0) return ret;
+
+    ret = fs_seek(fp, WAV_SUBCHUNK_2_SIZE_OFFSET, FS_SEEK_SET);
+    if (ret < 0) return ret;
+    ret = wav_write_u32(fp, size - WAV_HEADER_SIZE);
+    if (ret < 0) return ret;
+
+    ret = fs_seek(fp, 0, FS_SEEK_END);
+    if (ret < 0) return ret;
+
+    return 0;
 }

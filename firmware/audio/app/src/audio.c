@@ -104,7 +104,6 @@ static struct audio {
     qu32_32 target_theta;
     /// Last controller input
     int16_t hfclkaudio_increment;
-    int64_t max_record_time;
 } audio = {
     .codec = DEVICE_DT_GET(DT_ALIAS(codec)),
     .i2s = DEVICE_DT_GET(DT_ALIAS(i2s)),
@@ -142,6 +141,8 @@ static void audio_pool_destroy(struct net_buf *buf) {
 static void audio_thread_run(void *p1, void *p2, void *p3) {
     struct audio *a = &audio;
     int err;
+    int64_t record_time_avg = 0;
+    size_t i = 0;
 
     err = i2s_trigger(a->i2s, I2S_DIR_RX, I2S_TRIGGER_START);
     if (err) {
@@ -156,7 +157,18 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
         err = i2s_read(a->i2s, &block_buf, &block_size);
         if (err) {
             LOG_ERR("failed to read I2S (err %d)", err);
-            break;
+
+            err = i2s_trigger(a->i2s, I2S_DIR_RX, I2S_TRIGGER_PREPARE);
+            if (err) {
+                LOG_ERR("failed to clear I2S error (err %d)", err);
+                break;
+            }
+            err = i2s_trigger(a->i2s, I2S_DIR_RX, I2S_TRIGGER_START);
+            if (err) {
+                LOG_ERR("failed to re-start I2S (err %d)", err);
+                break;
+            }
+            continue;
         }
 
         struct audio_block_time block_time;
@@ -195,9 +207,12 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
             record_buffer(&block);
         }
         int64_t record_time = k_uptime_delta(&record_start_time);
-        if (record_time > a->max_record_time) {
-            a->max_record_time = record_time;
-            LOG_INF("record time: %" PRIi64 " ms", record_time);
+        record_time_avg += record_time;
+        ++i;
+        if (i == 10) {
+            LOG_INF("record time: %" PRIi64 " ms", record_time_avg / 10);
+            record_time_avg = 0;
+            i = 0;
         }
 
         k_mem_slab_free(a->slab, block_buf);

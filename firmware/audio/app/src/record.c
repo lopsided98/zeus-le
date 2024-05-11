@@ -17,7 +17,12 @@ LOG_MODULE_REGISTER(record, LOG_LEVEL_DBG);
 #define RECORD_FILE_PATH_PREFIX RECORD_FILE_DIR "/" RECORD_FILE_NAME_PREFIX
 
 // 2 GiB, because some programs use a signed 32-bit integer
-#define RECORD_MAX_FILE_BYTES UINT32_C((1 << 31) - 1)
+// #define RECORD_MAX_FILE_BYTES UINT32_C((1 << 31) - 1)
+// 512 MiB, because seek time increases with file size, and we need to regularly
+// seek to the beginning to update the length in the header.
+#define RECORD_MAX_FILE_BYTES UINT32_C(1 << 29)
+
+#define RECORD_UPDATE_SIZE_INTERVAL_MS 10000
 
 enum record_state {
     RECORD_STOPPED,
@@ -40,6 +45,8 @@ static struct record {
     uint32_t file_index;
     enum record_state state;
     uint32_t start_time;
+    // Last time the WAV file size was updated (ms)
+    int64_t last_size_update_time_ms;
 } record = {
     .mutex = &record_mutex,
     .file_index = 0,
@@ -156,6 +163,7 @@ int record_start(uint32_t time) {
 int record_stop(void) {
     struct record *r = &record;
     k_mutex_lock(r->mutex, K_FOREVER);
+    int err;
     if (!r->init) return -EINVAL;
 
     switch (r->state) {
@@ -164,6 +172,10 @@ int record_stop(void) {
             break;
         case RECORD_WAITING_NEW_FILE:
         case RECORD_RUNNING:
+            err = wav_update_size(&r->file);
+            if (err) {
+                LOG_WRN("failed to update WAV length (err %d)", err);
+            }
             fs_close(&r->file);
             break;
     }
@@ -235,13 +247,36 @@ int record_buffer(const struct audio_block *block) {
             goto file_error;
         }
         r->file_len += split_offset;
+
+        int64_t uptime_ms = k_uptime_get();
+        if (uptime_ms - r->last_size_update_time_ms >=
+            RECORD_UPDATE_SIZE_INTERVAL_MS) {
+            ret = wav_update_size(&r->file);
+            if (ret) {
+                LOG_ERR("failed to update WAV size (err %d)", ret);
+                goto file_error;
+            }
+
+            ret = fs_sync(&r->file);
+            if (ret) {
+                LOG_ERR("failed to sync WAV file (err %d)", ret);
+                goto file_error;
+            }
+
+            r->last_size_update_time_ms = uptime_ms;
+        }
     }
     if (new_file) {
         if (old_file) {
+            ret = wav_update_size(&r->file);
+            if (ret) {
+                LOG_WRN("failed to update WAV size (err %d)", ret);
+            }
             // Ignore error, what am I going to do?
             fs_close(&r->file);
         }
         r->file_len = 0;
+        r->last_size_update_time_ms = k_uptime_get();
 
         char file_name[sizeof(RECORD_FILE_PATH_PREFIX) /* includes terminator */
                        + 10 /* max digits */ + 4 /*.wav*/];
