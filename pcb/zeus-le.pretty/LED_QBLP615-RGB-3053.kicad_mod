@@ -1,0 +1,191 @@
+(footprint "LED_QBLP615-RGB-3053"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -1.5 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "e5525d27-f1f6-4770-b0dd-d9376afbcf33")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "LED_QBLP615-RGB-3053"
+		(at 0 3.4 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "ecf44c79-fe1e-4fe5-b2ac-1c9bfc2f5f6f")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Footprint" "LED_QBLP615-RGB-3053"
+		(at 0 4.9 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "bdda9982-abce-4b1a-bf84-98ffd1650ae6")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "https://www.qt-brightek.com/datasheet/QBLP615-RGB-3053.pdf#page=7"
+		(at 0 1.6 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "e4d1602e-e879-46d4-9c1f-186a0ab5922a")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 -0.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "8f3bbe4f-b182-4795-af2e-7d7bf60f7919")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start 2 -0.25)
+		(end 2 0.45)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "61ae114d-1649-4993-b4fd-b29689d9674b")
+	)
+	(fp_line
+		(start 2 0.45)
+		(end -1.85 0.45)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "d597f573-05af-4582-b4f1-874170bfa560")
+	)
+	(fp_line
+		(start -1.6 -0.7)
+		(end -1.6 0)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "7dfea5f6-f9f1-4882-80a5-8e7add5faaa4")
+	)
+	(fp_line
+		(start -1.3 -1)
+		(end -1.6 -0.7)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "fe61ed1d-f38f-43f5-a39d-eaf5d351b8c8")
+	)
+	(fp_line
+		(start 1.6 -1)
+		(end -1.3 -1)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "59f319e9-cfed-4feb-a074-e9d6a891f83c")
+	)
+	(fp_line
+		(start 1.6 -1)
+		(end 1.6 0)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "dab8e060-43aa-49cb-906a-cf2279b48a50")
+	)
+	(fp_line
+		(start 1.6 0)
+		(end -1.6 0)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "003cda42-e1be-4200-aac3-60def3a352d5")
+	)
+	(fp_text user "${REFERENCE}"
+		(at -0.3 1.4 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "04fb55b9-d7b1-4a22-93fb-f9a7f0086a7c")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at 0.4 0)
+		(size 0.5 0.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(thermal_bridge_angle 45)
+		(uuid "5fc97b1b-9689-4dd9-9ac1-c8e065cbd466")
+	)
+	(pad "2" smd rect
+		(at -0.4 0)
+		(size 0.5 0.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(thermal_bridge_angle 45)
+		(uuid "0a13a632-4efa-458f-960a-6841895a02f0")
+	)
+	(pad "3" smd rect
+		(at -1.4 0)
+		(size 0.8 0.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(thermal_bridge_angle 45)
+		(uuid "75b1c896-a66f-431c-83e3-9632e56988a8")
+	)
+	(pad "4" smd rect
+		(at 1.4 0)
+		(size 0.8 0.5)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(thermal_bridge_angle 45)
+		(uuid "ee9d9682-2143-4b75-b68e-5965d9ea394a")
+	)
+	(model "${KIPRJMOD}/zeus-le.3dshapes/QBLP615-RGB-3053.step"
+		(offset
+			(xyz 0 -0.15 0.2)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 90 0 0)
+		)
+	)
+)
