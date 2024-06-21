@@ -15095,7 +15095,7 @@
 			(thermal_bridge_angle 45)
 			(uuid "767e17fc-6e37-424e-bca6-9ae6a226e3be")
 		)
-		(model "${KIPRJMOD}/zeus-le.3dshapes/QBLP615-RGB-3053.step"
+		(model "${KIPRJMOD}/zeus-le.3dshapes/LED_QBLP615-RGB-3053.step"
 			(offset
 				(xyz 0 -0.15 0.2)
 			)
