@@ -66,8 +66,8 @@
 	(solder_mask_margin 0.05)
 	(attr smd)
 	(fp_line
-		(start -0.81 1.26)
-		(end -0.81 -0.86)
+		(start -0.82 1.27)
+		(end -0.82 -0.87)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -76,8 +76,8 @@
 		(uuid "e9cef307-8389-4e86-a5b3-01535d3b16d3")
 	)
 	(fp_line
-		(start -0.81 1.26)
-		(end 0.81 1.26)
+		(start -0.82 1.27)
+		(end 0.82 1.27)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -86,8 +86,8 @@
 		(uuid "c3581213-4eb4-423e-926b-447f5881e36a")
 	)
 	(fp_line
-		(start -0.41 -1.26)
-		(end 0.81 -1.26)
+		(start -0.42 -1.27)
+		(end 0.82 -1.27)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -96,8 +96,8 @@
 		(uuid "4f075821-6b4b-4cbe-995d-feded403846d")
 	)
 	(fp_line
-		(start 0.81 -1.26)
-		(end 0.81 1.26)
+		(start 0.82 -1.27)
+		(end 0.82 1.27)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -107,7 +107,7 @@
 	)
 	(fp_poly
 		(pts
-			(xy -0.81 -1.26) (xy -1.31 -1.26) (xy -0.81 -1.76) (xy -0.81 -1.26)
+			(xy -0.82 -1.27) (xy -1.32 -1.27) (xy -0.82 -1.77) (xy -0.82 -1.27)
 		)
 		(stroke
 			(width 0.12)

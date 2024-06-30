@@ -1,0 +1,21 @@
+Version 4
+SymbolType CELL
+LINE Normal -40 0 -64 0
+LINE Normal 40 0 64 0
+ARC Normal -40 -16 -8 16 -13 10 -40 0
+ARC Normal -16 -16 16 16 11 10 -11 10
+ARC Normal 8 -16 40 16 40 0 13 10
+TEXT 0 -32 Center 2 TDK
+TEXT 0 32 Center 2 MLZ2012N220LT000
+TEXT 0 56 Center 2 L=22uH at 2MHz
+WINDOW 0 -80 -24 Left 2
+SYMATTR SpiceModel MLZ2012N220LT000_b
+SYMATTR Prefix X
+SYMATTR ModelFile MLZ2012N220LT000_b_LTspice.mod
+SYMATTR Description Inductor
+PIN -64 0 NONE 8
+PINATTR PinName 1
+PINATTR SpiceOrder 1
+PIN 64 0 NONE 8
+PINATTR PinName 2
+PINATTR SpiceOrder 2

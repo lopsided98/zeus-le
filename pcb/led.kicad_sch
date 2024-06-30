@@ -143,7 +143,7 @@
 				)
 			)
 		)
-		(symbol "Device:LED_BGAR"
+		(symbol "Device:LED_GBAR"
 			(pin_names
 				(offset 0) hide)
 			(exclude_from_sim no)
@@ -157,7 +157,7 @@
 					)
 				)
 			)
-			(property "Value" "LED_BGAR"
+			(property "Value" "LED_GBAR"
 				(at 0 -8.89 0)
 				(effects
 					(font
@@ -183,7 +183,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "RGB LED, blue/green/anode/red"
+			(property "Description" "RGB LED, green/blue/anode/red"
 				(at 0 0 0)
 				(effects
 					(font
@@ -210,7 +210,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "LED_BGAR_0_0"
+			(symbol "LED_GBAR_0_0"
 				(text "B"
 					(at -1.905 -6.35 0)
 					(effects
@@ -236,7 +236,7 @@
 					)
 				)
 			)
-			(symbol "LED_BGAR_0_1"
+			(symbol "LED_GBAR_0_1"
 				(polyline
 					(pts
 						(xy -1.27 -5.08) (xy -2.54 -5.08)
@@ -568,11 +568,11 @@
 					)
 				)
 			)
-			(symbol "LED_BGAR_1_1"
+			(symbol "LED_GBAR_1_1"
 				(pin passive line
-					(at -5.08 -5.08 0)
+					(at -5.08 0 0)
 					(length 2.54)
-					(name "BK"
+					(name "GK"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -588,9 +588,9 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 0 0)
+					(at -5.08 -5.08 0)
 					(length 2.54)
-					(name "GK"
+					(name "BK"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1110,6 +1110,10 @@
 		(color 0 0 0 0)
 		(uuid "f0edb021-c670-4b5d-800f-ad27d0eb1640")
 	)
+	(no_connect
+		(at 140.97 107.95)
+		(uuid "d3d819c6-718e-4a96-8ef5-0554f90eb6a7")
+	)
 	(bus_entry
 		(at 104.14 90.17)
 		(size 2.54 2.54)
@@ -1170,13 +1174,33 @@
 	)
 	(wire
 		(pts
-			(xy 140.97 92.71) (xy 156.21 92.71)
+			(xy 143.51 102.87) (xy 140.97 102.87)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "185c81f0-9b85-43cb-af47-901d222717ba")
+		(uuid "2d9bf6ca-4d8c-4d1c-85e6-e5baa0caddba")
+	)
+	(wire
+		(pts
+			(xy 153.67 92.71) (xy 156.21 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2ea3e843-ea8d-41fb-82f5-38d392d9ba03")
+	)
+	(wire
+		(pts
+			(xy 143.51 100.33) (xy 153.67 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "34598aa9-5810-4403-bd7a-f311e2ac3493")
 	)
 	(wire
 		(pts
@@ -1200,16 +1224,6 @@
 	)
 	(wire
 		(pts
-			(xy 140.97 102.87) (xy 156.21 102.87)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5b90790f-8d05-404f-b8f5-4a640f253111")
-	)
-	(wire
-		(pts
 			(xy 128.27 113.03) (xy 115.57 113.03)
 		)
 		(stroke
@@ -1217,6 +1231,16 @@
 			(type default)
 		)
 		(uuid "6ced0cb9-a32d-4fe4-8fee-e755adc2a855")
+	)
+	(wire
+		(pts
+			(xy 140.97 92.71) (xy 148.59 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7ce0e51e-c532-4e23-acd4-9acee1b32fbf")
 	)
 	(wire
 		(pts
@@ -1237,6 +1261,26 @@
 			(type default)
 		)
 		(uuid "832bae0c-52a3-40ba-9c80-25bdd9d8609c")
+	)
+	(wire
+		(pts
+			(xy 148.59 92.71) (xy 148.59 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9215f98a-dd49-412a-8206-58371efa93bb")
+	)
+	(wire
+		(pts
+			(xy 153.67 100.33) (xy 153.67 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "99ff95ba-0eb8-4967-968b-c589ce4c97d8")
 	)
 	(wire
 		(pts
@@ -1270,6 +1314,16 @@
 	)
 	(wire
 		(pts
+			(xy 143.51 102.87) (xy 143.51 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c60ef3b3-33dd-48de-b9bb-f8f7bc6613b9")
+	)
+	(wire
+		(pts
 			(xy 140.97 97.79) (xy 156.21 97.79)
 		)
 		(stroke
@@ -1287,6 +1341,16 @@
 			(type default)
 		)
 		(uuid "d72d2890-272f-4301-8274-e6139f2315fd")
+	)
+	(wire
+		(pts
+			(xy 148.59 102.87) (xy 156.21 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e5781665-b1cf-44ac-bb90-e246c149d151")
 	)
 	(wire
 		(pts
@@ -1333,7 +1397,7 @@
 		(uuid "c6791d79-50a7-4da8-99a2-085b1aa6389d")
 	)
 	(symbol
-		(lib_id "Device:LED_BGAR")
+		(lib_id "Device:LED_GBAR")
 		(at 161.29 97.79 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -1376,7 +1440,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RGB LED, blue/green/anode/red"
+		(property "Description" "RGB LED, green/blue/anode/red"
 			(at 161.29 97.79 0)
 			(effects
 				(font

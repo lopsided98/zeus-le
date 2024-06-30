@@ -65,8 +65,8 @@
 	)
 	(attr smd)
 	(fp_line
-		(start 1 -1.01)
-		(end -0.7 -1.01)
+		(start 1 -1.02)
+		(end -0.7 -1.02)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -75,8 +75,8 @@
 		(uuid "6801717f-72c3-4515-8bf6-32be632576dd")
 	)
 	(fp_line
-		(start 1 1.01)
-		(end -1 1.01)
+		(start 1 1.02)
+		(end -1 1.02)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -239,7 +239,7 @@
 		(layers "F.Cu" "F.Paste" "F.Mask")
 		(uuid "609f45f4-c0f3-45d8-b017-32b5d5fcebe1")
 	)
-	(model "${KICAD8_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Diodes_UDFN2020-6_Type-F.wrl"
+	(model "${KIPRJMOD}/zeus-le.3dshapes/Diodes_UDFN2018-6.step"
 		(offset
 			(xyz 0 0 0)
 		)

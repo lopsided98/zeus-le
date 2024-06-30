@@ -6,7 +6,6 @@
 	(tags "MSD-1-A ")
 	(property "Reference" "REF**"
 		(at 0 -12.8 0)
-		(unlocked yes)
 		(layer "F.SilkS")
 		(uuid "faf120c1-0bb9-48bc-ab9a-0167f83c18b3")
 		(effects

@@ -292,6 +292,16 @@
 		(color 0 0 0 0)
 		(uuid "be040ad4-7718-42f2-8ea7-4dcea5e4dc10")
 	)
+	(wire
+		(pts
+			(xy 66.04 116.84) (xy 66.04 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0067fc7d-41ba-4464-8074-ba505be7a07d")
+	)
 	(bus
 		(pts
 			(xy 113.03 86.36) (xy 113.03 80.01)
@@ -344,6 +354,16 @@
 	)
 	(wire
 		(pts
+			(xy 87.63 74.93) (xy 116.84 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3e0bd2ad-ce9d-4087-a0b5-65cf9fbbee78")
+	)
+	(wire
+		(pts
 			(xy 151.13 82.55) (xy 151.13 109.22)
 		)
 		(stroke
@@ -361,16 +381,6 @@
 			(type default)
 		)
 		(uuid "5aa1f25f-0a43-4d1a-8761-ffab35f9a0c8")
-	)
-	(wire
-		(pts
-			(xy 87.63 54.61) (xy 116.84 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5b737ccc-935c-4c49-903c-33316361ff2a")
 	)
 	(bus
 		(pts
@@ -392,26 +402,6 @@
 		)
 		(uuid "6e08b7f8-d38d-4d79-b05b-8a0ddf7265b3")
 	)
-	(bus
-		(pts
-			(xy 87.63 76.2) (xy 116.84 76.2)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "77da50e7-37a4-4c3b-bd99-0658f6e44015")
-	)
-	(wire
-		(pts
-			(xy 67.31 123.19) (xy 67.31 121.92)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "79a8310b-bb2d-4213-8202-9a0d11915645")
-	)
 	(wire
 		(pts
 			(xy 87.63 72.39) (xy 116.84 72.39)
@@ -421,16 +411,6 @@
 			(type default)
 		)
 		(uuid "a50b42e8-26d0-4480-860b-b3b26149d8d8")
-	)
-	(wire
-		(pts
-			(xy 87.63 57.15) (xy 116.84 57.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a7d50881-c20d-41b5-826c-a29bd53e1c5b")
 	)
 	(wire
 		(pts
@@ -651,17 +631,17 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 67.31 123.19 0)
+		(lib_id "power:PWR_FLAG")
+		(at 66.04 115.57 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "a2f62871-d6fd-4901-8049-68e4253c6890")
-		(property "Reference" "#PWR083"
-			(at 67.31 129.54 0)
+		(uuid "590817ef-dc74-4c2d-bef3-87ae66b2d18b")
+		(property "Reference" "#FLG04"
+			(at 66.04 113.665 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -669,8 +649,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 67.31 128.27 0)
+		(property "Value" "PWR_FLAG"
+			(at 66.04 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -678,7 +658,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 67.31 123.19 0)
+			(at 66.04 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -686,8 +666,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
-			(at 67.31 123.19 0)
+		(property "Datasheet" "~"
+			(at 66.04 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -695,8 +675,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 67.31 123.19 0)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 66.04 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -705,12 +685,78 @@
 			)
 		)
 		(pin "1"
-			(uuid "15eeb50a-4e2b-4861-b94c-7df397f67140")
+			(uuid "58ec6f14-0213-4d7c-90f7-476c6ecd3135")
 		)
 		(instances
 			(project "zeus-le"
 				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b"
-					(reference "#PWR083")
+					(reference "#FLG04")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 66.04 116.84 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "71a89740-f15a-43ad-94d3-987618c2e30e")
+		(property "Reference" "#PWR016"
+			(at 66.04 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 66.04 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 66.04 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 66.04 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 66.04 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "81d0d8d6-db78-4dbf-a2d1-28aae7278205")
+		)
+		(instances
+			(project "zeus-le"
+				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b"
+					(reference "#PWR016")
 					(unit 1)
 				)
 			)
@@ -780,72 +826,6 @@
 			)
 		)
 	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 67.31 121.92 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "d8acc7ba-a46c-424e-8c68-9db35beee18c")
-		(property "Reference" "#FLG04"
-			(at 67.31 120.015 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 67.31 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 67.31 121.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 67.31 121.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 67.31 121.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "61c2f77b-fb52-460b-a6c3-1331cafa8122")
-		)
-		(instances
-			(project "zeus-le"
-				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b"
-					(reference "#FLG04")
-					(unit 1)
-				)
-			)
-		)
-	)
 	(sheet
 		(at 53.34 49.53)
 		(size 34.29 33.02)
@@ -896,26 +876,6 @@
 			)
 			(uuid "f4503a3b-11de-4fdc-a7a2-b7c7dc23ce16")
 		)
-		(pin "USB_INT" output
-			(at 87.63 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "600b57d7-4e39-40d3-873f-f1fde13c10e5")
-		)
-		(pin "USB_DBG" output
-			(at 87.63 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-			(uuid "4a13aef7-064a-4c55-8f13-797b233fced9")
-		)
 		(pin "CHG_INT" output
 			(at 87.63 69.85 0)
 			(effects
@@ -956,15 +916,15 @@
 			)
 			(uuid "4da5854f-02d5-4961-b88d-acf1a8a45e49")
 		)
-		(pin "UART{RX, TX}" input
-			(at 87.63 76.2 0)
+		(pin "CHG_EN" input
+			(at 87.63 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "0e28c253-f7e9-408b-ba62-ce2fff9f8e8a")
+			(uuid "eabbd9d4-2b5c-48db-b1a8-9019648c8705")
 		)
 		(instances
 			(project "zeus-le"
@@ -1268,26 +1228,6 @@
 			)
 			(uuid "5d9ee082-0a16-4cf2-9511-0c58c5a93f27")
 		)
-		(pin "USB_DBG" input
-			(at 116.84 57.15 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "e95d93df-b5ec-4eb6-b05e-f2e383036506")
-		)
-		(pin "USB_INT" input
-			(at 116.84 54.61 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "79ab8a6d-c5eb-4a9f-9edc-039a3ffdba58")
-		)
 		(pin "CHG_INT" input
 			(at 116.84 69.85 180)
 			(effects
@@ -1318,15 +1258,15 @@
 			)
 			(uuid "f03a34d9-c74f-457b-8865-46c986799a49")
 		)
-		(pin "UART{RX, TX}" input
-			(at 116.84 76.2 180)
+		(pin "CHG_EN" output
+			(at 116.84 74.93 180)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "51d1ea8a-2944-41a6-85d8-2ecc0c72803b")
+			(uuid "30340df7-ee65-4892-a3b0-d6001a35b840")
 		)
 		(instances
 			(project "zeus-le"
