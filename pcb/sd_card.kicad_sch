@@ -2751,7 +2751,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Pull-up"
+		(property "Description" "Resistor, pull-up"
+			(at 128.27 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CR0402-JW-103GLF"
 			(at 128.27 38.1 0)
 			(effects
 				(font
@@ -2821,6 +2830,15 @@
 		)
 		(property "Description" "0.2A Single Channel Current-limited Power Switch"
 			(at 85.09 108.204 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "AP21510FM-7 "
+			(at 85.09 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2970,7 +2988,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Pull-up"
+		(property "Description" "Resistor, pull-up"
+			(at 107.95 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CR0402-JW-103GLF"
 			(at 107.95 38.1 0)
 			(effects
 				(font
@@ -3039,7 +3066,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Pull-up"
+		(property "Description" "Resistor, pull-up"
+			(at 97.79 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CR0402-JW-103GLF"
 			(at 97.79 38.1 0)
 			(effects
 				(font
@@ -3108,7 +3144,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Pull-up"
+		(property "Description" "Resistor, pull-down"
+			(at 73.66 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "WR04X1003FTL"
 			(at 73.66 107.95 0)
 			(effects
 				(font
@@ -3176,6 +3221,15 @@
 			)
 		)
 		(property "Description" "Micro SD Card Socket with one card detection pin"
+			(at 214.63 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "MSD-1-A"
 			(at 214.63 86.36 0)
 			(effects
 				(font
@@ -3268,7 +3322,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Pull-up"
+		(property "Description" "Resistor, pull-up"
+			(at 87.63 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "WR04X1003FTL"
 			(at 87.63 38.1 0)
 			(effects
 				(font
@@ -3403,7 +3466,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 16V, X7R"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
+			(at 44.45 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "GRM188R61A106ME69D"
 			(at 44.45 87.63 0)
 			(effects
 				(font
@@ -3670,7 +3742,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 16V, X7R"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
+			(at 118.11 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "GRM188R61A106ME69D"
 			(at 118.11 87.63 0)
 			(effects
 				(font
@@ -3739,6 +3820,24 @@
 			)
 		)
 		(property "Description" "6 channel EMI filters with integrated ESD protection"
+			(at 156.21 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "TPD6F003DQDR"
+			(at 156.21 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "digikey#" "296-25802-1-ND"
 			(at 156.21 52.07 0)
 			(effects
 				(font
@@ -3840,7 +3939,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Pull-up"
+		(property "Description" "Resistor, pull-up"
+			(at 143.51 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CR0402-JW-103GLF"
 			(at 143.51 80.01 0)
 			(effects
 				(font
@@ -3909,7 +4017,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Pull-up"
+		(property "Description" "Resistor, pull-up"
+			(at 143.51 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CR0402-JW-103GLF"
 			(at 143.51 87.63 0)
 			(effects
 				(font
@@ -3978,7 +4095,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Pull-up"
+		(property "Description" "Resistor, pull-up"
+			(at 118.11 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CR0402-JW-103GLF"
 			(at 118.11 38.1 0)
 			(effects
 				(font
@@ -4114,7 +4240,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling"
+		(property "Description" "Capacitor, decoupling, 25V, X5R"
+			(at 104.14 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL05A104KA5NNNC"
 			(at 104.14 87.63 0)
 			(effects
 				(font
@@ -4315,7 +4450,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling"
+		(property "Description" "Capacitor, decoupling, 25V, X5R"
+			(at 58.42 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL05A104KA5NNNC"
 			(at 58.42 87.63 0)
 			(effects
 				(font

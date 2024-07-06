@@ -37,6 +37,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
@@ -49,6 +50,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
@@ -61,14 +63,15 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
 	(solder_mask_margin 0.05)
 	(attr smd)
 	(fp_line
-		(start -1.09 0.76)
-		(end -1.09 -0.36)
+		(start -1.17 0.84)
+		(end -1.17 -0.44)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -77,8 +80,8 @@
 		(uuid "c7e69e80-adc1-4259-9300-6c1fdb04b51a")
 	)
 	(fp_line
-		(start -0.69 -0.76)
-		(end 1.09 -0.76)
+		(start -0.77 -0.84)
+		(end 1.17 -0.84)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -87,8 +90,8 @@
 		(uuid "2463d83c-edf8-413e-8a57-e238a9492ead")
 	)
 	(fp_line
-		(start 1.09 -0.76)
-		(end 1.09 0.76)
+		(start 1.17 -0.84)
+		(end 1.17 0.84)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -97,8 +100,8 @@
 		(uuid "e5ed693a-cc65-4306-b31f-09387383a688")
 	)
 	(fp_line
-		(start 1.09 0.76)
-		(end -1.09 0.76)
+		(start 1.17 0.84)
+		(end -1.17 0.84)
 		(stroke
 			(width 0.12)
 			(type solid)
@@ -108,7 +111,7 @@
 	)
 	(fp_poly
 		(pts
-			(xy -1.09 -0.76) (xy -1.59 -0.76) (xy -1.09 -1.26) (xy -1.09 -0.76)
+			(xy -1.17 -0.84) (xy -1.67 -0.84) (xy -1.17 -1.34) (xy -1.17 -0.84)
 		)
 		(stroke
 			(width 0.12)
@@ -225,6 +228,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "ef2a530e-b543-49c2-b17a-30df129799da")
 	)
 	(pad "A2" smd circle
@@ -232,6 +246,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "4916bf87-6d22-4c61-ab9e-cdb555bb6182")
 	)
 	(pad "A3" smd circle
@@ -239,6 +264,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "641aec65-b628-4d33-9505-bad23b1c4a17")
 	)
 	(pad "A4" smd circle
@@ -246,6 +282,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "e242290f-4a8d-45b6-a6c3-ff738f85ae25")
 	)
 	(pad "B1" smd circle
@@ -253,6 +300,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "6430e9f7-02c4-4912-b2c2-6261fa7b4199")
 	)
 	(pad "B2" smd circle
@@ -260,6 +318,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "fcd71b08-5bb9-4aa3-9dc5-dfa942202c75")
 	)
 	(pad "B3" smd circle
@@ -267,6 +336,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "793589b1-b7ee-479d-bb4c-2deb039af627")
 	)
 	(pad "B4" smd circle
@@ -274,6 +354,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "877b8645-d016-4c60-990f-7bea567ff799")
 	)
 	(pad "C1" smd circle
@@ -281,6 +372,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "2db65b02-aa9c-4059-9d4c-390ac218b985")
 	)
 	(pad "C2" smd circle
@@ -288,6 +390,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "1f57fe04-68d1-4a02-a506-ee2f961c0e42")
 	)
 	(pad "C3" smd circle
@@ -295,6 +408,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "ef5ac410-934b-47d1-b1d1-b8d7d8a9d757")
 	)
 	(pad "C4" smd circle
@@ -302,6 +426,17 @@
 		(size 0.25 0.25)
 		(property pad_prop_bga)
 		(layers "F.Cu" "F.Paste" "F.Mask")
+		(teardrops
+			(best_length_ratio 0.2)
+			(max_length 0.2)
+			(best_width_ratio 1)
+			(max_width 2)
+			(curve_points 5)
+			(filter_ratio 0.9)
+			(enabled yes)
+			(allow_two_segments yes)
+			(prefer_zone_connections no)
+		)
 		(uuid "23045888-0280-4992-bef7-104a83ea5cbd")
 	)
 )

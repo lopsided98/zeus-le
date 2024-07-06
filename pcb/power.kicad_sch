@@ -698,6 +698,145 @@
 				)
 			)
 		)
+		(symbol "Connector_Generic:Conn_01x02"
+			(pin_names
+				(offset 1.016) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x02"
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Conn_01x02_1_1"
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 1.27)
+					(end 1.27 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Connector_Generic_MountingPin:Conn_01x02_MountingPin"
 			(pin_names
 				(offset 1.016) hide)
@@ -4305,16 +4444,16 @@
 		(uuid "6ecc77cb-d871-415c-aee1-cb4402772f6a")
 	)
 	(junction
-		(at 182.88 72.39)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "734d6527-c97e-4872-b6ff-343aef3e3666")
-	)
-	(junction
 		(at 46.99 92.71)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8780e35e-12ba-4c62-b9bc-35c3354879a6")
+	)
+	(junction
+		(at 128.27 107.95)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8bca53d3-3887-490c-9298-8e175e123e81")
 	)
 	(junction
 		(at 142.24 115.57)
@@ -4371,28 +4510,28 @@
 		(uuid "c34aee21-2b1c-4ceb-b56e-5139a4aceb0c")
 	)
 	(junction
-		(at 129.54 115.57)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "c6302bd8-6a09-4856-afd0-5d904720038e")
-	)
-	(junction
 		(at 161.29 92.71)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "c8d1c7c3-73af-45b2-8791-02a0b7b7344d")
 	)
 	(junction
+		(at 205.74 74.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "cbb19a64-eeec-4919-a253-598d1666444b")
+	)
+	(junction
+		(at 186.69 74.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "dfdb518a-b782-49df-85ab-5398b822dc06")
+	)
+	(junction
 		(at 254 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e8bf8829-e397-4a4f-94cf-2da8053b469a")
-	)
-	(junction
-		(at 205.74 72.39)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "ee50c0ce-0323-4303-8902-e5f5273dac5c")
 	)
 	(junction
 		(at 107.95 22.86)
@@ -4412,12 +4551,18 @@
 		(color 0 0 0 0)
 		(uuid "f9c61732-885f-49a1-ad6e-2e085e946879")
 	)
+	(junction
+		(at 175.26 74.93)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "fc3e94aa-e154-4040-a07f-1cd8420720d6")
+	)
 	(no_connect
 		(at 44.45 123.19)
 		(uuid "56173206-65f1-49f4-9ce0-ac79657a8120")
 	)
 	(no_connect
-		(at 163.83 81.28)
+		(at 163.83 83.82)
 		(uuid "7d8cc814-ab7e-4344-8e10-e7376e69cdce")
 	)
 	(no_connect
@@ -4552,7 +4697,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 100.33) (xy 125.73 115.57)
+			(xy 128.27 100.33) (xy 128.27 107.95)
 		)
 		(stroke
 			(width 0)
@@ -4572,7 +4717,7 @@
 	)
 	(wire
 		(pts
-			(xy 205.74 80.01) (xy 205.74 78.74)
+			(xy 205.74 82.55) (xy 205.74 81.28)
 		)
 		(stroke
 			(width 0)
@@ -4712,7 +4857,7 @@
 	)
 	(wire
 		(pts
-			(xy 163.83 81.28) (xy 163.83 80.01)
+			(xy 163.83 83.82) (xy 163.83 82.55)
 		)
 		(stroke
 			(width 0)
@@ -4732,7 +4877,17 @@
 	)
 	(wire
 		(pts
-			(xy 168.91 72.39) (xy 182.88 72.39)
+			(xy 175.26 58.42) (xy 175.26 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2ad4b6a3-fcda-4580-8f4b-fa22741e2abc")
+	)
+	(wire
+		(pts
+			(xy 168.91 74.93) (xy 175.26 74.93)
 		)
 		(stroke
 			(width 0)
@@ -4772,7 +4927,7 @@
 	)
 	(wire
 		(pts
-			(xy 212.09 72.39) (xy 212.09 85.09)
+			(xy 212.09 74.93) (xy 212.09 85.09)
 		)
 		(stroke
 			(width 0)
@@ -4799,6 +4954,16 @@
 			(type default)
 		)
 		(uuid "3d380be6-f6d6-4601-8c08-a431e32bcc1d")
+	)
+	(wire
+		(pts
+			(xy 175.26 74.93) (xy 186.69 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3fe3a74d-7fb8-4595-b278-35664b9fa6b7")
 	)
 	(wire
 		(pts
@@ -4902,17 +5067,7 @@
 	)
 	(wire
 		(pts
-			(xy 182.88 72.39) (xy 190.5 72.39)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4a032a2c-ddbe-410c-836d-5ffb9658c1b4")
-	)
-	(wire
-		(pts
-			(xy 172.72 74.93) (xy 172.72 78.74)
+			(xy 170.18 77.47) (xy 170.18 78.74)
 		)
 		(stroke
 			(width 0)
@@ -4992,6 +5147,16 @@
 	)
 	(wire
 		(pts
+			(xy 170.18 62.23) (xy 170.18 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "56e1319d-9528-49de-b607-43770bbaa348")
+	)
+	(wire
+		(pts
 			(xy 198.12 124.46) (xy 198.12 123.19)
 		)
 		(stroke
@@ -5032,7 +5197,17 @@
 	)
 	(wire
 		(pts
-			(xy 198.12 72.39) (xy 205.74 72.39)
+			(xy 186.69 74.93) (xy 191.77 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5b901e71-7508-4689-bccd-72ab9c4da6fb")
+	)
+	(wire
+		(pts
+			(xy 199.39 74.93) (xy 205.74 74.93)
 		)
 		(stroke
 			(width 0)
@@ -5162,7 +5337,7 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 107.95) (xy 129.54 115.57)
+			(xy 128.27 107.95) (xy 128.27 115.57)
 		)
 		(stroke
 			(width 0)
@@ -5262,7 +5437,7 @@
 	)
 	(wire
 		(pts
-			(xy 168.91 74.93) (xy 172.72 74.93)
+			(xy 168.91 77.47) (xy 170.18 77.47)
 		)
 		(stroke
 			(width 0)
@@ -5322,7 +5497,7 @@
 	)
 	(wire
 		(pts
-			(xy 205.74 72.39) (xy 212.09 72.39)
+			(xy 205.74 74.93) (xy 212.09 74.93)
 		)
 		(stroke
 			(width 0)
@@ -5339,6 +5514,16 @@
 			(type default)
 		)
 		(uuid "8ebbc94e-88a8-474e-932f-1f17b15a4a80")
+	)
+	(wire
+		(pts
+			(xy 168.91 58.42) (xy 175.26 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8f015d74-b9af-4804-9937-b1b31e9ee5c8")
 	)
 	(wire
 		(pts
@@ -5452,7 +5637,7 @@
 	)
 	(wire
 		(pts
-			(xy 125.73 100.33) (xy 129.54 100.33)
+			(xy 128.27 100.33) (xy 129.54 100.33)
 		)
 		(stroke
 			(width 0)
@@ -5562,7 +5747,7 @@
 	)
 	(wire
 		(pts
-			(xy 205.74 73.66) (xy 205.74 72.39)
+			(xy 205.74 76.2) (xy 205.74 74.93)
 		)
 		(stroke
 			(width 0)
@@ -5589,6 +5774,26 @@
 			(type default)
 		)
 		(uuid "afe5af75-402b-4ea1-8030-d5f99388caf4")
+	)
+	(wire
+		(pts
+			(xy 128.27 107.95) (xy 129.54 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b0d6094b-8a02-4786-8757-bdd4eaa9b626")
+	)
+	(wire
+		(pts
+			(xy 128.27 115.57) (xy 142.24 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b0ffe808-0a84-48f5-886b-c4e0c4dc4aaf")
 	)
 	(wire
 		(pts
@@ -5629,16 +5834,6 @@
 			(type default)
 		)
 		(uuid "becdeb7c-5081-4127-9b83-4c259c9ddab6")
-	)
-	(wire
-		(pts
-			(xy 125.73 115.57) (xy 129.54 115.57)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c04f786c-2c31-475d-b084-46fa45473513")
 	)
 	(wire
 		(pts
@@ -5872,16 +6067,6 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 115.57) (xy 142.24 115.57)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f08e1294-56e6-4bf6-a873-0bc0e33f52e8")
-	)
-	(wire
-		(pts
 			(xy 186.69 92.71) (xy 198.12 92.71)
 		)
 		(stroke
@@ -5902,6 +6087,16 @@
 	)
 	(wire
 		(pts
+			(xy 170.18 60.96) (xy 168.91 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "faa04886-3ac3-49f0-80bb-354511f17aad")
+	)
+	(wire
+		(pts
 			(xy 248.92 45.72) (xy 254 45.72)
 		)
 		(stroke
@@ -5912,7 +6107,7 @@
 	)
 	(text_box "Minimize loop for input and output capacitors. Add gap between capacitor return current and AGND."
 		(exclude_from_sim no)
-		(at 147.32 39.37 0)
+		(at 148.59 36.83 0)
 		(size 26.67 12.7)
 		(stroke
 			(width 0)
@@ -6100,7 +6295,7 @@
 		(uuid "daace64e-ae64-4e14-8c4b-c6075c9b2cdc")
 	)
 	(label "VBAT"
-		(at 173.99 72.39 0)
+		(at 176.53 74.93 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6263,6 +6458,15 @@
 		)
 		(property "Description" "USB Upstream Terminator with ESD Protection, SOT-563"
 			(at 70.866 154.686 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "NUF2042XV6T1G "
+			(at 71.12 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6496,6 +6700,15 @@
 				(hide yes)
 			)
 		)
+		(property "manf#" "CR0402-JW-103GLF"
+			(at 198.12 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "61cfa719-6124-4857-bccf-12209a4d6f3b")
 		)
@@ -6556,7 +6769,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 25V, X7R, >1µF after derating"
+		(property "Description" "Capacitor, decoupling, 25V, X7R, >1µF after derating"
+			(at 251.46 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10A475MA8NQN"
 			(at 251.46 106.68 0)
 			(effects
 				(font
@@ -6823,7 +7045,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, USB CC"
+			(at 69.85 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CR0402-JW-512GLF"
 			(at 69.85 104.14 0)
 			(effects
 				(font
@@ -7091,7 +7322,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, pull-up"
+			(at 260.35 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "WR04X1003FTL"
 			(at 260.35 148.59 0)
 			(effects
 				(font
@@ -7160,7 +7400,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, USB CC"
+			(at 59.69 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CR0402-JW-512GLF"
 			(at 59.69 104.14 0)
 			(effects
 				(font
@@ -7435,6 +7684,15 @@
 				(hide yes)
 			)
 		)
+		(property "manf#" " KTS1662EUW-TR"
+			(at 142.24 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "C2"
 			(uuid "4e9cddbb-2606-4f83-b698-2b03a355c62b")
 		)
@@ -7482,7 +7740,7 @@
 	)
 	(symbol
 		(lib_id "Jumper:SolderJumper_2_Bridged")
-		(at 194.31 72.39 0)
+		(at 195.58 74.93 0)
 		(unit 1)
 		(exclude_from_sim yes)
 		(in_bom no)
@@ -7491,7 +7749,7 @@
 		(fields_autoplaced yes)
 		(uuid "445f3665-3a14-4533-b19b-e74a2e62bcab")
 		(property "Reference" "JP4"
-			(at 194.31 66.04 0)
+			(at 195.58 68.58 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7499,7 +7757,7 @@
 			)
 		)
 		(property "Value" "VBAT"
-			(at 194.31 68.58 0)
+			(at 195.58 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7507,7 +7765,7 @@
 			)
 		)
 		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm"
-			(at 194.31 72.39 0)
+			(at 195.58 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7516,7 +7774,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 194.31 72.39 0)
+			(at 195.58 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7525,7 +7783,7 @@
 			)
 		)
 		(property "Description" "Solder Jumper, 2-pole, closed/bridged"
-			(at 194.31 72.39 0)
+			(at 195.58 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7616,7 +7874,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 205.74 76.2 0)
+		(at 205.74 78.74 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7625,15 +7883,6 @@
 		(dnp no)
 		(uuid "482dd223-e17c-43e2-9ea2-7939b6df7638")
 		(property "Reference" "C13"
-			(at 201.93 74.9299 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "4.7µF"
 			(at 201.93 77.4699 0)
 			(effects
 				(font
@@ -7642,8 +7891,17 @@
 				(justify left)
 			)
 		)
+		(property "Value" "4.7µF"
+			(at 201.93 80.0099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 205.74 76.2 0)
+			(at 205.74 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7652,7 +7910,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 205.74 76.2 0)
+			(at 205.74 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7661,7 +7919,16 @@
 			)
 		)
 		(property "Description" "Capacitor, decoupling, connected to battery; check leakage"
-			(at 205.74 76.2 0)
+			(at 205.74 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10A475MA8NQN"
+			(at 205.74 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7701,7 +7968,7 @@
 				)
 			)
 		)
-		(property "Value" "BQ25150YFPT"
+		(property "Value" "BQ25150YFPR"
 			(at 221.996 88.392 0)
 			(effects
 				(font
@@ -7709,7 +7976,7 @@
 				)
 			)
 		)
-		(property "Footprint" "zeus-le:Texas_DSBGA-20_1.615x2.015mm_Layout4x5_P0.4mm"
+		(property "Footprint" "zeus-le:Texas_DSBGA-20_1.615x2.015mm_Layout4x5_P0.4mm_NSMD"
 			(at 213.614 144.78 0)
 			(effects
 				(font
@@ -7729,6 +7996,15 @@
 		)
 		(property "Description" "I2C Controlled 1-Cell 500-mA Linear Charger with 10-nA Ship Mode, Advanced Power Path Management and Control, ADC, and LDO, DSBGA-20"
 			(at 213.614 138.938 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "BQ25150YFPR"
+			(at 213.36 107.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7916,7 +8192,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor"
+			(at 234.95 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "RC0402FR-075KL"
 			(at 234.95 127 0)
 			(effects
 				(font
@@ -7942,7 +8227,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic_MountingPin:Conn_01x02_MountingPin")
-		(at 163.83 72.39 0)
+		(at 163.83 74.93 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7952,14 +8237,6 @@
 		(fields_autoplaced yes)
 		(uuid "5b4adebe-3c2c-461e-a11b-fa7966a435d9")
 		(property "Reference" "J2"
-			(at 163.83 66.04 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "S2B-PH-SM4-TB"
 			(at 163.83 68.58 0)
 			(effects
 				(font
@@ -7967,8 +8244,16 @@
 				)
 			)
 		)
+		(property "Value" "S2B-PH-SM4-TB"
+			(at 163.83 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
-			(at 163.83 72.39 0)
+			(at 163.83 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7977,7 +8262,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 163.83 72.39 0)
+			(at 163.83 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7986,7 +8271,7 @@
 			)
 		)
 		(property "Description" "Generic connectable mounting pin connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 163.83 72.39 0)
+			(at 163.83 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7994,8 +8279,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "JST"
-			(at 163.83 72.39 0)
+		(property "manf#" "S2B-PH-SM4-TB"
+			(at 163.83 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8411,7 +8696,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, pull-down"
+			(at 184.15 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "WR04X1003FTL"
 			(at 184.15 113.03 0)
 			(effects
 				(font
@@ -8636,7 +8930,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 205.74 80.01 0)
+		(at 205.74 82.55 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8645,7 +8939,7 @@
 		(dnp no)
 		(uuid "724c5166-5e45-4b3d-9f3b-fb810ae08118")
 		(property "Reference" "#PWR029"
-			(at 205.74 86.36 0)
+			(at 205.74 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8654,7 +8948,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 203.2 81.2799 0)
+			(at 203.2 83.8199 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8663,7 +8957,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 205.74 80.01 0)
+			(at 205.74 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8672,7 +8966,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 205.74 80.01 0)
+			(at 205.74 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8681,7 +8975,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 205.74 80.01 0)
+			(at 205.74 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8861,7 +9155,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 255.016 61.214 90)
 			(effects
 				(font
@@ -8879,7 +9173,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, US symbol"
+		(property "Description" "Resistor, LC filter damping"
+			(at 254 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CRL0603-FW-R100ELF"
 			(at 254 60.96 0)
 			(effects
 				(font
@@ -8898,6 +9201,84 @@
 			(project "zeus-le"
 				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/6cd3ad24-f296-403f-8ce8-fedfc8e5b734"
 					(reference "R9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 163.83 58.42 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7618f67d-6821-4b94-b094-2085a42c7cae")
+		(property "Reference" "J6"
+			(at 163.83 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "B2B-PH-K-S"
+			(at 163.83 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
+			(at 163.83 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 163.83 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 163.83 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "B2B-PH-K-S"
+			(at 163.83 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5b8d5852-c582-4997-8a09-9f96ae4b8489")
+		)
+		(pin "2"
+			(uuid "3a087177-6879-4dde-b49e-7469b09b0ad5")
+		)
+		(instances
+			(project ""
+				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/6cd3ad24-f296-403f-8ce8-fedfc8e5b734"
+					(reference "J6")
 					(unit 1)
 				)
 			)
@@ -9023,7 +9404,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "EVQ-P7D01P"
+		(property "manf#" "EVQPUD02K"
 			(at 189.23 142.24 90)
 			(effects
 				(font
@@ -9236,7 +9617,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling"
+		(property "Description" "Capacitor, decoupling, 25V, X5R"
+			(at 218.44 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL05A104KA5NNNC"
 			(at 218.44 76.2 0)
 			(effects
 				(font
@@ -9315,6 +9705,15 @@
 				(hide yes)
 			)
 		)
+		(property "manf#" "CL10A475MA8NQN"
+			(at 186.69 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "437035cf-d907-4a46-9907-e2d24568626e")
 		)
@@ -9376,7 +9775,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Decoupling, 10V"
+		(property "Description" "Capacitor, decoupling, 10V, X7R"
+			(at 161.29 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10B105KP8NNNC"
 			(at 161.29 96.52 0)
 			(effects
 				(font
@@ -9512,7 +9920,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Decoupling, 50V"
+		(property "Description" "Capacitor, decoupling, 50V, X5R"
 			(at 119.38 96.52 0)
 			(effects
 				(font
@@ -9521,7 +9929,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "CL10A105KB8NNNC, CL10B105KB8NQNC"
+		(property "manf#" "CL10A105KB8NNNC"
 			(at 119.38 96.52 0)
 			(effects
 				(font
@@ -9591,7 +9999,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "1300mW Zener Diode, DO-41"
+		(property "Description" "Zener Diode, 36V, SOD-323"
+			(at 83.82 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "XCUZ36V"
 			(at 83.82 99.06 0)
 			(effects
 				(font
@@ -9688,6 +10105,72 @@
 			(project "zeus-le"
 				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/6cd3ad24-f296-403f-8ce8-fedfc8e5b734"
 					(reference "C9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 170.18 62.23 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "95ed6ba0-1fc7-49fb-8aa9-7c7a6c39fa08")
+		(property "Reference" "#PWR074"
+			(at 170.18 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 170.18 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 170.18 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 170.18 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 170.18 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c35e10de-6b14-4075-8e2f-d57706b4ac0f")
+		)
+		(instances
+			(project "zeus-le"
+				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/6cd3ad24-f296-403f-8ce8-fedfc8e5b734"
+					(reference "#PWR074")
 					(unit 1)
 				)
 			)
@@ -9877,6 +10360,15 @@
 				(hide yes)
 			)
 		)
+		(property "manf#" "LC Bypass"
+			(at 245.11 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "b01ee94e-6fe6-45df-b526-6311a11c2daf")
 		)
@@ -9945,7 +10437,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Amphenol"
+		(property "manf#" "12402012E212A"
 			(at 29.21 107.95 0)
 			(effects
 				(font
@@ -10060,7 +10552,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, pull-down"
+			(at 107.95 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "WR04X1003FTL"
 			(at 107.95 43.18 0)
 			(effects
 				(font
@@ -10129,7 +10630,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 16V, X7R"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
+			(at 77.47 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "GRM188R61A106ME69D"
 			(at 77.47 26.67 0)
 			(effects
 				(font
@@ -10198,7 +10708,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 10V, >1µF after derating"
+		(property "Description" "Capacitor, decoupling, 10V, X5R, >1µF after derating"
+			(at 237.49 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "GRM188R61A106ME69D"
 			(at 237.49 90.17 0)
 			(effects
 				(font
@@ -10334,7 +10853,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 25V, X7R, >1µF after derating"
+		(property "Description" "Capacitor, decoupling, 25V, X7R, >1µF after derating"
+			(at 238.76 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10A475MA8NQN"
 			(at 238.76 111.76 0)
 			(effects
 				(font
@@ -10360,7 +10888,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 172.72 78.74 0)
+		(at 170.18 78.74 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10369,7 +10897,7 @@
 		(fields_autoplaced yes)
 		(uuid "b277c147-a1bd-4080-b866-fe7e3dc28535")
 		(property "Reference" "#PWR020"
-			(at 172.72 85.09 0)
+			(at 170.18 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10378,7 +10906,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 172.72 83.82 0)
+			(at 170.18 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10386,7 +10914,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 172.72 78.74 0)
+			(at 170.18 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10395,7 +10923,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 172.72 78.74 0)
+			(at 170.18 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10404,7 +10932,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 172.72 78.74 0)
+			(at 170.18 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10752,6 +11280,15 @@
 				(hide yes)
 			)
 		)
+		(property "manf#" "RT6160AWSC "
+			(at 123.19 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "E2"
 			(uuid "300bc69f-4c50-400a-889b-a929bc3d3564")
 		)
@@ -10991,7 +11528,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, pull-up"
+			(at 247.65 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "WR04X1003FTL"
 			(at 247.65 148.59 0)
 			(effects
 				(font
@@ -11261,7 +11807,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Ceramic Capacitor, 6.3V, X5R"
+		(property "Description" "Capacitor, decoupling, 6.3V, X5R"
 			(at 254 52.07 0)
 			(effects
 				(font
@@ -11471,7 +12017,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 25V, X7R, >1µF after derating"
+		(property "Description" "Capacitor, decoupling, 25V, X7R, >1µF after derating"
+			(at 264.16 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10A475MA8NQN"
 			(at 264.16 104.14 0)
 			(effects
 				(font
@@ -11497,7 +12052,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 182.88 72.39 0)
+		(at 186.69 74.93 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11506,7 +12061,7 @@
 		(fields_autoplaced yes)
 		(uuid "eae1ba56-fd3e-4115-af17-87fbdb99771e")
 		(property "Reference" "#FLG02"
-			(at 182.88 70.485 0)
+			(at 186.69 73.025 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11515,7 +12070,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 182.88 67.31 0)
+			(at 186.69 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11523,7 +12078,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 182.88 72.39 0)
+			(at 186.69 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11532,7 +12087,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 182.88 72.39 0)
+			(at 186.69 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11541,7 +12096,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 182.88 72.39 0)
+			(at 186.69 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11606,7 +12161,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling"
+		(property "Description" "Capacitor, decoupling, 25V, X5R"
+			(at 91.44 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL05A104KA5NNNC"
 			(at 91.44 26.67 0)
 			(effects
 				(font

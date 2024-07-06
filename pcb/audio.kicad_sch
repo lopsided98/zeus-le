@@ -2990,7 +2990,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Decoupling"
+		(property "Description" "Capacitor, decoupling, 25V, X5R"
+			(at 132.08 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL05A104KA5NNNC"
 			(at 132.08 44.45 0)
 			(effects
 				(font
@@ -3060,7 +3069,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor, small symbol"
+		(property "Description" "Capacitor, decoupling, 25V, X5R"
+			(at 215.9 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL05A104KA5NNNC"
 			(at 215.9 71.12 0)
 			(effects
 				(font
@@ -3260,7 +3278,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor, small symbol"
+		(property "Description" "Capacitor, decoupling, 10V, X7R"
+			(at 270.51 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10B105KP8NNNC"
 			(at 270.51 59.69 0)
 			(effects
 				(font
@@ -3395,7 +3422,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor, small symbol"
+		(property "Description" "Capacitor, decoupling, 25V, X5R"
+			(at 242.57 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL05A104KA5NNNC"
 			(at 242.57 66.04 0)
 			(effects
 				(font
@@ -3465,7 +3501,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor, small symbol"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
+			(at 228.6 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "GRM188R61A106ME69D"
 			(at 228.6 71.12 0)
 			(effects
 				(font
@@ -3600,15 +3645,6 @@
 		)
 		(property "Description" "Film Capacitor 12V 10V Acrylic, Metallized 1206 (3216 Metric)"
 			(at 49.53 64.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" " Cornell Dubilier Knowles"
-			(at 49.53 64.77 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3752,7 +3788,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Decoupling"
+		(property "Description" "Capacitor, decoupling, 10V, X7R"
+			(at 119.38 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10B105KP8NNNC"
 			(at 119.38 44.45 0)
 			(effects
 				(font
@@ -4021,7 +4066,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor, small symbol"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
+			(at 115.57 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "GRM188R61A106ME69D"
 			(at 115.57 66.04 0)
 			(effects
 				(font
@@ -4164,15 +4218,6 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" " Cornell Dubilier Knowles"
-			(at 49.53 76.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "manf#" "FCA1206A105M-H3"
 			(at 49.53 76.2 90)
 			(effects
@@ -4241,6 +4286,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 24.13 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "B5B-PH-K-S"
 			(at 24.13 83.82 0)
 			(effects
 				(font
@@ -4319,7 +4373,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor, small symbol"
+		(property "Description" "Capacitor, decoupling, 25V, X5R"
+			(at 127 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL05A104KA5NNNC"
 			(at 127 66.04 0)
 			(effects
 				(font
@@ -4387,6 +4450,15 @@
 			)
 		)
 		(property "Description" "4 Channel Low Capacitance TVS Diode Array, SOT-363"
+			(at 74.93 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "D3V3F4U6S-7 "
 			(at 74.93 82.55 0)
 			(effects
 				(font
@@ -4533,7 +4605,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor, small symbol"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
+			(at 255.27 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "GRM188R61A106ME69D"
 			(at 255.27 66.04 0)
 			(effects
 				(font
@@ -4603,15 +4684,6 @@
 		)
 		(property "Description" "Film Capacitor 12V 10V Acrylic, Metallized 1206 (3216 Metric)"
 			(at 49.53 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" " Cornell Dubilier Knowles"
-			(at 49.53 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4828,15 +4900,6 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" " Cornell Dubilier Knowles"
-			(at 49.53 101.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "manf#" "FCA1206A105M-H3"
 			(at 49.53 101.6 90)
 			(effects
@@ -5040,6 +5103,15 @@
 			)
 		)
 		(property "Description" "2-Channel, 768-kHz, Burr-Brown Audio ADC"
+			(at 175.26 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "TLV320ADC6120IRTER"
 			(at 175.26 74.93 0)
 			(effects
 				(font

@@ -1449,6 +1449,15 @@
 				(hide yes)
 			)
 		)
+		(property "manf#" "QBLP615-RGB-3053"
+			(at 161.29 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "42046530-3310-4b0b-bd29-30a1c6486b90")
 		)
@@ -1517,6 +1526,15 @@
 			)
 		)
 		(property "Description" "4-Channel RGBW LED Driver with Autonomous Control"
+			(at 128.27 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "LP5810ADSDR"
 			(at 128.27 100.33 0)
 			(effects
 				(font
@@ -1805,7 +1823,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Decoupling"
+		(property "Description" "Capacitor, decoupling, 10V, X7R"
+			(at 116.84 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10B105KP8NNNC"
 			(at 116.84 77.47 0)
 			(effects
 				(font

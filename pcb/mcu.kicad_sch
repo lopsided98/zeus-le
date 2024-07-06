@@ -3635,6 +3635,10 @@
 		(uuid "8fe0d3ca-e640-49ac-8bd3-4f9543758f26")
 	)
 	(no_connect
+		(at 110.49 104.14)
+		(uuid "97ed2271-0ebb-4608-8470-7409ce11e4c8")
+	)
+	(no_connect
 		(at 125.73 104.14)
 		(uuid "a57cde88-ffe3-4e79-8f66-5f11585eec90")
 	)
@@ -4234,16 +4238,6 @@
 	)
 	(wire
 		(pts
-			(xy 110.49 118.11) (xy 110.49 104.14)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "638628f6-8072-4e8a-8082-edd6fcee9a37")
-	)
-	(wire
-		(pts
 			(xy 224.79 59.69) (xy 245.11 59.69)
 		)
 		(stroke
@@ -4594,6 +4588,16 @@
 	)
 	(wire
 		(pts
+			(xy 104.14 135.89) (xy 95.25 135.89)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cfb9de8e-22fd-4123-9179-9b2f4a2704f0")
+	)
+	(wire
+		(pts
 			(xy 71.12 111.76) (xy 85.09 111.76)
 		)
 		(stroke
@@ -4631,6 +4635,16 @@
 			(type default)
 		)
 		(uuid "e128d69b-4c6c-46d4-bba2-a4533cab7c73")
+	)
+	(wire
+		(pts
+			(xy 95.25 135.89) (xy 95.25 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e3b35e0d-6360-4b3a-b72e-c206c35042a7")
 	)
 	(bus
 		(pts
@@ -4751,16 +4765,6 @@
 			(type default)
 		)
 		(uuid "f7bbf6db-cb75-40eb-8930-88d11ba44681")
-	)
-	(wire
-		(pts
-			(xy 118.11 118.11) (xy 110.49 118.11)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f8c39c4c-ccda-4358-ac10-72e437517dd2")
 	)
 	(wire
 		(pts
@@ -5141,7 +5145,7 @@
 	)
 	(hierarchical_label "CHG_PG"
 		(shape input)
-		(at 118.11 118.11 0)
+		(at 104.14 135.89 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5246,6 +5250,15 @@
 			)
 		)
 		(property "Description" "Capacitor, decoupling"
+			(at 257.81 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "CL10A475MA8NQN"
 			(at 257.81 109.22 0)
 			(effects
 				(font
@@ -5955,7 +5968,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "TBD"
+		(property "Value" "1.21k"
 			(at 62.23 53.3399 0)
 			(effects
 				(font
@@ -5982,7 +5995,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, I2C pull-up"
+			(at 59.69 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "RC0402FR-131K21L"
 			(at 59.69 52.07 0)
 			(effects
 				(font
@@ -6092,7 +6114,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "TBD"
+		(property "Value" "1.21k"
 			(at 53.34 53.3399 0)
 			(effects
 				(font
@@ -6119,7 +6141,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor, small US symbol"
+		(property "Description" "Resistor, I2C pull-up"
+			(at 50.8 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "RC0402FR-131K21L"
 			(at 50.8 52.07 0)
 			(effects
 				(font
@@ -6254,6 +6285,15 @@
 			)
 		)
 		(property "Description" "Generic connector, double row, 02x05, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 252.73 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "20021121-00010T4LF"
 			(at 252.73 59.69 0)
 			(effects
 				(font
@@ -6517,7 +6557,7 @@
 				)
 			)
 		)
-		(property "Value" "WT02V40V-V2"
+		(property "Value" "WT02C40C-V3"
 			(at 139.1535 24.13 0)
 			(effects
 				(font
@@ -6525,7 +6565,7 @@
 				)
 			)
 		)
-		(property "Footprint" "zeus-le:WT02V40V"
+		(property "Footprint" "zeus-le:WT02C40C"
 			(at 102.21 50.54 0)
 			(effects
 				(font
@@ -6545,6 +6585,15 @@
 		)
 		(property "Description" "BLE 5.3, 802.15.4, WiFi 6 Combo Module"
 			(at 102.21 50.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "WT02C40C-V3"
+			(at 97.79 48.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
