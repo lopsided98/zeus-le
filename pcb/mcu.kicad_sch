@@ -6258,7 +6258,7 @@
 				)
 			)
 		)
-		(property "Value" "20021121-00010T4LF"
+		(property "Value" "BD125-10-A-0305-0580-L-B"
 			(at 251.46 50.8 0)
 			(effects
 				(font
@@ -6284,7 +6284,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, double row, 02x05, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+		(property "Description" "Connector Header Surface Mount 10 position 0.050\" (1.27mm)"
 			(at 252.73 59.69 0)
 			(effects
 				(font

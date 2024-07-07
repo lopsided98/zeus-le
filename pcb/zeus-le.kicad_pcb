@@ -15047,7 +15047,7 @@
 				)
 			)
 		)
-		(property "Value" "20021121-00010T4LF"
+		(property "Value" "BD125-10-A-0305-0580-L-B"
 			(at 0 4.235 -90)
 			(layer "F.Fab")
 			(uuid "4a15e3bd-c80b-4e3a-aa98-39ee256cb3e0")
@@ -15084,7 +15084,7 @@
 				)
 			)
 		)
-		(property "Description" "Generic connector, double row, 02x05, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
+		(property "Description" "Connector Header Surface Mount 10 position 0.050\" (1.27mm)"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15676,7 +15676,7 @@
 			(pintype "passive")
 			(uuid "43cd3484-e0aa-411a-8837-6965c8647691")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_PinHeader_1.27mm.3dshapes/PinHeader_2x05_P1.27mm_Vertical_SMD.wrl"
+		(model "${KIPRJMOD}/zeus-le.3dshapes/GCT_BD125-10-A-0305-0580-L-B.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -15684,7 +15684,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz -90 0 90)
 			)
 		)
 	)
