@@ -3549,6 +3549,12 @@
 		)
 	)
 	(junction
+		(at 60.96 62.23)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4003ef7f-0be8-48e4-801d-7761dd0d1d5f")
+	)
+	(junction
 		(at 257.81 105.41)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3571,12 +3577,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a5abca46-1302-4b00-bae2-2a1d9379693f")
-	)
-	(junction
-		(at 59.69 62.23)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b1f427dc-dce4-47ef-ab37-63965be4b074")
 	)
 	(junction
 		(at 72.39 44.45)
@@ -3928,7 +3928,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 46.99) (xy 50.8 46.99)
+			(xy 60.96 46.99) (xy 50.8 46.99)
 		)
 		(stroke
 			(width 0)
@@ -4098,6 +4098,16 @@
 	)
 	(wire
 		(pts
+			(xy 60.96 62.23) (xy 74.93 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4a38a99f-90a7-4ab3-9f2d-ae8887b5836d")
+	)
+	(wire
+		(pts
 			(xy 257.81 105.41) (xy 257.81 106.68)
 		)
 		(stroke
@@ -4118,7 +4128,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 54.61) (xy 59.69 62.23)
+			(xy 60.96 54.61) (xy 60.96 62.23)
 		)
 		(stroke
 			(width 0)
@@ -4155,16 +4165,6 @@
 			(type default)
 		)
 		(uuid "56a727b1-c793-4d7e-ac50-7a50a68c7e63")
-	)
-	(wire
-		(pts
-			(xy 59.69 62.23) (xy 74.93 62.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "58e3b58b-3796-4a25-ae41-5c4c842ec17b")
 	)
 	(wire
 		(pts
@@ -4398,7 +4398,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 49.53) (xy 59.69 46.99)
+			(xy 60.96 49.53) (xy 60.96 46.99)
 		)
 		(stroke
 			(width 0)
@@ -4668,7 +4668,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.64 62.23) (xy 59.69 62.23)
+			(xy 40.64 62.23) (xy 60.96 62.23)
 		)
 		(stroke
 			(width 0)
@@ -5258,7 +5258,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "CL10A475MA8NQN"
+		(property "manf#" "C1608X5R1E475K080AC"
 			(at 257.81 109.22 0)
 			(effects
 				(font
@@ -5951,7 +5951,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
-		(at 59.69 52.07 0)
+		(at 60.96 52.07 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5960,7 +5960,7 @@
 		(fields_autoplaced yes)
 		(uuid "6b795f41-d839-4379-8316-31a451162253")
 		(property "Reference" "R12"
-			(at 62.23 50.7999 0)
+			(at 63.5 50.7999 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5969,7 +5969,7 @@
 			)
 		)
 		(property "Value" "1.21k"
-			(at 62.23 53.3399 0)
+			(at 63.5 53.3399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5978,7 +5978,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 59.69 52.07 0)
+			(at 60.96 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5987,7 +5987,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 59.69 52.07 0)
+			(at 60.96 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5996,7 +5996,7 @@
 			)
 		)
 		(property "Description" "Resistor, I2C pull-up"
-			(at 59.69 52.07 0)
+			(at 60.96 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6005,7 +6005,7 @@
 			)
 		)
 		(property "manf#" "RC0402FR-131K21L"
-			(at 59.69 52.07 0)
+			(at 60.96 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
