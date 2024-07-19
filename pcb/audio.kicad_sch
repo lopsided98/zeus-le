@@ -2776,6 +2776,17 @@
 		)
 		(uuid "469c607d-a8db-4adf-abd8-6662b0a6e094")
 	)
+	(label "I2C.SDA"
+		(at 213.36 109.22 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "5cad6765-af76-4f16-b33a-be5826b3db7c")
+	)
 	(label "I2S.SCK"
 		(at 213.36 118.11 180)
 		(fields_autoplaced yes)
@@ -2798,6 +2809,17 @@
 		)
 		(uuid "a72edd0f-80bf-438d-ab7e-713f602a1247")
 	)
+	(label "I2C.SCL"
+		(at 213.36 106.68 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "acbd4ef3-2ab7-43e1-9e32-7da37dbc00b3")
+	)
 	(label "I2S.WS"
 		(at 213.36 120.65 180)
 		(fields_autoplaced yes)
@@ -2809,17 +2831,6 @@
 		)
 		(uuid "b072accd-f065-4e59-8af6-bad488ee0631")
 	)
-	(label "I2C.SCL"
-		(at 213.36 109.22 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "caaefa2a-ec4e-455b-b04b-1ff8b48ba148")
-	)
 	(label "I2S.MCK"
 		(at 213.36 123.19 180)
 		(fields_autoplaced yes)
@@ -2830,17 +2841,6 @@
 			(justify right bottom)
 		)
 		(uuid "edc41ff7-8bba-4678-9f09-1a86cd8fb62c")
-	)
-	(label "I2C.SDA"
-		(at 213.36 106.68 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "ffa65d26-7f18-4d23-8199-c2f72689ce6f")
 	)
 	(hierarchical_label "IRQ"
 		(shape output)

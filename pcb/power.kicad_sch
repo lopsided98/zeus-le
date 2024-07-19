@@ -4522,12 +4522,6 @@
 		(uuid "cbb19a64-eeec-4919-a253-598d1666444b")
 	)
 	(junction
-		(at 186.69 74.93)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "dfdb518a-b782-49df-85ab-5398b822dc06")
-	)
-	(junction
 		(at 254 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4556,6 +4550,10 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fc3e94aa-e154-4040-a07f-1cd8420720d6")
+	)
+	(no_connect
+		(at 71.12 127)
+		(uuid "30a01746-5de0-41ca-ba60-118c5ca25e2d")
 	)
 	(no_connect
 		(at 44.45 123.19)
@@ -4957,7 +4955,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 74.93) (xy 186.69 74.93)
+			(xy 175.26 74.93) (xy 191.77 74.93)
 		)
 		(stroke
 			(width 0)
@@ -5194,16 +5192,6 @@
 			(type default)
 		)
 		(uuid "5b076ff4-dc6d-4e83-be04-27788228c5db")
-	)
-	(wire
-		(pts
-			(xy 186.69 74.93) (xy 191.77 74.93)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5b901e71-7508-4689-bccd-72ab9c4da6fb")
 	)
 	(wire
 		(pts
@@ -12051,72 +12039,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 186.69 74.93 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "eae1ba56-fd3e-4115-af17-87fbdb99771e")
-		(property "Reference" "#FLG02"
-			(at 186.69 73.025 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 186.69 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 186.69 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 186.69 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 186.69 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "bcfd8da0-e8ea-45e4-936d-a3f1efa9fa05")
-		)
-		(instances
-			(project "zeus-le"
-				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/6cd3ad24-f296-403f-8ce8-fedfc8e5b734"
-					(reference "#FLG02")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C_Small")
 		(at 91.44 26.67 0)
 		(unit 1)
@@ -12189,6 +12111,72 @@
 			(project "zeus-le"
 				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/6cd3ad24-f296-403f-8ce8-fedfc8e5b734"
 					(reference "C3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 205.74 74.93 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f992958b-10f4-4ba3-b5d5-cbec61981edf")
+		(property "Reference" "#FLG02"
+			(at 205.74 73.025 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 205.74 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 205.74 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 205.74 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 205.74 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8e6618a3-c1fc-4b7d-ab15-44433b8fc959")
+		)
+		(instances
+			(project "zeus-le"
+				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/6cd3ad24-f296-403f-8ce8-fedfc8e5b734"
+					(reference "#FLG02")
 					(unit 1)
 				)
 			)

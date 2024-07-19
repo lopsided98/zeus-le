@@ -4488,16 +4488,6 @@
 	)
 	(wire
 		(pts
-			(xy 107.95 104.14) (xy 107.95 128.27)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b6b67ba5-88dc-459f-baaa-dfef5a17bc5f")
-	)
-	(wire
-		(pts
 			(xy 97.79 133.35) (xy 97.79 104.14)
 		)
 		(stroke
@@ -4768,6 +4758,16 @@
 	)
 	(wire
 		(pts
+			(xy 107.95 104.14) (xy 107.95 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f94e9206-dbda-4ff6-b587-e26c7a7f2ddb")
+	)
+	(wire
+		(pts
 			(xy 204.47 58.42) (xy 222.25 58.42)
 		)
 		(stroke
@@ -4851,7 +4851,7 @@
 		(uuid "35b842e6-d0b6-4824-becf-02d4cfabe256")
 	)
 	(label "SD.SCK"
-		(at 107.95 104.14 270)
+		(at 107.95 105.41 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
