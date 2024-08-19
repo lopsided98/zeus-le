@@ -8454,7 +8454,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Inductor_SMD:L_Coilcraft_XxL4020"
+		(property "Footprint" "zeus-le:L_Bourns_SRP4020FA_4.1x4.1mm"
 			(at 142.24 33.02 0)
 			(effects
 				(font
@@ -8481,7 +8481,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "XFL4015-471MEC"
+		(property "manf#" "SRP4020FA-R47M"
 			(at 142.24 33.02 0)
 			(effects
 				(font
