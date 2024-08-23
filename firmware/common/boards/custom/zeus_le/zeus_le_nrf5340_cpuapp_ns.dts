@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) 2024 Ben Wolsieffer
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <nordic/nrf5340_cpuappns_qkaa.dtsi>
+#include "zeus_le_nrf5340_cpuapp_common.dts"
+
+/ {
+	model = "zeus-le nRF5340 Application";
+	compatible = "custom,zeus-le-cpuapp";
+
+	chosen {
+		zephyr,sram = &sram0_ns;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &slot0_ns_partition;
+	};
+};

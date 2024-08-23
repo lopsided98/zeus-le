@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.20.0)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
-if(("${BOARD}" STREQUAL "raytac_mdbt53_db_40") OR
-	("${BOARD}" STREQUAL "nrf5340bsim"))
+if(("${BOARD}" STREQUAL "zeus_le") OR
+    ("${BOARD}" STREQUAL "raytac_mdbt53_db_40") OR
+    ("${BOARD}" STREQUAL "nrf5340bsim"))
 	message(INFO " ${BOARD} used for Network Core")
 else()
 	message(FATAL_ERROR "${BOARD} is not supported")

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <hal/nrf_clock.h>
 #include <hal/nrf_ipc.h>
-#include <inttypes.h>
 #include <nrfx_dppi.h>
 #include <nrfx_timer.h>
 #include <zephyr/bluetooth/bluetooth.h>
@@ -13,7 +12,6 @@
 #include <zephyr/settings/settings.h>
 
 #include "audio.h"
-#include "freq_est.h"
 #include "ftp.h"
 #include "mgr.h"
 #include "net_audio.h"

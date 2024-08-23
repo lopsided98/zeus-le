@@ -7,7 +7,7 @@ function usage() {
 	echo "Usage: ${0} [-a APP] [-b [-h]
 
   -a APP        app to flash ([central], audio)
-  -b BOARD      board to flash (default: raytac_mdbt53_db_40)
+  -b BOARD      board to flash (default: zeus_le)
   -c CPU        CPU to flash (app, net, [both])
   -h            display this help
 " >&2
@@ -15,7 +15,7 @@ function usage() {
 }
 
 app="central"
-board="raytac_mdbt53_db_40"
+board="zeus_le"
 cpu="both"
 
 while getopts "a:b:c:h" name; do

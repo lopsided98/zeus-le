@@ -1,0 +1,21 @@
+# zeus-le board configuration
+
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+identifier: zeus_le/nrf5340/cpunet
+name: zeus-le-NRF5340-network-MCU
+type: mcu
+arch: arm
+toolchain:
+  - gnuarmemb
+  - xtools
+  - zephyr
+ram: 64
+flash: 256
+supported:
+  - watchdog
+  - gpio
+  - i2c
+  - spi
+  - uart
+  - counter
