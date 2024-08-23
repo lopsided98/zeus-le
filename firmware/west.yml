@@ -11,7 +11,7 @@ manifest:
   projects:
     - name: zephyr
       remote: lopsided98
-      revision: 66593873f98ef1a503b96521d699d2db85c6571e
+      revision: 8074e6b5929333ba5d0e5767879f696da34405c2
       import:
         name-allowlist:
           - babblesim_base
@@ -31,7 +31,7 @@ manifest:
       remote: babblesim
       repo-path: ext_nRF_hw_models.git
       path: tools/bsim/components/ext_nRF_hw_models
-      revision: e55aaff1359d8854856f910ae0ba0acf8ed19a37
+      revision: 3ede17158a9fe85c160e0384c0ad0306e24ee47e
     - name: west-nix
       remote: lopsided98
       revision: 2c09b5de284ab4eb3fa69da1613176e83f84dda0

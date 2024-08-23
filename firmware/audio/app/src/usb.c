@@ -16,13 +16,15 @@ USBD_DEVICE_DEFINE(usbd, DEVICE_DT_GET(DT_NODELABEL(zephyr_udc0)),
 USBD_DESC_LANG_DEFINE(usb_lang);
 USBD_DESC_MANUFACTURER_DEFINE(usb_mfr, "Zeus LE");
 USBD_DESC_PRODUCT_DEFINE(usb_product, "Zeus LE Audio");
-USBD_DESC_SERIAL_NUMBER_DEFINE(usb_sn, "0000");
+USBD_DESC_SERIAL_NUMBER_DEFINE(usb_sn);
 
-USBD_CONFIGURATION_DEFINE(usb_config, 0, 125 /* mA */);
+USBD_DESC_CONFIG_DEFINE(fs_cfg_desc, "FS Configuration");
+
+USBD_CONFIGURATION_DEFINE(usb_config, 0, 125 /* mA */, &fs_cfg_desc);
 
 static struct usb {
     // Resources
-    struct usbd_contex* const ctx;
+    struct usbd_context* const ctx;
 
     // State
     bool init;
@@ -66,16 +68,11 @@ int usb_init(void) {
         return ret;
     }
 
-    STRUCT_SECTION_FOREACH_ALTERNATE(usbd_class_fs, usbd_class_node, node) {
-        // Pull everything that is enabled in our configuration.
-        ret = usbd_register_class(u->ctx, node->c_data->name, USBD_SPEED_FS, 1);
-        if (ret < 0) {
-            LOG_ERR("failed to register %s (err %d)", node->c_data->name, ret);
-            return ret;
-        }
-
-        LOG_DBG("register %s", node->c_data->name);
-    }
+    ret = usbd_register_all_classes(u->ctx, USBD_SPEED_FS, 1);
+	if (ret) {
+		LOG_ERR("failed to register classes (err %d)", ret);
+		return ret;
+	}
 
     /*
      * Class with multiple interfaces have an Interface

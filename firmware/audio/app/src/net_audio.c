@@ -2,6 +2,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/net/net_if.h>
 #include <zephyr/net/socket.h>
 
 LOG_MODULE_REGISTER(net_audio);

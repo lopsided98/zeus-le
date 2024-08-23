@@ -18,9 +18,9 @@ in symlinkJoin {
     link = "zephyr";
     path = fetchgit {
         url = "https://github.com/lopsided98/zephyr";
-        rev = "66593873f98ef1a503b96521d699d2db85c6571e";
+        rev = "8074e6b5929333ba5d0e5767879f696da34405c2";
         branchName = "manifest-rev";
-        hash = "sha256-8U5Byn6fLfHk+yIaaIKWGDSy+FrIX3LbhNjFmrKHAgs=";
+        hash = "sha256-ZfdA+Rsap7BxRCmTGq0z5Y31IYVQdlTGcYaEqZqaD5g=";
     };
 })
 
@@ -28,9 +28,9 @@ in symlinkJoin {
     link = "tools/bsim/components/ext_nRF_hw_models";
     path = fetchgit {
         url = "https://github.com/BabbleSim/ext_nRF_hw_models.git";
-        rev = "e55aaff1359d8854856f910ae0ba0acf8ed19a37";
+        rev = "3ede17158a9fe85c160e0384c0ad0306e24ee47e";
         branchName = "manifest-rev";
-        hash = "sha256-8RylIgzal8lHoqRA581iTGF0BwACoY4u3QPZvGAaruQ=";
+        hash = "sha256-P7Z9V6D1nB4U+MALk3S745UFh5/dbe2vYr33GItpDk4=";
     };
 })
 
@@ -48,9 +48,9 @@ in symlinkJoin {
     link = "tools/bsim";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/babblesim-manifest";
-        rev = "68f6282c6a7f54641b75f5f9fc953c85e272a983";
+        rev = "9351ae1ad44864a49c351f9704f65f43046abeb0";
         branchName = "manifest-rev";
-        hash = "sha256-VF1VPfeQCyQd89DGbQGbePNHLbBo+lWfkjPNj9TSqYo=";
+        hash = "sha256-C+FZWqF7az/UuunTTsmYcCG17jElPHduwbFGwSSy88E=";
     };
 })
 
@@ -78,9 +78,9 @@ in symlinkJoin {
     link = "tools/bsim/components/ext_2G4_phy_v1";
     path = fetchgit {
         url = "https://github.com/BabbleSim/ext_2G4_phy_v1";
-        rev = "d8302b8d51409b9e717a1a0ba6b443d3b5552a6c";
+        rev = "04eeb3c3794444122fbeeb3715f4233b0b50cfbb";
         branchName = "manifest-rev";
-        hash = "sha256-Tb0su9q5wTCH8M0RJ99gGUwVM2GCl1NimGUe7YSkPug=";
+        hash = "sha256-cl7dKJXj+funFo072aW0/VwQu4AWmMI8wPQ+njzR+hU=";
     };
 })
 
@@ -128,9 +128,9 @@ in symlinkJoin {
     link = "modules/hal/nordic";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/hal_nordic";
-        rev = "827224f29e99972cd3b999dba913ae4649790671";
+        rev = "91654ddc7ce0da523eb4d6be2171208ae2b8fb35";
         branchName = "manifest-rev";
-        hash = "sha256-Kcol3sMPSEuza2CPPYIaJptp76hUrzRkSWtrjRfjAbQ=";
+        hash = "sha256-Hko6cr/TYBDTFGjsQJnlYOByz9iVou4wLBBTU8ZKkn4=";
     };
 })
 
@@ -138,9 +138,9 @@ in symlinkJoin {
     link = "modules/hal/libmetal";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/libmetal";
-        rev = "243eed541b9c211a2ce8841c788e62ddce84425e";
+        rev = "a6851ba6dba8c9e87d00c42f171a822f7a29639b";
         branchName = "manifest-rev";
-        hash = "sha256-wCsYllPeDKx4P5gBGEFDcY4QNbMdwrd+5h5GZ8tEsJM=";
+        hash = "sha256-TvJ8XiIa05lAUDfaGObkEuOjOUn3EzHPDxEVCoeiRBA=";
     };
 })
 
@@ -148,9 +148,9 @@ in symlinkJoin {
     link = "tools/net-tools";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/net-tools";
-        rev = "cd2eb1858a1570b49241e18fc1e1cd849a450af2";
+        rev = "7c7a856814d7f27509c8511fef14cec21f7d0c30";
         branchName = "manifest-rev";
-        hash = "sha256-EkisIg3DJBgULxyIVB7P1muHVlZCqh50KbbV/dfCnlY=";
+        hash = "sha256-T1hnDzDRAGQavm6NNzIFokWsouFJ3rkoAmcZRbvhqQc=";
     };
 })
 
@@ -158,9 +158,9 @@ in symlinkJoin {
     link = "modules/lib/open-amp";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/open-amp";
-        rev = "da78aea63159771956fe0c9263f2e6985b66e9d5";
+        rev = "76d2168bcdfcd23a9a7dce8c21f2083b90a1e60a";
         branchName = "manifest-rev";
-        hash = "sha256-7yae0X7zqDPA4CUfGU3LgNBh7qyKGIPLUv6dn/d65Fg=";
+        hash = "sha256-1TenetSRhMPbmM0JKy0TAbBBBsaNTuDF/H3hj7Z3qZM=";
     };
 })
 
