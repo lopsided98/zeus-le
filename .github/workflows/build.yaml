@@ -34,7 +34,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v2
         with:
           diagnostic-endpoint: ""
-      - run: nix build .#${{ matrix.package }}
+      - run: nix build -L .#${{ matrix.package }}
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.package }}
