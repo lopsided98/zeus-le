@@ -28,8 +28,8 @@ struct audio_block_time {
 };
 
 // TODO: sample rate must currently be divisible by the number of samples
-#define AUDIO_BLOCK_SIZE 17640
-#define AUDIO_BLOCK_COUNT 8
+#define AUDIO_BLOCK_SIZE 8820
+#define AUDIO_BLOCK_COUNT 3
 
 K_MEM_SLAB_DEFINE_STATIC(audio_slab, AUDIO_BLOCK_SIZE, AUDIO_BLOCK_COUNT, 4);
 

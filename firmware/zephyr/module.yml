@@ -1,0 +1,4 @@
+name: zeus_le
+build:
+  settings:
+    board_root: common

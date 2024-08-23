@@ -1,5 +1,6 @@
 { nixpkgs, pkgs, lib, stdenv
 , platform ? "nrf53"
+, firmware ? "audio"
 , dev ? false
 }: let
   # Optimize newlib for size
@@ -47,8 +48,8 @@
   }.${platform};
 in pkgs'.callPackage ({
   lib, stdenv, linkFarm, makeStaticLibraries, callPackage, buildPackages
-, pkgsBuildBuild, cmake, ninja, makedepend, python3, dtc, python3Packages, git
-, bash-completion, nix-prefetch-git, clang-tools, gdb, openocd, tmux, glibc
+, llvmPackages_latest, cmake, ninja, makedepend, python3, dtc, python3Packages
+, git, bash-completion, nix-prefetch-git, clang-tools, gdb, openocd, tmux, glibc
 , alsa-lib
 }: let
   # Zephyr host toolchain only looks for unprefixed tools
@@ -79,9 +80,9 @@ in stdenv.mkDerivation {
     else callPackage ./firmware/west.nix { };
 
   depsBuildBuild = lib.optionals dev [
-    (pkgsBuildBuild.clang-tools.override {
-      llvmPackages = pkgsBuildBuild.llvmPackages_latest;
-    })
+    llvmPackages_latest.clang-tools
+    # Splicing is buggy and tries to eval for target platform
+    openocd
   ];
 
   nativeBuildInputs = [
@@ -92,17 +93,21 @@ in stdenv.mkDerivation {
     python3
     dtc
   ] ++ (with python3Packages; [
+    packaging
     pyelftools
     pykwalify
-    packaging
+    pyyaml
   ]) ++ lib.optionals dev ([
     bash-completion
     git
-    python3Packages.west
     nix-prefetch-git
     gdb
-  ] ++ lib.optionals (platform == "nrf53") [
-    openocd
+  ] ++ (with python3Packages; [
+    west
+    requests # west blobs
+    anytree # ram_report
+  ]) ++ lib.optionals (platform == "nrf53") [
+    (builtins.trace buildPackages.stdenv.hostPlatform.isAarch (lib.getLib buildPackages.udev))
   ] ++ lib.optionals (platform == "simulator") [
     tmux
   ]);
@@ -128,10 +133,10 @@ in stdenv.mkDerivation {
   cmakeDir = "../zephyr/share/sysbuild";
 
   cmakeFlags = [
-    "-DBOARD=raytac_mdbt53_db_40_nrf5340_cpuapp"
-    "-DAPP_DIR=../firmware/central/app"
+    "-DBOARD=zeus_le/nrf5340/cpuapp"
+    "-DAPP_DIR=../firmware/${firmware}/app"
     # TODO: generate dynamically
-    "-DBUILD_VERSION=zephyr-v3.6.0-3130-g66593873f98e"
+    "-DBUILD_VERSION=zephyr-v3.6.0-9291-g8074e6b59293"
   ];
 
   preConfigure = ''

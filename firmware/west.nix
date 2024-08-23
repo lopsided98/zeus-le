@@ -135,12 +135,32 @@ in symlinkJoin {
 })
 
 (linkPath {
+    link = "modules/lib/hostap";
+    path = fetchgit {
+        url = "https://github.com/zephyrproject-rtos/hostap";
+        rev = "77a4cad575c91f1b234c8d15630f87999881cde2";
+        branchName = "manifest-rev";
+        hash = "sha256-3FtVhhMssM9n3moUSbvHYBTOTptaR5/kkVMgkhhxpo8=";
+    };
+})
+
+(linkPath {
     link = "modules/hal/libmetal";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/libmetal";
         rev = "a6851ba6dba8c9e87d00c42f171a822f7a29639b";
         branchName = "manifest-rev";
         hash = "sha256-TvJ8XiIa05lAUDfaGObkEuOjOUn3EzHPDxEVCoeiRBA=";
+    };
+})
+
+(linkPath {
+    link = "modules/crypto/mbedtls";
+    path = fetchgit {
+        url = "https://github.com/zephyrproject-rtos/mbedtls";
+        rev = "2f24831ee13d399ce019c4632b0bcd440a713f7c";
+        branchName = "manifest-rev";
+        hash = "sha256-mXe04PQocIvBhC2Z4HFVj26Q/qr64I9uBkzVJIlTjoc=";
     };
 })
 
@@ -165,6 +185,16 @@ in symlinkJoin {
 })
 
 (linkPath {
+    link = "modules/lib/picolibc";
+    path = fetchgit {
+        url = "https://github.com/zephyrproject-rtos/picolibc";
+        rev = "764ef4e401a8f4c6a86ab723533841f072885a5b";
+        branchName = "manifest-rev";
+        hash = "sha256-5W/+vorhOP/MD19JYzHJfZTkWMM7sKUQqzTDA/7rxZs=";
+    };
+})
+
+(linkPath {
     link = "modules/crypto/tinycrypt";
     path = fetchgit {
         url = "https://github.com/zephyrproject-rtos/tinycrypt";
@@ -178,7 +208,7 @@ in symlinkJoin {
   postBuild = ''
     cat << EOF > "$out/.zephyr-env"
       export ZEPHYR_BASE=${lib.escapeShellArg "${placeholder "out"}/zephyr"}
-      export ZEPHYR_MODULES=${lib.escapeShellArg "${placeholder "out"}/tools/bsim/components/ext_nRF_hw_models;${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/fs/fatfs;${placeholder "out"}/modules/hal/nordic;${placeholder "out"}/modules/hal/libmetal;${placeholder "out"}/modules/lib/open-amp;${placeholder "out"}/modules/crypto/tinycrypt"}
+      export ZEPHYR_MODULES=${lib.escapeShellArg "${placeholder "out"}/firmware;${placeholder "out"}/tools/bsim/components/ext_nRF_hw_models;${placeholder "out"}/modules/hal/cmsis;${placeholder "out"}/modules/fs/fatfs;${placeholder "out"}/modules/hal/nordic;${placeholder "out"}/modules/lib/hostap;${placeholder "out"}/modules/hal/libmetal;${placeholder "out"}/modules/crypto/mbedtls;${placeholder "out"}/modules/lib/open-amp;${placeholder "out"}/modules/lib/picolibc;${placeholder "out"}/modules/crypto/tinycrypt"}
     EOF
   '';
 }

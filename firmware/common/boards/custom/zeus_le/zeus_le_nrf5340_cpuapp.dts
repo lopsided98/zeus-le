@@ -18,10 +18,44 @@
 		zephyr,code-partition = &slot0_partition;
 		zephyr,sram-secure-partition = &sram0_s;
 		zephyr,sram-non-secure-partition = &sram0_ns;
+		zephyr,wifi = &wlan0;
 	};
 };
 
 zephyr_udc0: &usbd {
 	compatible = "nordic,nrf-usbd";
 	status = "okay";
+};
+
+&qspi {
+	nrf70: nrf7002@1 {
+		compatible = "nordic,nrf7002-qspi";
+		status = "okay";
+		reg = <1>;
+		qspi-frequency = <24000000>;
+		qspi-quad-mode;
+
+		iovdd-ctrl-gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
+		bucken-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+		host-irq-gpios = <&gpio0 23 GPIO_ACTIVE_HIGH>;
+		req-gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
+		status0-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+		grant-gpios = <&gpio0 24 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
+		swctrl1-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+
+		wifi-max-tx-pwr-2g-dsss = <21>;
+		wifi-max-tx-pwr-2g-mcs0 = <16>;
+		wifi-max-tx-pwr-2g-mcs7 = <16>;
+
+		wifi-max-tx-pwr-5g-low-mcs0 = <9>;
+		wifi-max-tx-pwr-5g-low-mcs7 = <9>;
+		wifi-max-tx-pwr-5g-mid-mcs0 = <11>;
+		wifi-max-tx-pwr-5g-mid-mcs7 = <11>;
+		wifi-max-tx-pwr-5g-high-mcs0 = <13>;
+		wifi-max-tx-pwr-5g-high-mcs7 = <13>;
+
+		wlan0: wlan {
+			compatible = "nordic,wlan";
+		};
+	};
 };

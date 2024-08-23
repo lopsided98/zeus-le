@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.20.0)
 
 # app.overlay is not used automatically if a board-specific overlay is present
 list(APPEND EXTRA_DTC_OVERLAY_FILE app.overlay)
-# FIXME: this doesn't work, have to manually specify on command line
-list(APPEND BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../common)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 

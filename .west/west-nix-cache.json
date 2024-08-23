@@ -60,10 +60,20 @@
       "rev": "91654ddc7ce0da523eb4d6be2171208ae2b8fb35",
       "hash": "sha256-Hko6cr/TYBDTFGjsQJnlYOByz9iVou4wLBBTU8ZKkn4="
     },
+    "4cf50964b1aea876a343e90f9ea1e08c2c5a9a9e561639de71841175afc24087": {
+      "url": "https://github.com/zephyrproject-rtos/hostap",
+      "rev": "77a4cad575c91f1b234c8d15630f87999881cde2",
+      "hash": "sha256-3FtVhhMssM9n3moUSbvHYBTOTptaR5/kkVMgkhhxpo8="
+    },
     "9da9c055a3f59a82263f26decd8512bb2cd532ca7ef1dacfd259e6bfb332f4a7": {
       "url": "https://github.com/zephyrproject-rtos/libmetal",
       "rev": "a6851ba6dba8c9e87d00c42f171a822f7a29639b",
       "hash": "sha256-TvJ8XiIa05lAUDfaGObkEuOjOUn3EzHPDxEVCoeiRBA="
+    },
+    "f8a9922e867f5336133cf46e96009bcae531a7f7a99a5ad3c2ab9736451bc312": {
+      "url": "https://github.com/zephyrproject-rtos/mbedtls",
+      "rev": "2f24831ee13d399ce019c4632b0bcd440a713f7c",
+      "hash": "sha256-mXe04PQocIvBhC2Z4HFVj26Q/qr64I9uBkzVJIlTjoc="
     },
     "7d25c84001159cd93234e895fe909e1bde478dd904964f2e32f5a301abefb351": {
       "url": "https://github.com/zephyrproject-rtos/net-tools",
@@ -74,6 +84,11 @@
       "url": "https://github.com/zephyrproject-rtos/open-amp",
       "rev": "76d2168bcdfcd23a9a7dce8c21f2083b90a1e60a",
       "hash": "sha256-1TenetSRhMPbmM0JKy0TAbBBBsaNTuDF/H3hj7Z3qZM="
+    },
+    "1d2514c450874772085b2551705d1510005dcfaeb019af03af3c3530494ea814": {
+      "url": "https://github.com/zephyrproject-rtos/picolibc",
+      "rev": "764ef4e401a8f4c6a86ab723533841f072885a5b",
+      "hash": "sha256-5W/+vorhOP/MD19JYzHJfZTkWMM7sKUQqzTDA/7rxZs="
     },
     "2260d89918d88be4914b303e2034765cc741742cf5c276e4007f82730a6f90a3": {
       "url": "https://github.com/zephyrproject-rtos/tinycrypt",
