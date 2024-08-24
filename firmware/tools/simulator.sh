@@ -5,19 +5,15 @@ script_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 top_dir="${script_dir}/../.."
 
 function usage() {
-	echo "Usage: ${0} [-a APP] [-h]
+	echo "Usage: ${0} [-h]
 
-  -a APP        app to simulate (default: central)
   -h            display this help
 " >&2
 	exit 1
 }
 
-app="central"
-
 while getopts "a:h" name; do
 	case "${name}" in
-		a) app="${OPTARG}" ;;
 		h|*) usage ;;
 	esac
 done

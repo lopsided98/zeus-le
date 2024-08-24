@@ -12,41 +12,42 @@
     pkgs = nixpkgs.legacyPackages.${system};
   in {
     packages = {
-      zeus-le-nrf53-audio = pkgs.callPackage ./default.nix {
+      zeus-le-audio = pkgs.callPackage ./default.nix {
         nixpkgs = import nixpkgs;
-        platform = "nrf53";
+        board = "zeus_le";
         firmware = "audio";
       };
 
-      zeus-le-nrf53-central = pkgs.callPackage ./default.nix {
+      zeus-le-central = pkgs.callPackage ./default.nix {
         nixpkgs = import nixpkgs;
-        platform = "nrf53";
+        board = "zeus_le";
         firmware = "central";
       };
 
-      zeus-le-simulator-audio = pkgs.callPackage ./default.nix {
+      # These builds fail due to some obscure BabbleSim issue
+      /*zeus-le-simulator-audio = pkgs.callPackage ./default.nix {
         nixpkgs = import nixpkgs;
-        platform = "simulator";
+        board = "nrf5340bsim";
         firmware = "audio";
       };
 
       zeus-le-simulator-central = pkgs.callPackage ./default.nix {
         nixpkgs = import nixpkgs;
-        platform = "simulator";
+        board = "nrf5340bsim";
         firmware = "central";
-      };
+      };*/
     };
 
     devShells = {
       nrf53 = pkgs.callPackage ./default.nix {
         nixpkgs = import nixpkgs;
-        platform = "nrf53";
+        board = "zeus_le";
         dev = true;
       };
 
       simulator = pkgs.callPackage ./default.nix {
         nixpkgs = import nixpkgs;
-        platform = "simulator";
+        board = "nrf5340bsim";
         dev = true;
       };
 

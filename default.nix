@@ -1,5 +1,5 @@
 { nixpkgs, pkgs, lib, stdenv
-, platform ? "nrf53"
+, board ? "zeus_le"
 , firmware ? "audio"
 , dev ? false
 }: let
@@ -21,8 +21,13 @@
     });
   };
 
+  platform = {
+    "zeus_le" = "arm";
+    "nrf5340bsim" = "simulator";
+  }.${board} or (throw "unsupported board: ${board}");
+
   pkgs' = {
-    "nrf53" = nixpkgs {
+    "arm" = nixpkgs {
       localSystem = stdenv.hostPlatform;
       crossSystem = let
         # Remove an attribute from an attrset by its path
@@ -57,8 +62,12 @@ in pkgs'.callPackage ({
     name = "bin/${name}";
     path = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}${name}";
   }) [
-    "gcc"
+    "ar"
     "g++"
+    "gcc"
+    "ld.bfd"
+    "nm" # Needed by BabbleSim
+    "readelf"
   ]);
 
   # Make a package that can be linked against the Zephyr posix arch for the
@@ -81,7 +90,7 @@ in stdenv.mkDerivation {
 
   depsBuildBuild = lib.optionals dev [
     llvmPackages_latest.clang-tools
-  ] ++ lib.optionals (platform == "nrf53") [
+  ] ++ lib.optionals (platform == "arm") [
     # Splicing is buggy and tries to eval for target platform
     openocd
   ];
@@ -132,7 +141,7 @@ in stdenv.mkDerivation {
   cmakeDir = "../zephyr/share/sysbuild";
 
   cmakeFlags = [
-    "-DBOARD=zeus_le/nrf5340/cpuapp"
+    "-DBOARD=${board}/nrf5340/cpuapp"
     "-DAPP_DIR=../firmware/${firmware}/app"
     # TODO: generate dynamically
     "-DBUILD_VERSION=zephyr-v3.6.0-9291-g8074e6b59293"
@@ -140,11 +149,15 @@ in stdenv.mkDerivation {
 
   preConfigure = ''
     export XDG_CACHE_HOME="$TMPDIR"
-    # Zephyr requires absolute paths
-    export CC="$(command -v $CC)"
-    export CXX="$(command -v $CXX)"
 
     source .zephyr-env
+  '' + lib.optionalString (platform == "simulator") ''
+    # Must be absolute paths
+    cmakeFlagsArray+=(
+      "-DBSIM_COMPONENTS_PATH=$(pwd)/tools/bsim/components"
+      "-DBSIM_OUT_PATH=$(pwd)/tools/bsim"
+    )
+    make -C tools/bsim CC="$CC" AR="$AR" -j "$NIX_BUILD_CORES" everything
   '';
 
   installPhase = ''
