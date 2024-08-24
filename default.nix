@@ -151,8 +151,8 @@ in stdenv.mkDerivation {
     runHook preInstall
 
     mkdir -p "$out"
-    cp app/zephyr/zephyr.elf "$out/zeus_le_central_app.elf"
-    cp net/zephyr/zephyr.elf "$out/zeus_le_central_net.elf"
+    cp app/zephyr/zephyr.elf "$out/zeus_le_${firmware}_app.elf"
+    cp net/zephyr/zephyr.elf "$out/zeus_le_${firmware}_net.elf"
 
     runHook postInstall
   '';
