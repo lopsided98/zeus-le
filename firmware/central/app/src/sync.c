@@ -44,7 +44,7 @@ static struct sync {
     .first_seq = true,
 };
 
-#define LED_ENABLED !IS_ENABLED(CONFIG_ARCH_POSIX)
+#define LED_ENABLED DT_NODE_EXISTS(DT_NODELABEL(led0))
 
 #if LED_ENABLED
 static const struct gpio_dt_spec led =

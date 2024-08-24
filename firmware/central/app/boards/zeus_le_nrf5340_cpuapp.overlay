@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+/ {
+	cdc_ecm_eth0: cdc_ecm_eth0 {
+		compatible = "zephyr,cdc-ecm-ethernet";
+		local-mac-address = [ 02 00 00 85 72 C1 ];
+		remote-mac-address = "8a5488a923a7";
+	};
+};

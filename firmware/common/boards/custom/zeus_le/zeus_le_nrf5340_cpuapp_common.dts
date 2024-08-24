@@ -74,7 +74,7 @@
 };
 
 &qspi {
-	status = "disabled";
+	status = "okay";
 	pinctrl-0 = <&qspi_default>;
 	pinctrl-1 = <&qspi_sleep>;
 	pinctrl-names = "default", "sleep";
