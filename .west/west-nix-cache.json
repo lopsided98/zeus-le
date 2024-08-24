@@ -73,7 +73,7 @@
     "f8a9922e867f5336133cf46e96009bcae531a7f7a99a5ad3c2ab9736451bc312": {
       "url": "https://github.com/zephyrproject-rtos/mbedtls",
       "rev": "2f24831ee13d399ce019c4632b0bcd440a713f7c",
-      "hash": "sha256-mXe04PQocIvBhC2Z4HFVj26Q/qr64I9uBkzVJIlTjoc="
+      "hash": "sha256-IgQFVvsXcAbxvVcrv3U/eEt4fCo+ramzYswI97BAExE="
     },
     "7d25c84001159cd93234e895fe909e1bde478dd904964f2e32f5a301abefb351": {
       "url": "https://github.com/zephyrproject-rtos/net-tools",

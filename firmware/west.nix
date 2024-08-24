@@ -160,7 +160,7 @@ in symlinkJoin {
         url = "https://github.com/zephyrproject-rtos/mbedtls";
         rev = "2f24831ee13d399ce019c4632b0bcd440a713f7c";
         branchName = "manifest-rev";
-        hash = "sha256-mXe04PQocIvBhC2Z4HFVj26Q/qr64I9uBkzVJIlTjoc=";
+        hash = "sha256-IgQFVvsXcAbxvVcrv3U/eEt4fCo+ramzYswI97BAExE=";
     };
 })
 

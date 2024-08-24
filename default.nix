@@ -81,6 +81,7 @@ in stdenv.mkDerivation {
 
   depsBuildBuild = lib.optionals dev [
     llvmPackages_latest.clang-tools
+  ] ++ lib.optionals (platform == "nrf53") [
     # Splicing is buggy and tries to eval for target platform
     openocd
   ];
@@ -106,9 +107,7 @@ in stdenv.mkDerivation {
     west
     requests # west blobs
     anytree # ram_report
-  ]) ++ lib.optionals (platform == "nrf53") [
-    (builtins.trace buildPackages.stdenv.hostPlatform.isAarch (lib.getLib buildPackages.udev))
-  ] ++ lib.optionals (platform == "simulator") [
+  ]) ++ lib.optionals (platform == "simulator") [
     tmux
   ]);
 
