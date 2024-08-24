@@ -37,7 +37,7 @@ manifest:
       revision: 3ede17158a9fe85c160e0384c0ad0306e24ee47e
     - name: west-nix
       remote: lopsided98
-      revision: 2c09b5de284ab4eb3fa69da1613176e83f84dda0
+      revision: 3f31c82804e217842dc40e21ab8f95a037dfc8f7
       import: true
       path: tools/west-nix
   self:

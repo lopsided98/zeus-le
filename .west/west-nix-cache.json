@@ -10,10 +10,10 @@
       "rev": "3ede17158a9fe85c160e0384c0ad0306e24ee47e",
       "hash": "sha256-P7Z9V6D1nB4U+MALk3S745UFh5/dbe2vYr33GItpDk4="
     },
-    "cc39eba8608d9e39ea92294e38fcf5467ad864471d791edfadd272372e0bbb36": {
+    "0e80d2ce28454b7453f8e4728675ea7e48b1e09c6e4f72276e9e74dc9da5b0b4": {
       "url": "https://github.com/lopsided98/west-nix",
-      "rev": "2c09b5de284ab4eb3fa69da1613176e83f84dda0",
-      "hash": "sha256-v4YDB3YZ207csSZaGxQYPZmaWPInzeAg4a5zZTy3T2c="
+      "rev": "3f31c82804e217842dc40e21ab8f95a037dfc8f7",
+      "hash": "sha256-l30Ib09LT0+kFhq6DYqIWlLznRP0ZMxgzEzU6L2d1nQ="
     },
     "10596946c28442301168dd7c1a09fa0617477e789903a3eee170e6073293f1f9": {
       "url": "https://github.com/zephyrproject-rtos/babblesim-manifest",

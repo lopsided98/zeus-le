@@ -1,5 +1,5 @@
 
-{ lib, runCommand, lndir, fetchgit, fetchurl }: 
+{ lib, runCommand, lndir, fetchgit, fetchurl }:
 
 runCommand "west-workspace" {
 nativeBuildInputs = [ lndir ];
@@ -37,9 +37,9 @@ nativeBuildInputs = [ lndir ];
         ${lib.escapeShellArg (
         fetchgit {
             url = "https://github.com/lopsided98/west-nix";
-            rev = "2c09b5de284ab4eb3fa69da1613176e83f84dda0";
+            rev = "3f31c82804e217842dc40e21ab8f95a037dfc8f7";
             branchName = "manifest-rev";
-            hash = "sha256-v4YDB3YZ207csSZaGxQYPZmaWPInzeAg4a5zZTy3T2c=";
+            hash = "sha256-l30Ib09LT0+kFhq6DYqIWlLznRP0ZMxgzEzU6L2d1nQ=";
         })} \
         "$out"/'tools/west-nix'
 
