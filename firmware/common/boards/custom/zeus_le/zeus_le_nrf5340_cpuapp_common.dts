@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "zeus_le_nrf5340_cpuapp_common-pinctrl.dtsi"
-#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <zeus/dt-bindings/regulator/bq2515x.h>
 
 / {
 
@@ -113,10 +113,21 @@
 		bq25150_ldo: ldo {
 			compatible = "ti,bq2515x-regulator";
 
+			regulator-initial-mode = <BQ2515X_REGULATOR_MODE_LDO>;
 			regulator-min-microvolt = <3100000>;
-			regulator-max-microvolt = <3100000>;
+			regulator-max-microvolt = <3500000>;
 		};
-  };
+	};
+
+	rt6160a@75 {
+		compatible = "richtek,rt6160";
+		reg = <0x75>;
+		richtek,vsel-gpios = <&gpio0 20 GPIO_ACTIVE_HIGH>;
+
+		regulator-always-on;
+		regulator-min-microvolt = <3100000>;
+		regulator-max-microvolt = <3500000>;
+	};
 };
 
 &uart0 {

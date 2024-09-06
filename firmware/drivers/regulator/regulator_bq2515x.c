@@ -1,5 +1,4 @@
 /*
- * Copyright 2023-2024 NXP
  * Copyright 2024 Ben Wolsieffer
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -24,7 +23,6 @@ struct regulator_bq2515x_data {
 struct regulator_bq2515x_config {
 	struct regulator_common_config common;
 	const struct device *mfd;
-	bool load_switch;
 };
 
 static int regulator_bq2515x_enable(const struct device *dev)
@@ -160,16 +158,22 @@ static const struct regulator_driver_api api = {
 
 static int regulator_bq2515x_init(const struct device *dev)
 {
+	const struct regulator_bq2515x_config *config = dev->config;
+	uint8_t val;
 	int ret;
 
-	regulator_common_data_init(dev);
+	if (!device_is_ready(config->mfd)) {
+		return -ENODEV;
+	}
 
-	ret = regulator_bq2515x_disable(dev);
+	ret = mfd_bq2515x_reg_read(config->mfd, BQ2515X_LDOCTRL_ADDR, &val);
 	if (ret < 0) {
 		return ret;
 	}
 
-	return regulator_common_init(dev, false);
+	regulator_common_data_init(dev);
+
+	return regulator_common_init(dev, val & BQ2515X_LDOCTRL_EN_LS_LDO);
 }
 
 #define REGULATOR_BQ2515X_INIT(inst)                                                               \

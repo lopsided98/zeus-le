@@ -1,0 +1,33 @@
+# Copyright (c), 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Richtek RT6160 Buck-Boost Converter
+
+compatible: "richtek,rt6160"
+
+include:
+  - name: base.yaml
+  - name: regulator.yaml
+    property-allowlist:
+      - regulator-always-on
+      - regulator-boot-on
+      - regulator-min-microvolt
+      - regulator-max-microvolt
+      - regulator-allowed-modes
+      - regulator-initial-mode
+
+properties:
+  richtek,en-gpios:
+    type: phandle-array
+    description: GPIO connected to EN pin
+  
+  richtek,vsel-gpios:
+    type: phandle-array
+    description: GPIO connected to VSEL pin
+
+  richtek,ramp-pwm:
+    type: boolean
+    description: |
+      Enable ramp-PWM function, which runs the regulator in forced-PWM mode
+      while slewing the output voltage.

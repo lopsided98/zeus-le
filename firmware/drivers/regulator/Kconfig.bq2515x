@@ -8,8 +8,8 @@ config REGULATOR_BQ2515X
 	select I2C
 	select MFD
 	help
-	  Enable the TI BQ25150/BQ25155/BQ25157 battery charger multi-function
-	  device driver.
+	  Enable the TI BQ25150/BQ25155/BQ25157 battery charger
+	  load-switch/LDO driver.
 
 config REGULATOR_BQ2515X_INIT_PRIORITY
 	int "BQ2515x regulator driver init priority"

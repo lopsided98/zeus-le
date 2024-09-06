@@ -17,7 +17,6 @@
  * @name BQ2515X Regulator modes
  * @{
  */
-/* DCDCs */
 #define BQ2515X_REGULATOR_MODE_LDO         0
 #define BQ2515X_REGULATOR_MODE_LOAD_SWITCH 1
 

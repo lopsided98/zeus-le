@@ -10,5 +10,6 @@ menuconfig REGULATOR
 if REGULATOR
 
 rsource "Kconfig.bq2515x"
+rsource "Kconfig.rt6160"
 
 endif # REGULATOR

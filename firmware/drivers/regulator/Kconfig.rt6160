@@ -1,0 +1,19 @@
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+config REGULATOR_RT6160
+	bool "RT6160 Buck-Boost Converter driver"
+	default y
+	depends on DT_HAS_RICHTEK_RT6160_ENABLED
+	select I2C
+	help
+	  Enable the Richtek RT6160 buck-boost converter regulator
+	  driver.
+
+config REGULATOR_RT6160_INIT_PRIORITY
+	int "RT6160 regulator driver init priority"
+	default KERNEL_INIT_PRIORITY_DEVICE
+	depends on REGULATOR_RT6160
+	help
+	  Init priority for the RT6160 regulator driver. It must
+	  be greater than the I2C init priority.
