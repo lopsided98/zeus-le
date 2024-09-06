@@ -1,0 +1,19 @@
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+config REGULATOR_BQ2515X
+	bool "BQ2515x battery charger LS/LDO driver"
+	default y
+	depends on DT_HAS_TI_BQ2515X_REGULATOR_ENABLED
+	select I2C
+	select MFD
+	help
+	  Enable the TI BQ25150/BQ25155/BQ25157 battery charger multi-function
+	  device driver.
+
+config REGULATOR_BQ2515X_INIT_PRIORITY
+	int "BQ2515x regulator driver init priority"
+	default 86
+	depends on REGULATOR_BQ2515X
+	help
+	  Init priority for the BQ2515x regulator driver.

@@ -1,0 +1,14 @@
+# Copyright 2023 Nordic Semiconductor ASA
+# Copyright 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig MFD
+	bool "Multi-function device (MFD) drivers"
+	help
+	  Include drivers for multi-function devices
+
+if MFD
+
+rsource "Kconfig.bq2515x"
+
+endif # MFD

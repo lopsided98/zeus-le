@@ -17,12 +17,18 @@
 		zephyr,bt-hci = &bt_hci_ipc0;
 		nordic,802154-spinel-ipc = &ipc0;
 		zephyr,ieee802154 = &ieee802154;
+		zephyr,wifi = &wlan0;
 	};
 
-	/* These aliases are provided for compatibility with samples */
 	aliases {
 		watchdog0 = &wdt0;
+		i2s = &i2s0;
+		codec = &tlv320adc;
 	};
+};
+
+&clock {
+	hfclkaudio-frequency = <11289600>;
 };
 
 &vregmain {
@@ -59,10 +65,58 @@
 
 &i2c1 {
 	compatible = "nordic,nrf-twim";
-	status = "disabled";
+	status = "okay";
 	pinctrl-0 = <&i2c1_default>;
 	pinctrl-1 = <&i2c1_sleep>;
 	pinctrl-names = "default", "sleep";
+
+	tlv320adc: tlv320adc@4e {
+		compatible = "ti,tlv320adcx120";
+		reg = <0x4e>;
+		// TODO: configure ADC GPIO1 as IRQ in driver. Pull-up should not be
+		// necessary as the pin can be configured as push-pull.
+		int-gpios = <&gpio1 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+
+		avdd-supply = <&bq25150_ldo>;
+		internal-areg;
+
+		left {
+			channel = <1>;
+			line-in;
+			slot = <0>;
+		};
+
+		right {
+			channel = <2>;
+			line-in;
+			slot = <32>;
+		};
+	};
+
+	lp5810@50 {
+		compatible = "ti,lp5810";
+		reg = <0x50>;
+	};
+
+	bq25150@6b {
+		compatible = "ti,bq2515x";
+		reg = <0x6b>;
+		int-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
+
+		charger {
+			compatible = "ti,bq2515x-charger";
+
+			constant-charge-current-max-microamp = <100000>;
+			input-current-max-milliamp = <150>;
+		};
+
+		bq25150_ldo: ldo {
+			compatible = "ti,bq2515x-regulator";
+
+			regulator-min-microvolt = <3100000>;
+			regulator-max-microvolt = <3100000>;
+		};
+  };
 };
 
 &uart0 {
@@ -71,6 +125,13 @@
 	pinctrl-0 = <&uart0_default>;
 	pinctrl-1 = <&uart0_sleep>;
 	pinctrl-names = "default", "sleep";
+};
+
+&i2s0 {
+	status = "okay";
+	pinctrl-0 = <&i2s0_default>;
+	pinctrl-names = "default";
+	clock-source = "ACLK";
 };
 
 &qspi {
@@ -104,6 +165,39 @@
 		// nRF53 SPI is 16 MHz. Probably should hack the driver to allow
 		// overclocking to 32 MHz.
 		spi-max-frequency = <32000000>;
+	};
+};
+
+&qspi {
+	nrf70: nrf7002@1 {
+		compatible = "nordic,nrf7002-qspi";
+		status = "okay";
+		reg = <1>;
+		qspi-frequency = <24000000>;
+		qspi-quad-mode;
+
+		iovdd-ctrl-gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
+		bucken-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+		host-irq-gpios = <&gpio0 23 GPIO_ACTIVE_HIGH>;
+		req-gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
+		status0-gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+		grant-gpios = <&gpio0 24 (GPIO_PULL_DOWN | GPIO_ACTIVE_LOW)>;
+		swctrl1-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+
+		wifi-max-tx-pwr-2g-dsss = <21>;
+		wifi-max-tx-pwr-2g-mcs0 = <16>;
+		wifi-max-tx-pwr-2g-mcs7 = <16>;
+
+		wifi-max-tx-pwr-5g-low-mcs0 = <9>;
+		wifi-max-tx-pwr-5g-low-mcs7 = <9>;
+		wifi-max-tx-pwr-5g-mid-mcs0 = <11>;
+		wifi-max-tx-pwr-5g-mid-mcs7 = <11>;
+		wifi-max-tx-pwr-5g-high-mcs0 = <13>;
+		wifi-max-tx-pwr-5g-high-mcs7 = <13>;
+
+		wlan0: wlan {
+			compatible = "nordic,wlan";
+		};
 	};
 };
 

@@ -1,4 +1,7 @@
 name: zeus_le
 build:
+  cmake: .
+  kconfig: Kconfig
   settings:
     board_root: common
+    dts_root: common

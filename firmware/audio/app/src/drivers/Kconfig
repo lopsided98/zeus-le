@@ -1,3 +1,5 @@
+rsource "disk/Kconfig"
+
 config AUDIO_DUMMY_CODEC
 	bool "No-op input codec"
 	depends on DT_HAS_ZEPHYR_DUMMY_CODEC_ENABLED
@@ -19,7 +21,17 @@ config I2S_TONE
 
 config AUDIO_SGTL5000
 	bool "SGTL5000 codec support"
+	default y
 	depends on DT_HAS_NXP_SGTL5000_ENABLED
-	depends on I2C
+	select I2C
 	help
 	  Enable SGTL5000 codec support on the selected board
+
+config AUDIO_TLV320ADCX120
+	bool "TLV320ADCx120 ADC support"
+	default y
+	depends on DT_HAS_TI_TLV320ADCX120_ENABLED
+	select I2C
+	depends on GPIO
+	help
+	  Enable TLV320ADCx120 support on the selected board

@@ -17,4 +17,12 @@
 			status = "okay";
 		};
 	};
+
+	sdmmc-cached {
+		compatible = "zephyr,disk-cache";
+		disk-name = "SD";
+		backing-disk-name = "SD_raw";
+		sector-size = <512>;
+		sector-count = <8>;
+	};
 };

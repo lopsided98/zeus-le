@@ -18,3 +18,10 @@ CONFIG_SERIAL=y
 # Enable console
 CONFIG_CONSOLE=y
 CONFIG_UART_CONSOLE=y
+
+# Enable RGB LED
+CONFIG_LED=y
+
+# Enable battery charger
+CONFIG_CHARGER=y
+CONFIG_REGULATOR=y

@@ -241,6 +241,7 @@ int record_buffer(const struct audio_block *block) {
     }
 
     if (old_file) {
+        LOG_INF("wav write");
         ret = wav_write(&r->file, block->buf, split_offset);
         if (ret) {
             LOG_ERR("WAV write failed (err %d)", ret);
@@ -251,12 +252,14 @@ int record_buffer(const struct audio_block *block) {
         int64_t uptime_ms = k_uptime_get();
         if (uptime_ms - r->last_size_update_time_ms >=
             RECORD_UPDATE_SIZE_INTERVAL_MS) {
+            LOG_INF("update size");
             ret = wav_update_size(&r->file);
             if (ret) {
                 LOG_ERR("failed to update WAV size (err %d)", ret);
                 goto file_error;
             }
 
+            LOG_INF("sync");
             ret = fs_sync(&r->file);
             if (ret) {
                 LOG_ERR("failed to sync WAV file (err %d)", ret);

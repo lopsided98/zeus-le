@@ -1,0 +1,18 @@
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+config MFD_BQ2515X
+	bool "BQ2515x battery charger multi-function device driver"
+	default y
+	depends on DT_HAS_TI_BQ2515X_ENABLED
+	select I2C
+	help
+	  Enable the TI BQ25150/BQ25155/BQ25157 battery charger multi-function
+	  device driver.
+
+config MFD_BQ2515X_INIT_PRIORITY
+	int "BQ2515x MFD initialization priority"
+	default MFD_INIT_PRIORITY
+	depends on MFD_BQ2515X
+	help
+	  Multi-function device initialization priority for BQ2515x.

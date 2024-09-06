@@ -1,12 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-#include <hal/nrf_clock.h>
-#include <hal/nrf_ipc.h>
-#include <nrfx_dppi.h>
-#include <nrfx_timer.h>
 #include <zephyr/bluetooth/bluetooth.h>
-#include <zephyr/drivers/clock_control/nrf_clock_control.h>
-#include <zephyr/drivers/gpio.h>
-#include <zephyr/drivers/mbox.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/settings/settings.h>
@@ -18,9 +11,12 @@
 #include "record.h"
 #include "sd_card.h"
 #include "sync_timer.h"
-#include "usb.h"
+#include "zeus/usb.h"
+#include "zeus/wifi.h"
 
 LOG_MODULE_REGISTER(audio_app);
+
+WIFI_POWER_OFF_REGISTER();
 
 int main(void) {
     // Initialize the Bluetooth Subsystem

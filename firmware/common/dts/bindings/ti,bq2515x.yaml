@@ -1,0 +1,32 @@
+# Copyright 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  BQ25150/BQ25155/BQ25157 I2C Controlled, 500-mA, 1-cell linear charger with
+  10-nA IQ, power path, regulated system voltage, 16-bit ADC and LDO
+
+  The device has child nodes for the charger and LS/LDO. For example:
+
+  bq25155@6b {
+    compatible = "ti,bq2515x";
+    reg = <0x6b>;
+
+    charger {
+      compatible = "ti,bq2515x-charger";
+
+      constant-charge-current-max-microamp = <200000>;
+      input-current-max-milliamp = <500>;
+    };
+
+    ldo {
+      compatible = "ti,bq2515x-regulator";
+    };
+  };
+
+compatible: "ti,bq2515x"
+
+include: i2c-device.yaml
+
+properties:
+  int-gpios:
+      type: phandle-array

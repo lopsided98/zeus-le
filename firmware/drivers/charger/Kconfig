@@ -1,0 +1,13 @@
+# Copyright 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig CHARGER
+	bool "Battery charger drivers"
+	help
+	  Enable battery charger driver configuration.
+
+if CHARGER
+
+rsource "Kconfig.bq2515x"
+
+endif # CHARGER

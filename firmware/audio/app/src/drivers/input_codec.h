@@ -9,37 +9,35 @@
  * Codec properties that can be set by input_codec_set_property().
  */
 enum input_codec_property {
-    INPUT_CODEC_PROPERTY_SOURCE, /**< Input source */
-    INPUT_CODEC_PROPERTY_VOLUME, /**< Input volume */
-    INPUT_CODEC_PROPERTY_MUTE,   /**< Input mute/unmute */
+	INPUT_CODEC_PROPERTY_SOURCE, /**< Input source */
+	INPUT_CODEC_PROPERTY_VOLUME, /**< Input volume */
+	INPUT_CODEC_PROPERTY_MUTE,   /**< Input mute/unmute */
 };
 
 /**
  * Audio input sources
  */
 enum input_codec_source {
-    INPUT_CODEC_SOURCE_MIC,     /**< Microphone input */
-    INPUT_CODEC_SOURCE_LINE_IN, /**< Line in */
+	INPUT_CODEC_SOURCE_MIC,     /**< Microphone input */
+	INPUT_CODEC_SOURCE_LINE_IN, /**< Line in */
 };
 
 /**
  * Codec property values
  */
 union input_codec_property_value {
-    enum input_codec_source source; /**< Input source */
-    int vol;                        /**< Volume level in 0.5dB resolution */
-    bool mute;                      /**< Mute if @a true, unmute if @a false */
+	enum input_codec_source source; /**< Input source */
+	int vol;                        /**< Volume level in 0.5dB resolution */
+	bool mute;                      /**< Mute if @a true, unmute if @a false */
 };
 
 struct input_codec_api {
-    int (*configure)(const struct device *dev, struct audio_codec_cfg *cfg);
-    int (*start_input)(const struct device *dev);
-    int (*stop_input)(const struct device *dev);
-    int (*set_property)(const struct device *dev,
-                        enum input_codec_property property,
-                        audio_channel_t channel,
-                        union input_codec_property_value val);
-    int (*apply_properties)(const struct device *dev);
+	int (*configure)(const struct device *dev, struct audio_codec_cfg *cfg);
+	int (*start_input)(const struct device *dev);
+	int (*stop_input)(const struct device *dev);
+	int (*set_property)(const struct device *dev, enum input_codec_property property,
+			    audio_channel_t channel, union input_codec_property_value val);
+	int (*apply_properties)(const struct device *dev);
 };
 
 /**
@@ -53,12 +51,11 @@ struct input_codec_api {
  *
  * @return 0 on success, negative error code on failure
  */
-static inline int input_codec_configure(const struct device *dev,
-                                        struct audio_codec_cfg *cfg) {
-    const struct input_codec_api *api =
-        (const struct input_codec_api *)dev->api;
+static inline int input_codec_configure(const struct device *dev, struct audio_codec_cfg *cfg)
+{
+	const struct input_codec_api *api = (const struct input_codec_api *)dev->api;
 
-    return api->configure(dev, cfg);
+	return api->configure(dev, cfg);
 }
 
 /**
@@ -70,11 +67,11 @@ static inline int input_codec_configure(const struct device *dev,
  *
  * @return 0 on success, negative error code on failure
  */
-static inline int input_codec_start_input(const struct device *dev) {
-    const struct input_codec_api *api =
-        (const struct input_codec_api *)dev->api;
+static inline int input_codec_start_input(const struct device *dev)
+{
+	const struct input_codec_api *api = (const struct input_codec_api *)dev->api;
 
-    return api->start_input(dev);
+	return api->start_input(dev);
 }
 
 /**
@@ -86,11 +83,11 @@ static inline int input_codec_start_input(const struct device *dev) {
  *
  * @return 0 on success, negative error code on failure
  */
-static inline int input_codec_stop_input(const struct device *dev) {
-    const struct input_codec_api *api =
-        (const struct input_codec_api *)dev->api;
+static inline int input_codec_stop_input(const struct device *dev)
+{
+	const struct input_codec_api *api = (const struct input_codec_api *)dev->api;
 
-    return api->stop_input(dev);
+	return api->stop_input(dev);
 }
 /**
  * @brief Set a codec property defined by input_codec_property
@@ -104,13 +101,14 @@ static inline int input_codec_stop_input(const struct device *dev) {
  *
  * @return 0 on success, negative error code on failure
  */
-static inline int input_codec_set_property(
-    const struct device *dev, enum input_codec_property property,
-    audio_channel_t channel, union input_codec_property_value val) {
-    const struct input_codec_api *api =
-        (const struct input_codec_api *)dev->api;
+static inline int input_codec_set_property(const struct device *dev,
+					   enum input_codec_property property,
+					   audio_channel_t channel,
+					   union input_codec_property_value val)
+{
+	const struct input_codec_api *api = (const struct input_codec_api *)dev->api;
 
-    return api->set_property(dev, property, channel, val);
+	return api->set_property(dev, property, channel, val);
 }
 
 /**
@@ -124,9 +122,9 @@ static inline int input_codec_set_property(
  *
  * @return 0 on success, negative error code on failure
  */
-static inline int input_codec_apply_properties(const struct device *dev) {
-    const struct input_codec_api *api =
-        (const struct input_codec_api *)dev->api;
+static inline int input_codec_apply_properties(const struct device *dev)
+{
+	const struct input_codec_api *api = (const struct input_codec_api *)dev->api;
 
-    return api->apply_properties(dev);
+	return api->apply_properties(dev);
 }

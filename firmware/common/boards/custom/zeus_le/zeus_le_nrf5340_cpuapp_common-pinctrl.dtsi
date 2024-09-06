@@ -35,6 +35,14 @@
 		};
 	};
 
+	i2s0_default: i2s0_default {
+		group1 {
+			psels = <NRF_PSEL(I2S_SCK_M, 1, 10)>,
+				<NRF_PSEL(I2S_LRCK_M, 1, 11)>,
+				<NRF_PSEL(I2S_SDIN, 1, 12)>;
+		};
+	};
+
 	qspi_default: qspi_default {
 		group1 {
 			psels = <NRF_PSEL(QSPI_SCK, 0, 17)>,

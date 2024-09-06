@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-#include <inttypes.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
@@ -9,6 +8,8 @@
 
 #include "sync.h"
 #include "zeus/protocol.h"
+#include "zeus/usb.h"
+#include "zeus/wifi.h"
 
 LOG_MODULE_REGISTER(central, LOG_LEVEL_DBG);
 
@@ -155,6 +156,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(stop, NULL, "Stop recording", cmd_stop), SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(zeus, &sub_zeus, "Zeus commands", NULL);
 
+WIFI_POWER_OFF_REGISTER();
+
 int main(void) {
     int ret;
 
@@ -170,6 +173,8 @@ int main(void) {
         LOG_WRN("failed to load settings (err %d)", ret);
         // No return, settings failure is not fatal
     }
+
+    usb_init();
 
     ret = connect_adv_init();
     if (ret) {

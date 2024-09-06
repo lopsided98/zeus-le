@@ -1,0 +1,12 @@
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+config LP58XX
+	bool "LP58xx LED controller"
+	default y
+	depends on DT_HAS_TI_LP5810_ENABLED || DT_HAS_TI_LP5811_ENABLED || \
+		   DT_HAS_TI_LP5812_ENABLED || DT_HAS_TI_LP5813_ENABLED
+	select I2C
+	help
+	  Enable driver for the Texas Instruments LP58xx I2C LED
+	  controllers. It supports: LP5810, LP5811, LP5812 and LP5813.

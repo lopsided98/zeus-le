@@ -1,0 +1,14 @@
+# Copyright (c) 2021 Nordic Semiconductor ASA
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig DISK_DRIVERS
+	bool "Disk drivers"
+	help
+	  Disk Driver configuration
+
+if DISK_DRIVERS
+
+rsource "Kconfig.cache"
+
+endif # DISK_DRIVERS

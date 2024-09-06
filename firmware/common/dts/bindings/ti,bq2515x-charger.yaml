@@ -1,0 +1,27 @@
+# Copyright 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  BQ2515x battery charger device
+
+compatible: "ti,bq2515x-charger"
+
+include: [battery.yaml]
+
+properties:
+  constant-charge-current-max-microamp:
+    type: int
+    default: 0
+    description: |
+      Charge current set at init time in uA, available range is 1.25 mA to
+      500 mA. The value specified will be rounded down to the next smallest
+      implemented value. If set to 0 (default), skip setting the charge current
+      value at driver initialization.
+
+  input-current-max-milliamp:
+    type: int
+    default: 0
+    enum: [0, 50, 100, 150, 200, 300, 400, 500, 600]
+    description: |
+      Input current limit set at init time in mA. If set to 0 (default), skip
+      setting the input current limit at driver initialization.

@@ -1,0 +1,5 @@
+description: Texas Instruments LP5810 I2C LED controller node
+
+compatible: ti,lp5810
+
+include: ti,lp58xx.yaml

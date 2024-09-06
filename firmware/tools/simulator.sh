@@ -55,6 +55,7 @@ function set_app_cmd() {
   mkdir -p "${sim_data_dir}"
   cd "${sim_data_dir}"
   app_cmd=(
+    #"gdb" "--args"
     "${build_dir}/zephyr/zephyr.exe"
     "-s=${sim}"
     "-d=${d}"

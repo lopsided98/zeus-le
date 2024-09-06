@@ -1,0 +1,18 @@
+# Copyright (c) 2016 Intel Corporation
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+config DISK_DRIVER_CACHE
+	bool "Disk driver caching layer"
+	depends on DT_HAS_ZEPHYR_DISK_CACHE_ENABLED
+	default y
+	help
+	  Cache layer on top of another disk driver.
+
+if DISK_DRIVER_CACHE
+
+module = DISK_CACHE
+module-str = "Disk cache"
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # DISK_DRIVER_CACHE

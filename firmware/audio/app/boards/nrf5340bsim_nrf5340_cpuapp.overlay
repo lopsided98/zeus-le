@@ -50,7 +50,7 @@
 	sdmmc {
 		compatible = "zephyr,flash-disk";
 		partition = <&sdmmc_partition>;
-		disk-name = "SD";
+		disk-name = "SD_raw";
 		cache-size = <512>;
 	};
 

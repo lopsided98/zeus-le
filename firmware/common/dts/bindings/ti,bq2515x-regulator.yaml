@@ -1,0 +1,18 @@
+# Copyright (c), 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  BQ2515x battery charger load-switch/LDO regulator
+
+compatible: "ti,bq2515x-regulator"
+
+include:
+  - name: base.yaml
+  - name: regulator.yaml
+    property-allowlist:
+      - regulator-always-on
+      - regulator-boot-on
+      - regulator-min-microvolt
+      - regulator-max-microvolt
+      - regulator-allowed-modes
+      - regulator-initial-mode

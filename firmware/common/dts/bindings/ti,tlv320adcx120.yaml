@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+description: TI TLV320ADCx120 Audio ADC
+
+compatible: ti,tlv320adcx120
+
+include: i2c-device.yaml
+
+properties:
+  int-gpios:
+    type: phandle-array
+
+  avdd-supply:
+    type: phandle
+    description: |
+      Reference to the regulator that controls power to the AVDD supply rail.
+      The referenced devicetree node must have a regulator compatible.
+
+  internal-areg:
+    type: boolean
+    description: |
+      Use the internally generated 1.8V AREG supply.
+
+child-binding:
+  description: Input channel configuration
+
+  properties:
+    channel: 
+      type: int
+      description: Channel number (1-4)
+      enum: [1, 2, 3, 4]
+    line-in:
+      type: boolean
+      description: Enable line input mode.
+    dc-coupled:
+      type: boolean
+      description: Enable DC coupled input mode.
+    impedance-ohms:
+      type: int
+      default: 2500
+      description: Channel input impedance in ohms.
+      enum: [ 2500, 10000, 20000 ]
+    slot:
+      type: int
+      required: true
+      description: Channel slot assignment in ASI data

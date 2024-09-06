@@ -105,8 +105,8 @@ static struct audio {
     /// Last controller input
     int16_t hfclkaudio_increment;
 } audio = {
-    // .codec = DEVICE_DT_GET(DT_ALIAS(codec)),
-    // .i2s = DEVICE_DT_GET(DT_ALIAS(i2s)),
+    .codec = DEVICE_DT_GET(DT_ALIAS(codec)),
+    .i2s = DEVICE_DT_GET(DT_ALIAS(i2s)),
     .slab = &audio_slab,
     .pool = &audio_pool,
     .started = &audio_started,
@@ -300,7 +300,6 @@ static void audio_egu_handler(uint8_t event_idx, void *p_context) {
 }
 
 int audio_init() {
-    return -ENOTSUP;
     int err;
     struct audio *a = &audio;
     if (a->init) return -EALREADY;

@@ -1,0 +1,20 @@
+# Copyright (c) 2020 Seagate Technology LLC
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+include: ["i2c-device.yaml", "led-controller.yaml"]
+
+properties:
+  max-curr-opt:
+    type: boolean
+    description: |
+      If enabled, the maximum current output is set to 51 mA (25.5 mA else).
+
+child-binding:
+  properties:
+    label:
+      required: true
+    index:
+      required: true
+    color-mapping:
+      required: true

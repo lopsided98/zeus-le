@@ -1,0 +1,13 @@
+# Copyright 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig LED
+	bool "Light-Emitting Diode (LED) drivers"
+	help
+	  Include LED drivers in the system configuration.
+
+if LED
+
+rsource "Kconfig.lp58xx"
+
+endif # LED

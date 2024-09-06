@@ -1,0 +1,34 @@
+# Copyright (c) 2024 Ben Wolsieffer
+# SPDX-License-Identifier: Apache-2.0
+
+description: Disk driver caching layer
+
+compatible: "zephyr,disk-cache"
+
+include: ["base.yaml"]
+
+properties:
+  disk-name:
+    type: string
+    required: true
+    description: |
+      Disk name.
+
+  backing-disk-name:
+    type: string
+    required: true
+    description: |
+      Name of the disk that underlies the cache.
+
+  sector-size:
+    type: int
+    required: true
+    enum: [512, 1024, 2048, 4096, 8192, 16384, 32768, 65536]
+    description: |
+      Disk sector size in bytes. Must match the underlying disk.
+
+  sector-count:
+    type: int
+    required: true
+    description: |
+      Number of sectors in the cache.
