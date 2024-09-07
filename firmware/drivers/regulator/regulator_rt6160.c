@@ -237,15 +237,15 @@ static int regulator_rt6160_init(const struct device *dev)
 			return -ENODEV;
 		}
 
+		/* Supposed to leave regulator state as is if neither REGULATOR_INIT_ENABLED or
+		 * REGULATOR_BOOT_OFF is set, but we can't determine the existing pin state, so
+		 * always disable it unless REGULATOR_INIT_ENABLED is set. */
+		enabled = config->common.flags & REGULATOR_INIT_ENABLED;
 		ret = gpio_pin_configure_dt(&config->en_gpio,
-					    config->common.flags & REGULATOR_INIT_ENABLED
-						    ? GPIO_OUTPUT_ACTIVE
-						    : GPIO_OUTPUT);
+					    enabled ? GPIO_OUTPUT_ACTIVE : GPIO_OUTPUT_INACTIVE);
 		if (ret < 0) {
 			return ret;
 		}
-
-		enabled = gpio_pin_get_dt(&config->en_gpio);
 	} else {
 		/* No EN GPIO configured, so assume EN pin is hardwired high. */
 		enabled = true;

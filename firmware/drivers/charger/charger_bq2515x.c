@@ -26,6 +26,7 @@ LOG_MODULE_REGISTER(bq2515x_charger, CONFIG_CHARGER_LOG_LEVEL);
 
 struct charger_bq2515x_data {
 	struct gpio_callback event_cb;
+	bool ce_gpio_active;
 };
 
 struct charger_bq2515x_config {
@@ -100,10 +101,14 @@ static uint32_t bq2515x_ilim_to_ma(uint8_t ilim)
 static int bq2515x_charge_enable(const struct device *dev, const bool enable)
 {
 	const struct charger_bq2515x_config *config = dev->config;
+	struct charger_bq2515x_data *data = dev->data;
 	int ret;
 
 	if (config->ce_gpio.port != NULL) {
 		ret = gpio_pin_set_dt(&config->ce_gpio, enable);
+		if (ret == 0) {
+			data->ce_gpio_active = enable;
+		}
 	} else {
 		uint8_t value = enable ? 0 : BQ2515X_ICCTRL2_CHARGER_DISABLE;
 
@@ -184,6 +189,7 @@ static int bq2515x_get_online(const struct device *dev, enum charger_online *onl
 static int bq2515x_get_status(const struct device *dev, enum charger_status *status)
 {
 	const struct charger_bq2515x_config *config = dev->config;
+	struct charger_bq2515x_data *data = dev->data;
 	uint8_t stat0;
 	uint8_t icctrl2;
 	int ret;
@@ -198,11 +204,9 @@ static int bq2515x_get_status(const struct device *dev, enum charger_status *sta
 		return 0;
 	}
 
-	if (config->ce_gpio.port != NULL) {
-		if (!gpio_pin_get_dt(&config->ce_gpio)) {
-			*status = CHARGER_STATUS_NOT_CHARGING;
-			return 0;
-		}
+	if (!data->ce_gpio_active) {
+		*status = CHARGER_STATUS_NOT_CHARGING;
+		return 0;
 	}
 
 	ret = mfd_bq2515x_reg_read(config->mfd, BQ2515X_ICCTRL2_ADDR, &icctrl2);
@@ -361,7 +365,9 @@ static int charger_bq2525x_init(const struct device *dev)
 }
 
 #define CHARGER_BQ2525X_INIT(inst)                                                                 \
-	static struct charger_bq2515x_data data_##inst;                                            \
+	static struct charger_bq2515x_data data_##inst = {                                         \
+		.ce_gpio_active = true,                                                            \
+	};                                                                                         \
                                                                                                    \
 	static const struct charger_bq2515x_config config_##inst = {                               \
 		.mfd = DEVICE_DT_GET(DT_INST_PARENT(inst)),                                        \
