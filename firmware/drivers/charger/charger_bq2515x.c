@@ -198,6 +198,13 @@ static int bq2515x_get_status(const struct device *dev, enum charger_status *sta
 		return 0;
 	}
 
+	if (config->ce_gpio.port != NULL) {
+		if (!gpio_pin_get_dt(&config->ce_gpio)) {
+			*status = CHARGER_STATUS_NOT_CHARGING;
+			return 0;
+		}
+	}
+
 	ret = mfd_bq2515x_reg_read(config->mfd, BQ2515X_ICCTRL2_ADDR, &icctrl2);
 	if (ret < 0) {
 		return ret;
