@@ -314,7 +314,12 @@ static int charger_bq2525x_init(const struct device *dev)
 	gpio_init_callback(&data->event_cb, bq2515x_event_handler,
 			   BIT(BQ2515X_EVENT_IINLIM_ACTIVE) | BIT(BQ2515X_EVENT_VINDPM_ACTIVE) |
 				   BIT(BQ2515X_EVENT_VDPPM_ACTIVE));
-	mfd_bq2515x_add_callback(dev, &data->event_cb);
+	mfd_bq2515x_add_callback(cfg->mfd, &data->event_cb);
+
+	/* Disable watchdog */
+	ret = mfd_bq2515x_reg_update(cfg->mfd, BQ2515X_CHARGERCTRL0_ADDR,
+				     BQ2515X_CHARGERCTRL0_WATCHDOG_DISABLE,
+				     BQ2515X_CHARGERCTRL0_WATCHDOG_DISABLE);
 
 	if (cfg->initial_charge_current_ua > 0) {
 		ret = bq2515x_set_charge_current(dev, cfg->initial_charge_current_ua);

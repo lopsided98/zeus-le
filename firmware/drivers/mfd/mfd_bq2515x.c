@@ -16,6 +16,7 @@
 #include <zephyr/drivers/gpio/gpio_utils.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/byteorder.h>
 #include <zephyr/sys/util.h>
 #include <zeus/drivers/mfd/bq2515x.h>
 
@@ -32,39 +33,7 @@ struct mfd_bq2515x_data {
 	struct gpio_callback int_callback;
 	struct k_work int_work;
 	sys_slist_t callbacks;
-};
-
-struct event_reg {
-	uint8_t offset;
-	uint8_t mask;
-};
-
-static const struct event_reg event_reg[BQ2515X_EVENT_MAX] = {
-	[BQ2515X_EVENT_CHARGE_CV] = {0, BIT(6)},
-	[BQ2515X_EVENT_CHARGE_DONE] = {0, BIT(5)},
-	[BQ2515X_EVENT_IINLIM_ACTIVE] = {0, BIT(4)},
-	[BQ2515X_EVENT_VDPPM_ACTIVE] = {0, BIT(3)},
-	[BQ2515X_EVENT_VINDPM_ACTIVE] = {0, BIT(2)},
-	[BQ2515X_EVENT_THERMREG_ACTIVE] = {0, BIT(1)},
-	[BQ2515X_EVENT_VIN_PGOOD] = {0, BIT(0)},
-	[BQ2515X_EVENT_VIN_OVP_FAULT] = {1, BIT(7)},
-	[BQ2515X_EVENT_BAT_OCP_FAULT] = {1, BIT(5)},
-	[BQ2515X_EVENT_BAT_UVLO_FAULT] = {1, BIT(4)},
-	[BQ2515X_EVENT_TS_COLD] = {1, BIT(3)},
-	[BQ2515X_EVENT_TS_COOL] = {1, BIT(2)},
-	[BQ2515X_EVENT_TS_WARM] = {1, BIT(1)},
-	[BQ2515X_EVENT_TS_HOT] = {1, BIT(0)},
-	[BQ2515X_EVENT_ADC_READY] = {2, BIT(7)},
-	[BQ2515X_EVENT_COMP1_ALARM] = {2, BIT(6)},
-	[BQ2515X_EVENT_COMP2_ALARM] = {2, BIT(5)},
-	[BQ2515X_EVENT_COMP3_ALARM] = {2, BIT(4)},
-	[BQ2515X_EVENT_TS_OPEN] = {2, BIT(0)},
-	[BQ2515X_EVENT_WD_FAULT] = {3, BIT(6)},
-	[BQ2515X_EVENT_SAFETY_TIMER_FAULT] = {3, BIT(5)},
-	[BQ2515X_EVENT_LDO_OCP_FAULT] = {3, BIT(4)},
-	[BQ2515X_EVENT_MRWAKE1_TIMEOUT] = {3, BIT(2)},
-	[BQ2515X_EVENT_MRWAKE2_TIMEOUT] = {3, BIT(1)},
-	[BQ2515X_EVENT_MRRESET_WARN] = {3, BIT(0)},
+	uint32_t int_mask;
 };
 
 static void bq2515x_int_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
@@ -77,29 +46,34 @@ static void bq2515x_int_handler(const struct device *dev, struct gpio_callback *
 static void bq2515x_int_work_handler(struct k_work *work)
 {
 	struct mfd_bq2515x_data *data = CONTAINER_OF(work, struct mfd_bq2515x_data, int_work);
-	uint8_t buf[4];
+	uint32_t flags;
 	int ret;
 
 	/* Read (and clear) all flag registers */
-	ret = mfd_bq2515x_reg_read_burst(data->dev, BQ2515X_FLAG0_ADDR, buf, sizeof(buf));
+	ret = mfd_bq2515x_reg_read_burst(data->dev, BQ2515X_FLAG0_ADDR, &flags, sizeof(flags));
 	if (ret < 0) {
 		k_work_submit(&data->int_work);
 		return;
 	}
 
-	uint32_t pin_mask = 0;
-	for (int i = 0; i < BQ2515X_EVENT_MAX; i++) {
-		struct event_reg event = event_reg[i];
-		if (buf[event.offset] & event.mask) {
-			pin_mask |= BIT(i);
-		}
-	}
+	/* Treat 4 flag registers as a 32-bit LE integer */
+	flags = sys_le32_to_cpu(flags);
 
-	if (pin_mask != 0) {
-		gpio_fire_callbacks(&data->callbacks, data->dev, pin_mask);
+	if (flags != 0) {
+		gpio_fire_callbacks(&data->callbacks, data->dev, flags);
 	} else {
 		LOG_WRN("Spurious interrupt");
 	}
+}
+
+static int mfd_bq2515x_write_int_mask(const struct device *dev)
+{
+	const struct mfd_bq2515x_config *config = dev->config;
+	struct mfd_bq2515x_data *data = dev->data;
+	uint8_t buf[1 + sizeof(data->int_mask)] = {BQ2515X_MASK0_ADDR};
+	memcpy(buf + 1, &data->int_mask, sizeof(data->int_mask));
+
+	return i2c_write_dt(&config->i2c, buf, sizeof(buf));
 }
 
 static int mfd_bq2515x_init(const struct device *dev)
@@ -134,6 +108,11 @@ static int mfd_bq2515x_init(const struct device *dev)
 	}
 
 	ret = mfd_bq2515x_software_reset(dev);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = mfd_bq2515x_write_int_mask(dev);
 	if (ret < 0) {
 		return ret;
 	}
@@ -234,6 +213,13 @@ int mfd_bq2515x_software_reset(const struct device *dev)
 int mfd_bq2515x_add_callback(const struct device *dev, struct gpio_callback *callback)
 {
 	struct mfd_bq2515x_data *data = dev->data;
+	int ret;
+
+	data->int_mask &= ~callback->pin_mask;
+	ret = mfd_bq2515x_write_int_mask(dev);
+	if (ret < 0) {
+		return ret;
+	}
 
 	return gpio_manage_callback(&data->callbacks, callback, true);
 }
@@ -241,12 +227,21 @@ int mfd_bq2515x_add_callback(const struct device *dev, struct gpio_callback *cal
 int mfd_bq2515x_remove_callback(const struct device *dev, struct gpio_callback *callback)
 {
 	struct mfd_bq2515x_data *data = dev->data;
+	int ret;
 
-	return gpio_manage_callback(&data->callbacks, callback, false);
+	ret = gpio_manage_callback(&data->callbacks, callback, false);
+	if (ret < 0) {
+		return ret;
+	}
+
+	data->int_mask |= callback->pin_mask;
+	return mfd_bq2515x_write_int_mask(dev);
 }
 
 #define MFD_BQ2515X_DEFINE(inst)                                                                   \
-	static struct mfd_bq2515x_data data_##inst;                                                \
+	static struct mfd_bq2515x_data data_##inst = {                                             \
+		.int_mask = 0xffffffff,                                                                     \
+	};                                                                                         \
                                                                                                    \
 	static const struct mfd_bq2515x_config config##inst = {                                    \
 		.i2c = I2C_DT_SPEC_INST_GET(inst),                                                 \
