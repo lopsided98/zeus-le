@@ -23,18 +23,29 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(lp58xx, CONFIG_LED_LOG_LEVEL);
 
-#define LP5810_NUM_CHANNELS	4
-#define LP5811_NUM_CHANNELS	4
-#define LP5812_NUM_CHANNELS	12
-#define LP5813_NUM_CHANNELS	12
+#define LP5810_NUM_CHANNELS 4
+#define LP5811_NUM_CHANNELS 4
+#define LP5812_NUM_CHANNELS 12
+#define LP5813_NUM_CHANNELS 12
 
 #define LP58XX_MAX_BRIGHTNESS 100U
 
 /* Base registers */
 #define LP58XX_CHIP_EN_ADDR 0x000
 
-#define LP58XX_DEVICE_CONFIG_0_ADDR        0x001
-#define LP58XX_DEVICE_CONFIG_0_MAX_CURRENT BIT(0)
+#define LP58XX_DEV_CONFIG_0_ADDR        0x001
+#define LP58XX_DEV_CONFIG_0_MAX_CURRENT BIT(0)
+
+#define LP58XX_DEV_CONFIG_12_ADDR             0x00d
+#define LP58XX_DEV_CONFIG_12_CLAMP_SEL        BIT(5)
+#define LP58XX_DEV_CONFIG_12_CLAMP_DIS        BIT(4)
+#define LP58XX_DEV_CONFIG_12_LOD_ACTION       BIT(3)
+#define LP58XX_DEV_CONFIG_12_LSD_ACTION       BIT(2)
+#define LP58XX_DEV_CONFIG_12_LSD_THRESHOLD    GENMASK(1, 0)
+#define LP58XX_DEV_CONFIG_12_LSD_THRESHOLD_35 0
+#define LP58XX_DEV_CONFIG_12_LSD_THRESHOLD_45 1
+#define LP58XX_DEV_CONFIG_12_LSD_THRESHOLD_55 2
+#define LP58XX_DEV_CONFIG_12_LSD_THRESHOLD_65 3
 
 #define LP58XX_CMD_UPDATE_ADDR 0x010
 #define LP58XX_CMD_UPDATE_KEY  0x55
@@ -60,14 +71,15 @@ struct lp58xx_config {
 	uint8_t num_channels;
 	uint8_t num_leds;
 	uint8_t channel_offset;
-	bool max_curr_opt;
+	uint32_t max_current_ua;
+	uint8_t lsd_threshold_percent;
 };
 
 struct lp58xx_data {
 	uint8_t *chan_buf;
 };
 
-static int lp58xx_reg_write_byte(const struct device *dev, uint16_t reg, uint8_t val)
+static int lp58xx_reg_write(const struct device *dev, uint16_t reg, uint8_t val)
 {
 	const struct lp58xx_config *config = dev->config;
 
@@ -77,7 +89,7 @@ static int lp58xx_reg_write_byte(const struct device *dev, uint16_t reg, uint8_t
 	return i2c_reg_write_byte(config->bus.bus, addr, reg & 0xff, val);
 }
 
-static int lp58xx_reg_read_byte(const struct device *dev, uint16_t reg, uint8_t *val)
+static int lp58xx_reg_read(const struct device *dev, uint16_t reg, uint8_t *val)
 {
 	const struct lp58xx_config *config = dev->config;
 
@@ -138,16 +150,15 @@ static int lp58xx_set_current(const struct device *dev, uint8_t led, uint16_t cu
 		return -EINVAL;
 	}
 
-	uint16_t max_current_ua = config->max_curr_opt ? 50000 : 25500;
-	if (current_ua > max_current_ua) {
+	if (current_ua > config->max_current_ua) {
 		LOG_ERR("%s: current out of bounds: %u uA > %u uA", dev->name, current_ua,
-			max_current_ua);
+			config->max_current_ua);
 		return -EINVAL;
 	}
 
-	uint8_t val = ((uint32_t)current_ua * 0xff) / max_current_ua;
+	uint8_t val = ((uint32_t)current_ua * 0xff) / config->max_current_ua;
 
-	return lp58xx_reg_write_byte(dev, LP58XX_MANUAL_DC_ADDR(config->channel_offset + led), val);
+	return lp58xx_reg_write(dev, LP58XX_MANUAL_DC_ADDR(config->channel_offset + led), val);
 }
 
 static int lp58xx_set_brightness(const struct device *dev, uint32_t led, uint8_t value)
@@ -173,12 +184,12 @@ static int lp58xx_set_brightness(const struct device *dev, uint32_t led, uint8_t
 
 	uint8_t pwm = (value * 0xff) / LP58XX_MAX_BRIGHTNESS;
 
-	err = lp58xx_reg_write_byte(dev, LP58XX_MANUAL_PWM_ADDR(config->channel_offset + led), pwm);
+	err = lp58xx_reg_write(dev, LP58XX_MANUAL_PWM_ADDR(config->channel_offset + led), pwm);
 	if (err < 0) {
 		return err;
 	}
 
-	err = lp58xx_reg_read_byte(dev, LP58XX_LOD_STATUS_0_ADDR, &val);
+	err = lp58xx_reg_read(dev, LP58XX_LOD_STATUS_0_ADDR, &val);
 	if (err < 0) {
 		return err;
 	}
@@ -186,7 +197,7 @@ static int lp58xx_set_brightness(const struct device *dev, uint32_t led, uint8_t
 		LOG_WRN("%s: LOD fault: 0x%02x", dev->name, val);
 	}
 
-	err = lp58xx_reg_read_byte(dev, LP58XX_LSD_STATUS_0_ADDR, &val);
+	err = lp58xx_reg_read(dev, LP58XX_LSD_STATUS_0_ADDR, &val);
 	if (err < 0) {
 		return err;
 	}
@@ -222,25 +233,34 @@ static int lp58xx_write_channels(const struct device *dev, uint32_t start_channe
 				  buf, num_channels);
 }
 
-static void lp58xx_reset(const struct device *dev)
+static int lp58xx_reset(const struct device *dev)
 {
-	/*
-	 * Software reset
-	 * Always NAKs, so ignore return value
-	 */
-	lp58xx_reg_write_byte(dev, LP58XX_RESET_ADDR, LP58XX_RESET_KEY);
+	uint8_t val;
+	int tries = 5;
+	int ret;
+	/* Always NAKs, so ignore return value */
+	lp58xx_reg_write(dev, LP58XX_RESET_ADDR, LP58XX_RESET_KEY);
+
+	/* Next transaction sometimes fails, so try a few reads until the chip is
+	 * responding again. */
+	do {
+		ret = lp58xx_reg_read(dev, LP58XX_RESET_ADDR, &val);
+		tries--;
+	} while (ret < 0 && tries > 0);
+	return ret;
 }
 
 static int lp58xx_enable(const struct device *dev, bool enable)
 {
-	return lp58xx_reg_write_byte(dev, LP58XX_CHIP_EN_ADDR, enable);
+	return lp58xx_reg_write(dev, LP58XX_CHIP_EN_ADDR, enable);
 }
 
 static int lp58xx_init(const struct device *dev)
 {
 	const struct lp58xx_config *config = dev->config;
-	int err;
+	uint8_t lsd_threshold;
 	uint8_t val;
+	int err;
 
 	if (!i2c_is_ready_dt(&config->bus)) {
 		LOG_ERR("%s: I2C device not ready", dev->name);
@@ -248,7 +268,11 @@ static int lp58xx_init(const struct device *dev)
 	}
 
 	/* Reset device */
-	lp58xx_reset(dev);
+	err = lp58xx_reset(dev);
+	if (err < 0) {
+		LOG_ERR("%s: failed to reset", dev->name);
+		return err;
+	}
 
 	/* Enable device */
 	err = lp58xx_enable(dev, true);
@@ -259,23 +283,47 @@ static int lp58xx_init(const struct device *dev)
 
 	/* Setup config registers */
 	val = 0;
-	if (config->max_curr_opt) {
-		val |= LP58XX_DEVICE_CONFIG_0_MAX_CURRENT;
+	if (config->max_current_ua == 51000) {
+		val |= LP58XX_DEV_CONFIG_0_MAX_CURRENT;
 	}
 
-	err = lp58xx_reg_write_byte(dev, LP58XX_DEVICE_CONFIG_0_ADDR, val);
+	err = lp58xx_reg_write(dev, LP58XX_DEV_CONFIG_0_ADDR, val);
+	if (err < 0) {
+		return err;
+	}
+
+	switch (config->lsd_threshold_percent) {
+	case 35:
+		lsd_threshold = LP58XX_DEV_CONFIG_12_LSD_THRESHOLD_35;
+		break;
+	case 45:
+		lsd_threshold = LP58XX_DEV_CONFIG_12_LSD_THRESHOLD_45;
+		break;
+	case 55:
+		lsd_threshold = LP58XX_DEV_CONFIG_12_LSD_THRESHOLD_55;
+		break;
+	case 65:
+		lsd_threshold = LP58XX_DEV_CONFIG_12_LSD_THRESHOLD_65;
+		break;
+	default:
+		return -EINVAL;
+	}
+	val = LP58XX_DEV_CONFIG_12_LOD_ACTION |
+	      FIELD_PREP(LP58XX_DEV_CONFIG_12_LSD_THRESHOLD, lsd_threshold);
+
+	err = lp58xx_reg_write(dev, LP58XX_DEV_CONFIG_12_ADDR, val);
 	if (err < 0) {
 		return err;
 	}
 
 	/* Apply configuration */
-	err = lp58xx_reg_write_byte(dev, LP58XX_CMD_UPDATE_ADDR, LP58XX_CMD_UPDATE_KEY);
+	err = lp58xx_reg_write(dev, LP58XX_CMD_UPDATE_ADDR, LP58XX_CMD_UPDATE_KEY);
 	if (err < 0) {
 		return err;
 	}
 
 	/* Check for configuration errors */
-	err = lp58xx_reg_read_byte(dev, LP58XX_TSD_CONFIG_STATUS_ADDR, &val);
+	err = lp58xx_reg_read(dev, LP58XX_TSD_CONFIG_STATUS_ADDR, &val);
 	if (err < 0) {
 		return err;
 	}
@@ -329,7 +377,8 @@ static const struct led_driver_api lp58xx_led_api = {
 		.bus = I2C_DT_SPEC_INST_GET(n),                                                    \
 		.num_channels = LP##id##_NUM_CHANNELS,                                             \
 		.channel_offset = 0,                                                               \
-		.max_curr_opt = DT_INST_PROP(n, max_curr_opt),                                     \
+		.max_current_ua = DT_INST_PROP(n, max_current_microamps),                          \
+		.lsd_threshold_percent = DT_INST_PROP(n, lsd_threshold_percent),                   \
 	};                                                                                         \
                                                                                                    \
 	static uint8_t lp##id##_chan_buf_##n[LP##id##_NUM_CHANNELS + 1];                           \

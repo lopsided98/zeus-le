@@ -77,7 +77,7 @@
 		// necessary as the pin can be configured as push-pull.
 		int-gpios = <&gpio1 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
-		avdd-supply = <&bq25150_ldo>;
+		avdd-supply = <&vdda>;
 		internal-areg;
 
 		left {
@@ -96,6 +96,8 @@
 	lp5810@50 {
 		compatible = "ti,lp5810";
 		reg = <0x50>;
+
+		lsd-threshold-percent = <65>;
 	};
 
 	bq25150@6b {
@@ -110,7 +112,7 @@
 			input-current-max-milliamp = <150>;
 		};
 
-		bq25150_ldo: ldo {
+		vdda: ldo {
 			compatible = "ti,bq2515x-regulator";
 
 			regulator-initial-mode = <BQ2515X_REGULATOR_MODE_LDO>;
@@ -119,7 +121,7 @@
 		};
 	};
 
-	rt6160a@75 {
+	vddd: rt6160a@75 {
 		compatible = "richtek,rt6160";
 		reg = <0x75>;
 		richtek,vsel-gpios = <&gpio0 20 GPIO_ACTIVE_HIGH>;

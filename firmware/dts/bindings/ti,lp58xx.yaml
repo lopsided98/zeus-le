@@ -5,10 +5,20 @@
 include: ["i2c-device.yaml", "led-controller.yaml"]
 
 properties:
-  max-curr-opt:
-    type: boolean
+  max-current-microamps:
+    type: int
+    default: 25500
     description: |
-      If enabled, the maximum current output is set to 51 mA (25.5 mA else).
+      Maximum current limit across all LEDs. This also determines the current
+      control resolution for each LED.
+    enum: [25500, 51000]
+
+  lsd-threshold-percent:
+    type: int
+    default: 35
+    description: |
+      LED short detection threshold as a percent of VCC
+    enum: [35, 45, 55, 65]
 
 child-binding:
   properties:
