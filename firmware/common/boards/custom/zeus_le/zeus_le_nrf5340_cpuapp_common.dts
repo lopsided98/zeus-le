@@ -107,6 +107,7 @@
 
 		charger {
 			compatible = "ti,bq2515x-charger";
+			ce-gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
 
 			constant-charge-current-max-microamp = <100000>;
 			input-current-max-milliamp = <150>;

@@ -9,6 +9,12 @@ compatible: "ti,bq2515x-charger"
 include: [battery.yaml]
 
 properties:
+  ce-gpios:
+    type: phandle-array
+    description: |
+      GPIO connected to charge enable pin. If not provided, I2C interace will be
+      used to enable/disable charging.
+
   constant-charge-current-max-microamp:
     type: int
     default: 0

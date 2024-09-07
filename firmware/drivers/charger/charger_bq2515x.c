@@ -30,6 +30,7 @@ struct charger_bq2515x_data {
 
 struct charger_bq2515x_config {
 	const struct device *mfd;
+	struct gpio_dt_spec ce_gpio;
 	uint32_t initial_charge_current_ua;
 	uint32_t initial_input_current_limit_ma;
 };
@@ -99,16 +100,18 @@ static uint32_t bq2515x_ilim_to_ma(uint8_t ilim)
 static int bq2515x_charge_enable(const struct device *dev, const bool enable)
 {
 	const struct charger_bq2515x_config *config = dev->config;
-	uint8_t value = enable ? 0 : BQ2515X_ICCTRL2_CHARGER_DISABLE;
 	int ret;
 
-	ret = mfd_bq2515x_reg_update(config->mfd, BQ2515X_ICCTRL2_ADDR,
-				     BQ2515X_ICCTRL2_CHARGER_DISABLE, value);
-	if (ret < 0) {
-		return ret;
+	if (config->ce_gpio.port != NULL) {
+		ret = gpio_pin_set_dt(&config->ce_gpio, enable);
+	} else {
+		uint8_t value = enable ? 0 : BQ2515X_ICCTRL2_CHARGER_DISABLE;
+
+		ret = mfd_bq2515x_reg_update(config->mfd, BQ2515X_ICCTRL2_ADDR,
+					     BQ2515X_ICCTRL2_CHARGER_DISABLE, value);
 	}
 
-	return 0;
+	return ret;
 }
 
 static int bq2515x_set_charge_current(const struct device *dev, uint32_t const_charge_current_ua)
@@ -303,34 +306,45 @@ static void bq2515x_event_handler(const struct device *dev, struct gpio_callback
 
 static int charger_bq2525x_init(const struct device *dev)
 {
-	const struct charger_bq2515x_config *cfg = dev->config;
+	const struct charger_bq2515x_config *config = dev->config;
 	struct charger_bq2515x_data *data = dev->data;
 	int ret;
 
-	if (!device_is_ready(cfg->mfd)) {
+	if (!device_is_ready(config->mfd)) {
 		return -ENODEV;
 	}
 
 	gpio_init_callback(&data->event_cb, bq2515x_event_handler,
 			   BIT(BQ2515X_EVENT_IINLIM_ACTIVE) | BIT(BQ2515X_EVENT_VINDPM_ACTIVE) |
 				   BIT(BQ2515X_EVENT_VDPPM_ACTIVE));
-	mfd_bq2515x_add_callback(cfg->mfd, &data->event_cb);
+	mfd_bq2515x_add_callback(config->mfd, &data->event_cb);
 
 	/* Disable watchdog */
-	ret = mfd_bq2515x_reg_update(cfg->mfd, BQ2515X_CHARGERCTRL0_ADDR,
+	ret = mfd_bq2515x_reg_update(config->mfd, BQ2515X_CHARGERCTRL0_ADDR,
 				     BQ2515X_CHARGERCTRL0_WATCHDOG_DISABLE,
 				     BQ2515X_CHARGERCTRL0_WATCHDOG_DISABLE);
 
-	if (cfg->initial_charge_current_ua > 0) {
-		ret = bq2515x_set_charge_current(dev, cfg->initial_charge_current_ua);
+	if (config->ce_gpio.port != NULL) {
+		if (!gpio_is_ready_dt(&config->ce_gpio)) {
+			return -ENODEV;
+		}
+
+		ret = gpio_pin_configure_dt(&config->ce_gpio, GPIO_OUTPUT_ACTIVE);
 		if (ret < 0) {
 			return ret;
 		}
 	}
 
-	if (cfg->initial_input_current_limit_ma > 0) {
-		ret = bq2515x_set_input_current_limit(dev,
-						      cfg->initial_input_current_limit_ma * 1000);
+	if (config->initial_charge_current_ua > 0) {
+		ret = bq2515x_set_charge_current(dev, config->initial_charge_current_ua);
+		if (ret < 0) {
+			return ret;
+		}
+	}
+
+	if (config->initial_input_current_limit_ma > 0) {
+		ret = bq2515x_set_input_current_limit(dev, config->initial_input_current_limit_ma *
+								   1000);
 		if (ret < 0) {
 			return ret;
 		}
@@ -344,6 +358,7 @@ static int charger_bq2525x_init(const struct device *dev)
                                                                                                    \
 	static const struct charger_bq2515x_config config_##inst = {                               \
 		.mfd = DEVICE_DT_GET(DT_INST_PARENT(inst)),                                        \
+		.ce_gpio = GPIO_DT_SPEC_INST_GET_OR(inst, ce_gpios, {}),                           \
 		.initial_charge_current_ua =                                                       \
 			DT_INST_PROP(inst, constant_charge_current_max_microamp),                  \
 		.initial_input_current_limit_ma = DT_INST_PROP(inst, input_current_max_milliamp),  \
