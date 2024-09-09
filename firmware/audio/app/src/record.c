@@ -116,8 +116,9 @@ exit:
 
 int record_init(void) {
     struct record *r = &record;
-    k_mutex_lock(r->mutex, K_FOREVER);
     int ret;
+
+    k_mutex_lock(r->mutex, K_FOREVER);
     if (r->init) {
         ret = -EALREADY;
         goto unlock;
@@ -132,6 +133,7 @@ int record_init(void) {
     }
 
     r->init = true;
+    ret = 0;
 
 unlock:
     k_mutex_unlock(r->mutex);
@@ -140,8 +142,13 @@ unlock:
 
 int record_start(uint32_t time) {
     struct record *r = &record;
+    int ret;
+
     k_mutex_lock(r->mutex, K_FOREVER);
-    if (!r->init) return -EINVAL;
+    if (!r->init) {
+        ret = -EINVAL;
+        goto unlock;
+    }
 
     switch (r->state) {
         case RECORD_STOPPED:
@@ -154,17 +161,23 @@ int record_start(uint32_t time) {
             break;
     }
     r->start_time = time;
+    ret = 0;
     LOG_INF("start");
 
+unlock:
     k_mutex_unlock(r->mutex);
-    return 0;
+    return ret;
 }
 
 int record_stop(void) {
     struct record *r = &record;
+    int ret;
+
     k_mutex_lock(r->mutex, K_FOREVER);
-    int err;
-    if (!r->init) return -EINVAL;
+    if (!r->init) {
+        ret = -EINVAL;
+        goto unlock;
+    }
 
     switch (r->state) {
         case RECORD_STOPPED:
@@ -181,9 +194,11 @@ int record_stop(void) {
     }
 
     r->state = RECORD_STOPPED;
+    ret = 0;
 
+unlock:
     k_mutex_unlock(r->mutex);
-    return 0;
+    return ret;
 }
 
 int record_buffer(const struct audio_block *block) {
