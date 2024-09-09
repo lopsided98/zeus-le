@@ -25,7 +25,8 @@ USBD_CONFIGURATION_DEFINE(usb_config, 0, 100 /* mA */, &fs_cfg_desc);
 SHELL_UART_DEFINE(usb_shell_transport);
 SHELL_DEFINE(usb_shell, "usb:~$ ", &usb_shell_transport,
              CONFIG_SHELL_BACKEND_SERIAL_LOG_MESSAGE_QUEUE_SIZE,
-             CONFIG_SHELL_BACKEND_SERIAL_LOG_MESSAGE_QUEUE_TIMEOUT,
+             0,  // Don't wait. The queue fills up when the USB serial port is
+                 // not open, and waiting blocks all the other log backends.
              SHELL_FLAG_OLF_CRLF);
 
 static struct usb {

@@ -44,7 +44,7 @@ int ftp_init(void) {
 
     k_thread_create(&f->server_thread, ftp_server_stack,
                     K_THREAD_STACK_SIZEOF(ftp_server_stack), ftp_server_run,
-                    NULL, NULL, NULL, K_PRIO_PREEMPT(8), 0, K_NO_WAIT);
+                    NULL, NULL, NULL, K_PRIO_PREEMPT(9), 0, K_NO_WAIT);
     k_thread_name_set(&f->server_thread, "lftpd server");
 
     for (size_t i = 0; i < ARRAY_SIZE(ftp_conn_stacks); ++i) {

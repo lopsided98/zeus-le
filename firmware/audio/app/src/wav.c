@@ -50,8 +50,13 @@ int wav_init(struct fs_file_t* fp, const struct wav_format* fmt) {
     // Chunk ID
     ret = wav_write_buf(fp, "RIFF", 4);
     if (ret < 0) return ret;
-    // Chunk Size, initially 36 bytes with no data
-    ret = wav_write_u32(fp, 36);
+    // Chunk Size, initially set to maximum possible file size. The size is
+    // updated to the correct value when the file is closed, but doing it
+    // regularly as the file is written is too slow because seeking on FatFs
+    // becomes slower as the file gets longer. Setting the maximum length should
+    // at least allow the file to be played even if it doesn't get closed
+    // cleanly.
+    ret = wav_write_u32(fp, WAV_MAX_SIZE - 8);
     if (ret < 0) return ret;
     // Format
     ret = wav_write_buf(fp, "WAVE", 4);
@@ -85,8 +90,9 @@ int wav_init(struct fs_file_t* fp, const struct wav_format* fmt) {
     // Subchunk 2 ID
     ret = wav_write_buf(fp, "data", 4);
     if (ret < 0) return ret;
-    // Subchunk 2 Size, initially zero
-    ret = wav_write_u32(fp, 0);
+    // Subchunk 2 Size, initially set the maximum possible size. See the comment
+    // about chunk size above.
+    ret = wav_write_u32(fp, WAV_MAX_SIZE - WAV_HEADER_SIZE);
     if (ret < 0) return ret;
 
     return 0;
@@ -115,7 +121,7 @@ int wav_update_size(struct fs_file_t* fp) {
 
     if (size < WAV_HEADER_SIZE) {
         return -EINVAL;
-    } else if (size > UINT32_MAX) {
+    } else if (size > WAV_MAX_SIZE) {
         return -EFBIG;
     }
 

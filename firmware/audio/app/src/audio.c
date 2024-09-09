@@ -7,14 +7,13 @@
 #include <nrfx_egu.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/i2s.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net/buf.h>
 
 #include "drivers/input_codec.h"
 #include "fixed.h"
 #include "freq_ctlr.h"
 #include "freq_est.h"
-#include "net_audio.h"
 #include "record.h"
 #include "sync_timer.h"
 
@@ -29,13 +28,15 @@ struct audio_block_time {
 
 // TODO: sample rate must currently be divisible by the number of samples
 #define AUDIO_BLOCK_SIZE 8820
-#define AUDIO_BLOCK_COUNT 3
+#if IS_ENABLED(CONFIG_I2S_NRFX)
+// Queue size limits the number of buffered blocks, so no point having more than
+// the queue size plus one for the block currently being used by the hardware.
+#define AUDIO_BLOCK_COUNT (CONFIG_I2S_NRFX_RX_BLOCK_COUNT + 1)
+#else
+#define AUDIO_BLOCK_COUNT 5
+#endif
 
 K_MEM_SLAB_DEFINE_STATIC(audio_slab, AUDIO_BLOCK_SIZE, AUDIO_BLOCK_COUNT, 4);
-
-// Pool to allocate net_bufs to wrap audio data block allocated from slab
-static void audio_pool_destroy(struct net_buf *buf);
-NET_BUF_POOL_DEFINE(audio_pool, AUDIO_BLOCK_COUNT, 0, 0, audio_pool_destroy);
 
 static K_SEM_DEFINE(audio_started, 0, 1);
 static K_THREAD_STACK_DEFINE(audio_thread_stack, 1536);
@@ -72,7 +73,6 @@ static struct audio {
     const struct device *const codec;
     const struct device *const i2s;
     struct k_mem_slab *const slab;
-    struct net_buf_pool *const pool;
     struct k_sem *const started;
     struct k_thread thread;
 
@@ -108,7 +108,6 @@ static struct audio {
     .codec = DEVICE_DT_GET(DT_ALIAS(codec)),
     .i2s = DEVICE_DT_GET(DT_ALIAS(i2s)),
     .slab = &audio_slab,
-    .pool = &audio_pool,
     .started = &audio_started,
 
     .freq_est_cfg =
@@ -130,19 +129,9 @@ static struct audio {
     .block_time_queue = &audio_block_time_queue,
 };
 
-static void audio_pool_destroy(struct net_buf *buf) {
-    struct audio *a = &audio;
-
-    void *data = buf->__buf;
-    net_buf_destroy(buf);
-    k_mem_slab_free(a->slab, data);
-}
-
 static void audio_thread_run(void *p1, void *p2, void *p3) {
     struct audio *a = &audio;
     int err;
-    int64_t record_time_avg = 0;
-    size_t i = 0;
 
     err = i2s_trigger(a->i2s, I2S_DIR_RX, I2S_TRIGGER_START);
     if (err) {
@@ -171,6 +160,7 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
             continue;
         }
 
+        int64_t block_time_wait_start = k_uptime_ticks();
         struct audio_block_time block_time;
         if (AUDIO_SYNC_ENABLED) {
             err = k_msgq_get(a->block_time_queue, &block_time, K_FOREVER);
@@ -186,11 +176,12 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
                 .valid = true,
             };
         }
+        int64_t block_time_wait_us =
+            k_ticks_to_us_near64(k_uptime_ticks() - block_time_wait_start);
 
         k_sem_give(a->started);
 
-        int64_t record_start_time = k_uptime_get();
-        // net_audio_send(block_buf, block_size);
+        int64_t record_start_time = k_uptime_ticks();
 
         // Don't pass buffer to recording module if we don't have a valid
         // timestamp for it
@@ -206,14 +197,12 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
 
             record_buffer(&block);
         }
-        int64_t record_time = k_uptime_delta(&record_start_time);
-        record_time_avg += record_time;
-        ++i;
-        if (i == 10) {
-            LOG_INF("record time: %" PRIi64 " ms", record_time_avg / 10);
-            record_time_avg = 0;
-            i = 0;
-        }
+        int64_t record_us =
+            k_ticks_to_us_near64(k_uptime_ticks() - record_start_time);
+
+        LOG_INF("bt: %" PRIi64 ", rt: %" PRIu64 ", s: %u, b: %p",
+                block_time_wait_us, record_us, k_mem_slab_num_used_get(a->slab),
+                block_buf);
 
         k_mem_slab_free(a->slab, block_buf);
     }
@@ -376,7 +365,7 @@ int audio_init() {
 
     k_thread_create(&a->thread, audio_thread_stack,
                     K_THREAD_STACK_SIZEOF(audio_thread_stack), audio_thread_run,
-                    NULL, NULL, NULL, K_PRIO_COOP(7), 0, K_NO_WAIT);
+                    NULL, NULL, NULL, K_PRIO_COOP(12), 0, K_NO_WAIT);
     k_thread_name_set(&a->thread, "audio");
 
     err = k_sem_take(a->started, K_MSEC(2000));

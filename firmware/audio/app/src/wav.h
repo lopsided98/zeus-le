@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <zephyr/fs/fs.h>
 
+// 2 GiB, because some programs use a signed 32-bit integer
+#define WAV_MAX_SIZE UINT32_C((1 << 31) - 1)
+
 struct wav_format {
     uint16_t channels;
     uint32_t sample_rate;

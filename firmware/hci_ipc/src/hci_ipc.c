@@ -419,7 +419,7 @@ int hci_ipc_init(void) {
      */
     k_thread_create(&rx_thread_data, rx_thread_stack,
                     K_THREAD_STACK_SIZEOF(rx_thread_stack), rx_thread, NULL,
-                    NULL, NULL, K_PRIO_COOP(7), 0, K_NO_WAIT);
+                    NULL, NULL, K_PRIO_COOP(10), 0, K_NO_WAIT);
     k_thread_name_set(&tx_thread_data, "HCI ipc RX");
 
     /* Spawn the TX thread and start feeding commands and data to the
@@ -427,7 +427,7 @@ int hci_ipc_init(void) {
      */
     k_thread_create(&tx_thread_data, tx_thread_stack,
                     K_THREAD_STACK_SIZEOF(tx_thread_stack), tx_thread, NULL,
-                    NULL, NULL, K_PRIO_COOP(7), 0, K_NO_WAIT);
+                    NULL, NULL, K_PRIO_COOP(10), 0, K_NO_WAIT);
     k_thread_name_set(&tx_thread_data, "HCI ipc TX");
 
     return 0;

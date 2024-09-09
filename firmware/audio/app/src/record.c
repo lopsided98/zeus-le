@@ -16,13 +16,7 @@ LOG_MODULE_REGISTER(record, LOG_LEVEL_DBG);
 #define RECORD_FILE_NAME_PREFIX "REC_"
 #define RECORD_FILE_PATH_PREFIX RECORD_FILE_DIR "/" RECORD_FILE_NAME_PREFIX
 
-// 2 GiB, because some programs use a signed 32-bit integer
-// #define RECORD_MAX_FILE_BYTES UINT32_C((1 << 31) - 1)
-// 512 MiB, because seek time increases with file size, and we need to regularly
-// seek to the beginning to update the length in the header.
-#define RECORD_MAX_FILE_BYTES UINT32_C(1 << 29)
-
-#define RECORD_UPDATE_SIZE_INTERVAL_MS 10000
+#define RECORD_SYNC_INTERVAL_MS 5000
 
 enum record_state {
     RECORD_STOPPED,
@@ -33,8 +27,14 @@ enum record_state {
 
 K_MUTEX_DEFINE(record_mutex);
 
+K_THREAD_STACK_DEFINE(record_close_thread_stack, 1024);
+K_MSGQ_DEFINE(record_close_queue, sizeof(struct fs_file_t), 1,
+              _Alignof(struct fs_file_t));
+
 static struct record {
     struct k_mutex *mutex;
+    struct k_msgq *close_queue;
+    struct k_thread close_thread;
 
     bool init;
     /// Current open file
@@ -46,12 +46,36 @@ static struct record {
     enum record_state state;
     uint32_t start_time;
     // Last time the WAV file size was updated (ms)
-    int64_t last_size_update_time_ms;
+    int64_t last_sync_time_ms;
 } record = {
     .mutex = &record_mutex,
+    .close_queue = &record_close_queue,
     .file_index = 0,
     .state = RECORD_STOPPED,
 };
+
+static void record_close_thread_run(void *p1, void *p2, void *p3) {
+    struct record *r = &record;
+    int err;
+
+    while (true) {
+        struct fs_file_t file;
+        err = k_msgq_get(r->close_queue, &file, K_FOREVER);
+        if (err < 0) {
+            LOG_WRN("failed to get queue item  (err %d)", err);
+            continue;
+        }
+
+        err = wav_update_size(&file);
+        if (err < 0) {
+            LOG_WRN("failed to update WAV length (err %d)", err);
+        }
+        err = fs_close(&file);
+        if (err < 0) {
+            LOG_WRN("failed to close file (err %d)", err);
+        }
+    }
+}
 
 static int record_get_next_file_index(uint32_t *next_file_index) {
     int ret;
@@ -114,6 +138,17 @@ exit:
     return ret;
 }
 
+static void record_close_file(void) {
+    struct record *r = &record;
+    int err = k_msgq_put(r->close_queue, &r->file, K_FOREVER);
+    if (err < 0) {
+        LOG_WRN("Could not close file in background (err %d)", err);
+        // Just close synchronously without updating size
+        fs_close(&r->file);
+    }
+    fs_file_t_init(&r->file);
+}
+
 int record_init(void) {
     struct record *r = &record;
     int ret;
@@ -125,6 +160,12 @@ int record_init(void) {
     }
 
     fs_file_t_init(&r->file);
+
+    k_thread_create(&r->close_thread, record_close_thread_stack,
+                    K_THREAD_STACK_SIZEOF(record_close_thread_stack),
+                    record_close_thread_run, NULL, NULL, NULL,
+                    K_PRIO_PREEMPT(2), 0, K_NO_WAIT);
+    k_thread_name_set(&r->close_thread, "record_close");
 
     ret = record_get_next_file_index(&r->file_index);
     if (ret < 0) {
@@ -185,11 +226,7 @@ int record_stop(void) {
             break;
         case RECORD_WAITING_NEW_FILE:
         case RECORD_RUNNING:
-            err = wav_update_size(&r->file);
-            if (err) {
-                LOG_WRN("failed to update WAV length (err %d)", err);
-            }
-            fs_close(&r->file);
+            record_close_file();
             break;
     }
 
@@ -243,7 +280,7 @@ int record_buffer(const struct audio_block *block) {
 
             // Split file when it exceeds the max size
             uint32_t max_file_bytes =
-                ROUND_DOWN(RECORD_MAX_FILE_BYTES, block->bytes_per_frame);
+                ROUND_DOWN(WAV_MAX_SIZE, block->bytes_per_frame);
 
             if (r->file_len + block->len > max_file_bytes) {
                 new_file = true;
@@ -256,7 +293,6 @@ int record_buffer(const struct audio_block *block) {
     }
 
     if (old_file) {
-        LOG_INF("wav write");
         ret = wav_write(&r->file, block->buf, split_offset);
         if (ret) {
             LOG_ERR("WAV write failed (err %d)", ret);
@@ -265,15 +301,7 @@ int record_buffer(const struct audio_block *block) {
         r->file_len += split_offset;
 
         int64_t uptime_ms = k_uptime_get();
-        if (uptime_ms - r->last_size_update_time_ms >=
-            RECORD_UPDATE_SIZE_INTERVAL_MS) {
-            LOG_INF("update size");
-            ret = wav_update_size(&r->file);
-            if (ret) {
-                LOG_ERR("failed to update WAV size (err %d)", ret);
-                goto file_error;
-            }
-
+        if (uptime_ms - r->last_sync_time_ms >= RECORD_SYNC_INTERVAL_MS) {
             LOG_INF("sync");
             ret = fs_sync(&r->file);
             if (ret) {
@@ -281,20 +309,15 @@ int record_buffer(const struct audio_block *block) {
                 goto file_error;
             }
 
-            r->last_size_update_time_ms = uptime_ms;
+            r->last_sync_time_ms = uptime_ms;
         }
     }
     if (new_file) {
         if (old_file) {
-            ret = wav_update_size(&r->file);
-            if (ret) {
-                LOG_WRN("failed to update WAV size (err %d)", ret);
-            }
-            // Ignore error, what am I going to do?
-            fs_close(&r->file);
+            record_close_file();
         }
         r->file_len = 0;
-        r->last_size_update_time_ms = k_uptime_get();
+        r->last_sync_time_ms = k_uptime_get();
 
         char file_name[sizeof(RECORD_FILE_PATH_PREFIX) /* includes terminator */
                        + 10 /* max digits */ + 4 /*.wav*/];
@@ -307,6 +330,8 @@ int record_buffer(const struct audio_block *block) {
             ret = -EOVERFLOW;
             goto error;
         }
+
+        LOG_INF("creating new file: %s", file_name);
 
         ret = fs_open(&r->file, file_name, FS_O_WRITE | FS_O_CREATE);
         if (ret) {
