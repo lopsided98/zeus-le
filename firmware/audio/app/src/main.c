@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include <nrfx_clock.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -7,7 +8,6 @@
 #include "audio.h"
 #include "ftp.h"
 #include "mgr.h"
-#include "net_audio.h"
 #include "record.h"
 #include "sd_card.h"
 #include "sync_timer.h"
@@ -18,7 +18,20 @@ LOG_MODULE_REGISTER(audio_app);
 
 WIFI_POWER_OFF_REGISTER();
 
+int cpu_clock_128_mhz(void) {
+    nrfx_err_t err =
+        nrfx_clock_divider_set(NRF_CLOCK_DOMAIN_HFCLK, NRF_CLOCK_HFCLK_DIV_1);
+    if (err != NRFX_SUCCESS) {
+        LOG_WRN("Failed to set CPU to 128 MHz: %d", err - NRFX_ERROR_BASE_NUM);
+        return -1;
+    }
+    return 0;
+}
+
 int main(void) {
+    // Set CPU clock to 128 MHz
+    cpu_clock_128_mhz();
+
     // Initialize the Bluetooth Subsystem
     int ret = bt_enable(NULL);
     if (ret < 0) {
@@ -35,7 +48,6 @@ int main(void) {
     usb_init();
     sd_card_init();
     ftp_init();
-    net_audio_init();
     sync_timer_init();
     record_init();
     audio_init();

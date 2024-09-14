@@ -82,6 +82,7 @@ static int codec_initialize(const struct device *dev)
 	if (dev_cfg->avdd_supply != NULL) {
 		ret = regulator_enable(dev_cfg->avdd_supply);
 		if (ret < 0) {
+			LOG_ERR("Failed to enable AVDD supply (err %d)", ret);
 			return ret;
 		}
 	}

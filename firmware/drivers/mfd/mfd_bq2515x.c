@@ -94,6 +94,7 @@ static int mfd_bq2515x_init(const struct device *dev)
 	/* Check for valid device ID */
 	ret = mfd_bq2515x_reg_read(dev, BQ2515X_DEVICE_ID_ADDR, &val);
 	if (ret < 0) {
+		LOG_ERR("Failed to read device ID (err %d)", ret);
 		return ret;
 	}
 

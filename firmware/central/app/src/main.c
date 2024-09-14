@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include <nrfx_clock.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/kernel.h>
@@ -158,8 +159,19 @@ SHELL_CMD_REGISTER(zeus, &sub_zeus, "Zeus commands", NULL);
 
 WIFI_POWER_OFF_REGISTER();
 
+int cpu_clock_128_mhz(void) {
+    nrfx_err_t err =
+        nrfx_clock_divider_set(NRF_CLOCK_DOMAIN_HFCLK, NRF_CLOCK_HFCLK_DIV_1);
+    if (err != NRFX_SUCCESS) {
+        LOG_WRN("Failed to set CPU to 128 MHz: %d", err - NRFX_ERROR_BASE_NUM);
+        return -1;
+    }
+    return 0;
+}
+
 int main(void) {
     int ret;
+    cpu_clock_128_mhz();
 
     // Initialize the Bluetooth Subsystem
     ret = bt_enable(NULL);
