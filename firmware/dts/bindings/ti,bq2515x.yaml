@@ -28,5 +28,8 @@ compatible: "ti,bq2515x"
 include: i2c-device.yaml
 
 properties:
+  lp-gpios:
+      type: phandle-array
+
   int-gpios:
       type: phandle-array

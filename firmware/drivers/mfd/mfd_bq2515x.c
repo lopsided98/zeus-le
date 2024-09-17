@@ -24,6 +24,7 @@ LOG_MODULE_REGISTER(mfd_bq2515x, CONFIG_MFD_LOG_LEVEL);
 
 struct mfd_bq2515x_config {
 	struct i2c_dt_spec i2c;
+	struct gpio_dt_spec lp_gpio;
 	struct gpio_dt_spec int_gpio;
 };
 
@@ -90,6 +91,21 @@ static int mfd_bq2515x_init(const struct device *dev)
 	k_mutex_init(&data->mutex);
 
 	data->dev = dev;
+
+	if (config->lp_gpio.port != NULL) {
+		/* Configure low power mode GPIO */
+		if (!gpio_is_ready_dt(&config->lp_gpio)) {
+			return -ENODEV;
+		}
+
+		ret = gpio_pin_configure_dt(&config->lp_gpio, GPIO_OUTPUT_INACTIVE);
+		if (ret < 0) {
+			return ret;
+		}
+
+		/* 1 ms to exit low power mode */
+		k_msleep(1);
+	}
 
 	/* Check for valid device ID */
 	ret = mfd_bq2515x_reg_read(dev, BQ2515X_DEVICE_ID_ADDR, &val);
@@ -241,11 +257,12 @@ int mfd_bq2515x_remove_callback(const struct device *dev, struct gpio_callback *
 
 #define MFD_BQ2515X_DEFINE(inst)                                                                   \
 	static struct mfd_bq2515x_data data_##inst = {                                             \
-		.int_mask = 0xffffffff,                                                                     \
+		.int_mask = 0xffffffff,                                                            \
 	};                                                                                         \
                                                                                                    \
 	static const struct mfd_bq2515x_config config##inst = {                                    \
 		.i2c = I2C_DT_SPEC_INST_GET(inst),                                                 \
+		.lp_gpio = GPIO_DT_SPEC_INST_GET_OR(inst, lp_gpios, {0}),                          \
 		.int_gpio = GPIO_DT_SPEC_INST_GET_OR(inst, int_gpios, {0}),                        \
 	};                                                                                         \
                                                                                                    \

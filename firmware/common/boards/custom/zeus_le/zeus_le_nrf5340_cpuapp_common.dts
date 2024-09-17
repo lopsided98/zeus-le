@@ -103,6 +103,7 @@
 	bq25150@6b {
 		compatible = "ti,bq2515x";
 		reg = <0x6b>;
+		lp-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
 		int-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
 
 		charger {
