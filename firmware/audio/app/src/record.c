@@ -302,7 +302,7 @@ int record_buffer(const struct audio_block *block) {
 
         int64_t uptime_ms = k_uptime_get();
         if (uptime_ms - r->last_sync_time_ms >= RECORD_SYNC_INTERVAL_MS) {
-            LOG_INF("sync");
+            // LOG_INF("sync");
             ret = fs_sync(&r->file);
             if (ret) {
                 LOG_ERR("failed to sync WAV file (err %d)", ret);
