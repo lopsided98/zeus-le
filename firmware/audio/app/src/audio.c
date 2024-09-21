@@ -155,7 +155,7 @@ static bool audio_sync_update(const struct audio_block_time *block_time,
     // converging, this means the start of the recording may not be perfectly in
     // sync, but it will gradually synchronize over time.
     *block_start_time =
-        qu32_32_whole(block_time->i2s_time + data->target_theta);
+        qu32_32_whole(block_time->i2s_time - data->target_theta);
 
     data->hfclkaudio_increment =
         freq_ctlr_update(&config->freq_ctlr, data->target_theta, state);
@@ -174,9 +174,8 @@ static bool audio_sync_update(const struct audio_block_time *block_time,
 
     nrf_clock_hfclkaudio_config_set(NRF_CLOCK, freq);
     // printk("audio,%" PRIu64 ",%" PRIu64 ",%" PRIu16 ",%" PRIi16 ",%e\n",
-    // time,
-    //        ref_time + a->target_theta, freq, a->hfclkaudio_increment,
-    //        (double)(state.f / QU32_32_ONE));
+    //        block_time->i2s_time - data->target_theta, ref_time, freq,
+    //        data->hfclkaudio_increment, (double)(state.f / QU32_32_ONE));
     return true;
 }
 

@@ -180,7 +180,7 @@ bool sync_timer_correct_time(qu32_32 *time) {
 
     if (t->freq_est.status != FREQ_EST_STATUS_RESET) {
         qu32_32 theta = freq_est_predict(&t->freq_est, *time);
-        *time += theta;
+        *time -= theta;
         return true;
     } else {
         return false;
