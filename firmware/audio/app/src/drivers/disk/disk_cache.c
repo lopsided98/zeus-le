@@ -266,9 +266,9 @@ static const struct disk_operations disk_cache_ops = {
 #define DT_DRV_COMPAT zephyr_disk_cache
 
 #define DISK_CACHE_DEVICE_DEFINE(n)                                                                \
-	K_MEM_SLAB_DEFINE_STATIC(disk_entries_##n,                                                 \
-				 sizeof(struct disk_cache_entry) + DT_INST_PROP(n, sector_size),   \
-				 DT_INST_PROP(n, sector_count), 4);                                \
+	K_MEM_SLAB_DEFINE_STATIC(                                                                  \
+		disk_entries_##n, sizeof(struct disk_cache_entry) + DT_INST_PROP(n, sector_size),  \
+		DT_INST_PROP(n, sector_count), _Alignof(struct disk_cache_entry));                 \
                                                                                                    \
 	static sys_dlist_t disk_lru_list_##n = SYS_DLIST_STATIC_INIT(&disk_lru_list_##n);          \
                                                                                                    \
