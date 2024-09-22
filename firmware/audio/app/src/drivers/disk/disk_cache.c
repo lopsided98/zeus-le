@@ -60,8 +60,7 @@ static void disk_cache_flush(const struct device *dev)
 	while ((node = sys_dlist_get(config->lru_list))) {
 		struct disk_cache_entry *entry = NODE_TO_ENTRY(node);
 		entry->sector = 0;
-		void *entry_ptr = entry;
-		k_mem_slab_free(config->entries, &entry_ptr);
+		k_mem_slab_free(config->entries, entry);
 	}
 }
 
