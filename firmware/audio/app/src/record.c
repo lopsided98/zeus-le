@@ -15,6 +15,8 @@ LOG_MODULE_REGISTER(record, LOG_LEVEL_DBG);
 #define RECORD_FILE_DIR "/SD:"
 #define RECORD_FILE_NAME_PREFIX "REC_"
 #define RECORD_FILE_PATH_PREFIX RECORD_FILE_DIR "/" RECORD_FILE_NAME_PREFIX
+// 2 GiB, because some programs use a signed 32-bit integer
+#define RECORD_FILE_MAX_SIZE INT32_MAX
 
 #define RECORD_SYNC_INTERVAL_MS 5000
 
@@ -28,8 +30,7 @@ enum record_state {
 K_MUTEX_DEFINE(record_mutex);
 
 K_THREAD_STACK_DEFINE(record_close_thread_stack, 1024);
-K_MSGQ_DEFINE(record_close_queue, sizeof(struct fs_file_t), 1,
-              _Alignof(struct fs_file_t));
+K_MSGQ_DEFINE(record_close_queue, sizeof(struct wav), 1, 1);
 
 static struct record {
     struct k_mutex *mutex;
@@ -38,9 +39,7 @@ static struct record {
 
     bool init;
     /// Current open file
-    struct fs_file_t file;
-    /// Length of current file
-    uint32_t file_len;
+    struct wav file;
     /// Next unused file index
     uint32_t file_index;
     enum record_state state;
@@ -59,18 +58,14 @@ static void record_close_thread_run(void *p1, void *p2, void *p3) {
     int err;
 
     while (true) {
-        struct fs_file_t file;
+        struct wav file;
         err = k_msgq_get(r->close_queue, &file, K_FOREVER);
         if (err < 0) {
             LOG_WRN("failed to get queue item  (err %d)", err);
             continue;
         }
 
-        err = wav_update_size(&file);
-        if (err < 0) {
-            LOG_WRN("failed to update WAV length (err %d)", err);
-        }
-        err = fs_close(&file);
+        err = wav_close(&file);
         if (err < 0) {
             LOG_WRN("failed to close file (err %d)", err);
         }
@@ -144,9 +139,8 @@ static void record_close_file(void) {
     if (err < 0) {
         LOG_WRN("Could not close file in background (err %d)", err);
         // Just close synchronously without updating size
-        fs_close(&r->file);
+        wav_close_no_update(&r->file);
     }
-    fs_file_t_init(&r->file);
 }
 
 int record_init(void) {
@@ -158,8 +152,6 @@ int record_init(void) {
         ret = -EALREADY;
         goto unlock;
     }
-
-    fs_file_t_init(&r->file);
 
     k_thread_create(&r->close_thread, record_close_thread_stack,
                     K_THREAD_STACK_SIZEOF(record_close_thread_stack),
@@ -248,6 +240,9 @@ int record_buffer(const struct audio_block *block) {
         goto unlock;
     }
 
+    __ASSERT(block->len % block->bytes_per_frame == 0,
+             "Block contains partial frame");
+
     bool old_file = false;
     bool new_file;
     size_t split_offset;
@@ -265,11 +260,11 @@ int record_buffer(const struct audio_block *block) {
             LOG_INF("waiting: %" PRIu32, wait_time);
             if (wait_time <= block->duration) {
                 new_file = true;
-                // Byte index, but rounded to a frame boundary
-                split_offset = DIV_ROUND_CLOSEST(wait_time * block->len /
-                                                     block->bytes_per_frame,
-                                                 block->duration) *
-                               block->bytes_per_frame;
+                uint32_t block_frames = block->len / block->bytes_per_frame;
+                uint32_t split_frame = DIV_ROUND_CLOSEST(
+                    wait_time * block_frames, block->duration);
+                // Byte index, rounded to a frame boundary
+                split_offset = split_frame * block->bytes_per_frame;
             } else {
                 new_file = false;
                 split_offset = block->len;
@@ -277,35 +272,28 @@ int record_buffer(const struct audio_block *block) {
         } break;
         case RECORD_RUNNING: {
             old_file = true;
-
-            // Split file when it exceeds the max size
-            uint32_t max_file_bytes =
-                ROUND_DOWN(WAV_MAX_SIZE, block->bytes_per_frame);
-
-            if (r->file_len + block->len > max_file_bytes) {
-                new_file = true;
-                split_offset = max_file_bytes - r->file_len;
-            } else {
-                new_file = false;
-                split_offset = block->len;
-            }
+            new_file = false;
+            split_offset = block->len;
         } break;
     }
 
     if (old_file) {
         ret = wav_write(&r->file, block->buf, split_offset);
-        if (ret) {
+        if (ret < 0) {
             LOG_ERR("WAV write failed (err %d)", ret);
             goto file_error;
+        } else if (ret != split_offset) {
+            // File exceeded max size, split into a new file
+            new_file = true;
+            split_offset = ret;
         }
-        r->file_len += split_offset;
 
         int64_t uptime_ms = k_uptime_get();
         if (uptime_ms - r->last_sync_time_ms >= RECORD_SYNC_INTERVAL_MS) {
             // LOG_INF("sync");
-            ret = fs_sync(&r->file);
+            ret = fs_sync(&r->file.fp);
             if (ret) {
-                LOG_ERR("failed to sync WAV file (err %d)", ret);
+                LOG_ERR("WAV file sync failed (err %d)", ret);
                 goto file_error;
             }
 
@@ -313,10 +301,10 @@ int record_buffer(const struct audio_block *block) {
         }
     }
     if (new_file) {
+        LOG_INF("new file, len: %u, split: %u", block->len, split_offset);
         if (old_file) {
             record_close_file();
         }
-        r->file_len = 0;
         r->last_sync_time_ms = k_uptime_get();
 
         char file_name[sizeof(RECORD_FILE_PATH_PREFIX) /* includes terminator */
@@ -333,31 +321,26 @@ int record_buffer(const struct audio_block *block) {
 
         LOG_INF("creating new file: %s", file_name);
 
-        ret = fs_open(&r->file, file_name, FS_O_WRITE | FS_O_CREATE);
+        // TODO: don't hardcode format
+        ret = wav_open(&r->file, file_name,
+                       &(struct wav_format){
+                           .channels = 2,
+                           .sample_rate = 44100,
+                           .bits_per_sample = 16,
+                           .max_file_size = RECORD_FILE_MAX_SIZE,
+                       });
         if (ret) {
             LOG_ERR("failed to create file: %s (err %d)", file_name, ret);
             goto file_error;
         }
         r->file_index++;
 
-        // TODO: don't hardcode format
-        ret = wav_init(&r->file, &(struct wav_format){
-                                     .channels = 2,
-                                     .sample_rate = 44100,
-                                     .bits_per_sample = 16,
-                                 });
-        if (ret) {
-            LOG_ERR("WAV init failed (err %d)", ret);
-            goto file_error;
-        }
-
         size_t write_len = block->len - split_offset;
         ret = wav_write(&r->file, block->buf + split_offset, write_len);
-        if (ret) {
+        if (ret != write_len) {
             LOG_ERR("WAV write failed (err %d)", ret);
             goto file_error;
         }
-        r->file_len += write_len;
 
         r->state = RECORD_RUNNING;
     }
@@ -366,7 +349,7 @@ int record_buffer(const struct audio_block *block) {
     goto unlock;
 
 file_error:
-    fs_close(&r->file);
+    record_close_file();
 
 error:
     r->state = RECORD_STOPPED;

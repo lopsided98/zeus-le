@@ -17,8 +17,7 @@ LOG_MODULE_REGISTER(sync);
 #define SYNC_START_DELAY (2 * ZEUS_TIME_NOMINAL_FREQ)
 
 static void sync_adv_update_handler(struct k_work *work);
-
-K_WORK_DEFINE(sync_update_work, sync_adv_update_handler);
+static K_WORK_DEFINE(sync_update_work, sync_adv_update_handler);
 
 K_MSGQ_DEFINE(sync_cmd_queue, sizeof(struct zeus_adv_cmd), 2, 1);
 
