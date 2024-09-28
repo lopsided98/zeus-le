@@ -90,6 +90,8 @@ static const struct audio_config {
             .q_f = 256.0,
             .r = 390625.0,
             .p0 = 1e6,
+            .outlier_threshold = 20.0f,
+            .outlier_resync_count = 5,
         },
     .freq_ctlr =
         {
@@ -111,8 +113,6 @@ static struct audio_data {
     /// Number of timer ticks (as Q32.32) that should have elapsed from the time
     /// I2S was started to the start of the latest I2S buffer.
     qu32_32 i2s_time;
-    /// Set to true when target_theta has been initialized
-    bool target_locked;
     /// Controller target phase difference between the elapsed ticks counter
     /// (`i2s_time` variable) and central time (recovered via state estimator).
     /// This is set once after both I2S has started and the state estimator is
@@ -131,23 +131,25 @@ static bool audio_sync_update(const struct audio_block_time *block_time,
     struct audio_data *data = &audio_data;
     qu32_32 ref_time = qu32_32_from_int(block_time->ref_time);
 
-    if (!sync_timer_correct_time(&ref_time)) {
-        // No reference from central yet
-        *block_start_time = 0;
-        return false;
-    }
+    // Convert local timer to central timestamp, if available. If no central
+    // reference is available yet, continue anyway. This will sync the audio
+    // clock with the local timer. When the central time becomes available, it
+    // will cause an outlier reset and the controller will resync with the
+    // central clock.
+    sync_timer_local_to_central(&ref_time);
 
-    freq_est_update(&data->freq_est, block_time->i2s_time, ref_time,
-                    data->hfclkaudio_increment);
+    enum freq_est_result result =
+        freq_est_update(&data->freq_est, block_time->i2s_time, ref_time,
+                        data->hfclkaudio_increment);
 
     struct freq_est_state state = freq_est_get_state(&data->freq_est);
-    if (!data->target_locked) {
+    if (result == FREQ_EST_RESULT_INIT) {
+        LOG_INF("phase target reset");
         // Round target phase to multiple of sample period. This will
         // synchronize the sampling times of all devices.
         data->target_theta =
             DIV_ROUND_CLOSEST(state.theta, data->sample_period) *
             data->sample_period;
-        data->target_locked = true;
     }
 
     // Calculate central node block timestamp assuming the controller is

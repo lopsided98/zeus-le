@@ -52,6 +52,8 @@ static const struct freq_est_config FREQ_EST_CONFIG = {
     .q_f = 256.0,
     .r = 390625.0,
     .p0 = 1e6,
+    .outlier_threshold = 20.0f,
+    .outlier_resync_count = 5,
 };
 
 int sync_timer_init(void) {
@@ -170,11 +172,11 @@ qu32_32 sync_timer_get_central_time(void) {
     struct sync_timer *t = &sync_timer;
     qu32_32 time = qu32_32_from_int(
         nrfx_timer_capture(&t->timer, SYNC_TIMER_CAPTURE_CHANNEL_MANUAL));
-    sync_timer_correct_time(&time);
+    sync_timer_local_to_central(&time);
     return time;
 }
 
-bool sync_timer_correct_time(qu32_32 *time) {
+bool sync_timer_local_to_central(qu32_32 *time) {
     struct sync_timer *t = &sync_timer;
     if (!t->init) return false;
 

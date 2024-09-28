@@ -28,7 +28,7 @@ qu32_32 sync_timer_get_central_time(void);
 
 /// Adjust a local sync timer measurement to the corresponding central time
 /// measurement. Returns true if the time was adjusted successfully.
-bool sync_timer_correct_time(qu32_32 *time);
+bool sync_timer_local_to_central(qu32_32 *time);
 
 #ifdef __cplusplus
 }

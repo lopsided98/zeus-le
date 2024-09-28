@@ -12,6 +12,17 @@ enum freq_est_status {
     FREQ_EST_STATUS_CONVERGED,
 };
 
+enum freq_est_result {
+    /// Input was incorporated into the state estimate
+    FREQ_EST_RESULT_OK = 0,
+    /// Input was used to initialize the estimator
+    FREQ_EST_RESULT_INIT,
+    /// Input was an outlier and ignored
+    FREQ_EST_RESULT_OUTLIER,
+    /// Reset was triggered due to several consecutive outliers
+    FREQ_EST_RESULT_OUTLIER_RESET,
+};
+
 struct freq_est_config {
     // Nominal frequency of the timer (ticks/sec)
     uint32_t nominal_freq;
@@ -24,6 +35,12 @@ struct freq_est_config {
     // Phase measurement variance (s^2)
     float r;
     float p0;
+    // Mahalanobis distance threshold to consider a measurement an outlier. If
+    // zero, disable outlier detection.
+    float outlier_threshold;
+    // Number of consecutive outliers that trigger a resync. If zero, never
+    // resync.
+    uint32_t outlier_resync_count;
 };
 
 struct freq_est_state {
@@ -34,6 +51,7 @@ struct freq_est_state {
 
 struct freq_est {
     // Parameters
+    const struct freq_est_config *config;
     /// Input gain scaled by 2^32
     float k_u;
     float q_theta;
@@ -56,14 +74,18 @@ struct freq_est {
     float f;
     /// Uncertainty
     float p[2][2];
+    /// Number of consecutive outliers
+    uint32_t outlier_count;
 };
 
-void freq_est_init(struct freq_est *e, const struct freq_est_config *params);
+/// Initialize the frequency estimator. The cfg pointer must be valid for the
+/// lifetime of the estimator.
+void freq_est_init(struct freq_est *e, const struct freq_est_config *cfg);
 
 /// Predict the phase offset at the specified time
 qu32_32 freq_est_predict(const struct freq_est *e, qu32_32 time);
 
-void freq_est_update(struct freq_est *e, qu32_32 local_time, qu32_32 ref_time,
-                     int16_t input);
+enum freq_est_result freq_est_update(struct freq_est *e, qu32_32 local_time,
+                                     qu32_32 ref_time, int16_t input);
 
 struct freq_est_state freq_est_get_state(const struct freq_est *e);

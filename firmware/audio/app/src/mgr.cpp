@@ -622,7 +622,8 @@ CO_DEFINE(int, mgr_sync, const bt_addr_le_t& addr, bool cancel) {
                 break;
             case mgr_per_adv_sync_event::TERM:
                 LOG_INF("sync terminated");
-                break;
+                ret = -ECANCELED;
+                goto exit;
             case mgr_per_adv_sync_event::RECV:
                 bt_data_parse(
                     evt->info.recv.buf,
