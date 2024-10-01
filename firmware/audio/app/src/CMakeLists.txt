@@ -8,6 +8,7 @@ target_sources(app PRIVATE
     freq_ctlr.c
     freq_est.c
     ftp.c
+    led.c
     main.c
     mgr.cpp
     net_audio.c

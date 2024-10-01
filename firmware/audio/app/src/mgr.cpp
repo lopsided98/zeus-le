@@ -5,6 +5,7 @@
 #include <zephyr/logging/log.h>
 
 #include "coroutine_zephyr.hpp"
+#include "led.h"
 #include "record.h"
 #include "sync_timer.h"
 #include "zeus/protocol.h"
@@ -619,9 +620,11 @@ CO_DEFINE(int, mgr_sync, const bt_addr_le_t& addr, bool cancel) {
         switch (evt->type) {
             case mgr_per_adv_sync_event::SYNCED:
                 LOG_INF("sync started");
+                led_sync_started();
                 break;
             case mgr_per_adv_sync_event::TERM:
                 LOG_INF("sync terminated");
+                led_sync_terminated();
                 ret = -ECANCELED;
                 goto exit;
             case mgr_per_adv_sync_event::RECV:

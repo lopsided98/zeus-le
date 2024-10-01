@@ -8,6 +8,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net/buf.h>
 
+#include "led.h"
 #include "wav.h"
 
 LOG_MODULE_REGISTER(record, LOG_LEVEL_DBG);
@@ -195,6 +196,7 @@ int record_start(uint32_t time) {
     }
     r->start_time = time;
     ret = 0;
+    led_record_waiting();
     LOG_INF("start");
 
 unlock:
@@ -222,6 +224,7 @@ int record_stop(void) {
             break;
     }
 
+    led_record_stopped();
     r->state = RECORD_STOPPED;
     ret = 0;
 
@@ -265,6 +268,7 @@ int record_buffer(const struct audio_block *block) {
                     wait_time * block_frames, block->duration);
                 // Byte index, rounded to a frame boundary
                 split_offset = split_frame * block->bytes_per_frame;
+                led_record_started();
             } else {
                 new_file = false;
                 split_offset = block->len;

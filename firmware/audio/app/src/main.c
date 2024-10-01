@@ -7,6 +7,7 @@
 
 #include "audio.h"
 #include "ftp.h"
+#include "led.h"
 #include "mgr.h"
 #include "record.h"
 #include "sd_card.h"
@@ -29,11 +30,18 @@ int cpu_clock_128_mhz(void) {
 }
 
 int main(void) {
+    int ret;
+
     // Set CPU clock to 128 MHz
     cpu_clock_128_mhz();
 
+    ret = led_boot();
+    if (ret < 0) {
+        LOG_ERR("failed to set LED (err %d)", ret);
+    }
+
     // Initialize the Bluetooth Subsystem
-    int ret = bt_enable(NULL);
+    ret = bt_enable(NULL);
     if (ret < 0) {
         LOG_ERR("failed to enable Bluetooth (err %d)", ret);
         return 0;

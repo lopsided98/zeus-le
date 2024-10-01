@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "zeus_le_nrf5340_cpuapp_common-pinctrl.dtsi"
+#include <dt-bindings/led/led.h>
 #include <zeus/dt-bindings/regulator/bq2515x.h>
 
 / {
@@ -69,6 +70,7 @@
 	pinctrl-0 = <&i2c1_default>;
 	pinctrl-1 = <&i2c1_sleep>;
 	pinctrl-names = "default", "sleep";
+	clock-frequency = <I2C_BITRATE_FAST>;
 
 	tlv320adc: tlv320adc@4e {
 		compatible = "ti,tlv320adcx120";
@@ -93,11 +95,21 @@
 		};
 	};
 
-	lp5810@50 {
+	rgb_led: lp5810@50 {
 		compatible = "ti,lp5810";
 		reg = <0x50>;
 
+		max-current-microamps = <25500>;
 		lsd-threshold-percent = <65>;
+
+		rgb-led {
+			label = "RGB LED";
+			index = <0>;
+			color-mapping = <LED_COLOR_ID_BLUE LED_COLOR_ID_GREEN LED_COLOR_ID_RED>;
+			manual-current-microamps = <6000 7000 9800>;
+			auto-current-microamps = <6000 7000 9800>;
+			phase-align = "forward", "middle", "backward";
+		};
 	};
 
 	bq25150@6b {

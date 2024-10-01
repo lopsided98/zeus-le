@@ -1,4 +1,3 @@
-# Copyright (c) 2020 Seagate Technology LLC
 # Copyright (c) 2024 Ben Wolsieffer
 # SPDX-License-Identifier: Apache-2.0
 
@@ -24,7 +23,34 @@ child-binding:
   properties:
     label:
       required: true
+
     index:
       required: true
+
     color-mapping:
       required: true
+
+    manual-current-microamps:
+      type: array
+      required: true
+      description: |
+        DC current setting for this LED in manual mode.
+
+    auto-current-microamps:
+      type: array
+      required: true
+      description: |
+        DC current setting for this LED in autonomous mode.
+
+    exponential-dimming:
+      type: boolean
+      description: |
+        Enable expontial PWM dimming instead of linear dimming for this LED.
+
+    phase-align:
+      type: string-array
+      required: true
+      # enum:
+      #   - "forward"
+      #   - "middle"
+      #   - "backward"
