@@ -9,6 +9,7 @@
 #include "ftp.h"
 #include "led.h"
 #include "mgr.h"
+#include "power.h"
 #include "record.h"
 #include "sd_card.h"
 #include "sync_timer.h"
@@ -31,6 +32,8 @@ int cpu_clock_128_mhz(void) {
 
 int main(void) {
     int ret;
+
+    power_init();
 
     // Set CPU clock to 128 MHz
     cpu_clock_128_mhz();

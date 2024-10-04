@@ -4,15 +4,32 @@
 description: |
   BQ2515x battery charger load-switch/LDO regulator
 
+  The battery charger integrates a configurable load-switch or LDO. The LDO
+  must be defined as a child node named "ldo", for example:
+
+  bq25155@6b {
+    reg = <0x6b>;
+    ...
+    regulators {
+      compatible = "ti,bq2515x-regulator";
+
+      ldo {
+        /* properties for LDO */
+      };
+    };
+  };
+
 compatible: "ti,bq2515x-regulator"
 
-include:
-  - name: base.yaml
-  - name: regulator.yaml
-    property-allowlist:
-      - regulator-always-on
-      - regulator-boot-on
-      - regulator-min-microvolt
-      - regulator-max-microvolt
-      - regulator-allowed-modes
-      - regulator-initial-mode
+include: base.yaml
+
+child-binding:
+  include:
+    - name: regulator.yaml
+      property-allowlist:
+        - regulator-always-on
+        - regulator-boot-on
+        - regulator-min-microvolt
+        - regulator-max-microvolt
+        - regulator-allowed-modes
+        - regulator-initial-mode

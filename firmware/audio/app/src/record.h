@@ -12,9 +12,12 @@ int record_init(void);
 
 int record_start(uint32_t time);
 
+int record_buffer(const struct audio_block *block);
+
 int record_stop(void);
 
-int record_buffer(const struct audio_block *block);
+/// Stop any in-progress recording and prevent new recordings from startings.
+int record_shutdown(void);
 
 #ifdef __cplusplus
 }

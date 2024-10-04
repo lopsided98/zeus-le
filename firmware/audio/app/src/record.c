@@ -33,9 +33,15 @@ K_MUTEX_DEFINE(record_mutex);
 K_THREAD_STACK_DEFINE(record_close_thread_stack, 1024);
 K_MSGQ_DEFINE(record_close_queue, sizeof(struct wav), 1, 1);
 
-static struct record {
+static const struct record_config {
     struct k_mutex *mutex;
     struct k_msgq *close_queue;
+} record_config = {
+    .mutex = &record_mutex,
+    .close_queue = &record_close_queue,
+};
+
+static struct record_data {
     struct k_thread close_thread;
 
     bool init;
@@ -47,20 +53,18 @@ static struct record {
     uint32_t start_time;
     // Last time the WAV file size was updated (ms)
     int64_t last_sync_time_ms;
-} record = {
-    .mutex = &record_mutex,
-    .close_queue = &record_close_queue,
+} record_data = {
     .file_index = 0,
     .state = RECORD_STOPPED,
 };
 
 static void record_close_thread_run(void *p1, void *p2, void *p3) {
-    struct record *r = &record;
+    const struct record_config *config = &record_config;
     int err;
 
     while (true) {
         struct wav file;
-        err = k_msgq_get(r->close_queue, &file, K_FOREVER);
+        err = k_msgq_get(config->close_queue, &file, K_FOREVER);
         if (err < 0) {
             LOG_WRN("failed to get queue item  (err %d)", err);
             continue;
@@ -135,110 +139,85 @@ exit:
 }
 
 static void record_close_file(void) {
-    struct record *r = &record;
-    int err = k_msgq_put(r->close_queue, &r->file, K_FOREVER);
+    const struct record_config *config = &record_config;
+    struct record_data *data = &record_data;
+    int err = k_msgq_put(config->close_queue, &data->file, K_FOREVER);
     if (err < 0) {
         LOG_WRN("Could not close file in background (err %d)", err);
         // Just close synchronously without updating size
-        wav_close_no_update(&r->file);
+        wav_close_no_update(&data->file);
     }
 }
 
 int record_init(void) {
-    struct record *r = &record;
+    const struct record_config *config = &record_config;
+    struct record_data *data = &record_data;
     int ret;
 
-    k_mutex_lock(r->mutex, K_FOREVER);
-    if (r->init) {
+    k_mutex_lock(config->mutex, K_FOREVER);
+    if (data->init) {
         ret = -EALREADY;
         goto unlock;
     }
 
-    k_thread_create(&r->close_thread, record_close_thread_stack,
+    k_thread_create(&data->close_thread, record_close_thread_stack,
                     K_THREAD_STACK_SIZEOF(record_close_thread_stack),
                     record_close_thread_run, NULL, NULL, NULL,
                     K_PRIO_PREEMPT(2), 0, K_NO_WAIT);
-    k_thread_name_set(&r->close_thread, "record_close");
+    k_thread_name_set(&data->close_thread, "record_close");
 
-    ret = record_get_next_file_index(&r->file_index);
+    ret = record_get_next_file_index(&data->file_index);
     if (ret < 0) {
         LOG_WRN("failed to get next file index (err %d)", ret);
         goto unlock;
     }
 
-    r->init = true;
+    data->init = true;
     ret = 0;
 
 unlock:
-    k_mutex_unlock(r->mutex);
+    k_mutex_unlock(config->mutex);
     return ret;
 }
 
 int record_start(uint32_t time) {
-    struct record *r = &record;
+    const struct record_config *config = &record_config;
+    struct record_data *data = &record_data;
     int ret;
 
-    k_mutex_lock(r->mutex, K_FOREVER);
-    if (!r->init) {
+    k_mutex_lock(config->mutex, K_FOREVER);
+    if (!data->init) {
         ret = -EINVAL;
         goto unlock;
     }
 
-    switch (r->state) {
+    switch (data->state) {
         case RECORD_STOPPED:
         case RECORD_WAITING_START:
-            r->state = RECORD_WAITING_START;
+            data->state = RECORD_WAITING_START;
             break;
         case RECORD_WAITING_NEW_FILE:
         case RECORD_RUNNING:
-            r->state = RECORD_WAITING_NEW_FILE;
+            data->state = RECORD_WAITING_NEW_FILE;
             break;
     }
-    r->start_time = time;
+    data->start_time = time;
     ret = 0;
     led_record_waiting();
     LOG_INF("start");
 
 unlock:
-    k_mutex_unlock(r->mutex);
-    return ret;
-}
-
-int record_stop(void) {
-    struct record *r = &record;
-    int ret;
-
-    k_mutex_lock(r->mutex, K_FOREVER);
-    if (!r->init) {
-        ret = -EINVAL;
-        goto unlock;
-    }
-
-    switch (r->state) {
-        case RECORD_STOPPED:
-        case RECORD_WAITING_START:
-            break;
-        case RECORD_WAITING_NEW_FILE:
-        case RECORD_RUNNING:
-            record_close_file();
-            break;
-    }
-
-    led_record_stopped();
-    r->state = RECORD_STOPPED;
-    ret = 0;
-
-unlock:
-    k_mutex_unlock(r->mutex);
+    k_mutex_unlock(config->mutex);
     return ret;
 }
 
 int record_buffer(const struct audio_block *block) {
-    struct record *r = &record;
-    k_mutex_lock(r->mutex, K_FOREVER);
+    const struct record_config *config = &record_config;
+    struct record_data *data = &record_data;
+    k_mutex_lock(config->mutex, K_FOREVER);
 
     int ret;
-    if (!r->init) {
+    if (!data->init) {
         ret = -EINVAL;
         goto unlock;
     }
@@ -250,7 +229,7 @@ int record_buffer(const struct audio_block *block) {
     bool new_file;
     size_t split_offset;
 
-    switch (r->state) {
+    switch (data->state) {
         default:
         case RECORD_STOPPED:
             ret = 0;
@@ -259,7 +238,7 @@ int record_buffer(const struct audio_block *block) {
             old_file = true;
             // fallthrough
         case RECORD_WAITING_START: {
-            uint32_t wait_time = r->start_time - block->start_time;
+            uint32_t wait_time = data->start_time - block->start_time;
             LOG_INF("waiting: %" PRIu32, wait_time);
             if (wait_time <= block->duration) {
                 new_file = true;
@@ -282,7 +261,7 @@ int record_buffer(const struct audio_block *block) {
     }
 
     if (old_file) {
-        ret = wav_write(&r->file, block->buf, split_offset);
+        ret = wav_write(&data->file, block->buf, split_offset);
         if (ret < 0) {
             LOG_ERR("WAV write failed (err %d)", ret);
             goto file_error;
@@ -293,15 +272,15 @@ int record_buffer(const struct audio_block *block) {
         }
 
         int64_t uptime_ms = k_uptime_get();
-        if (uptime_ms - r->last_sync_time_ms >= RECORD_SYNC_INTERVAL_MS) {
+        if (uptime_ms - data->last_sync_time_ms >= RECORD_SYNC_INTERVAL_MS) {
             // LOG_INF("sync");
-            ret = fs_sync(&r->file.fp);
+            ret = fs_sync(&data->file.fp);
             if (ret) {
                 LOG_ERR("WAV file sync failed (err %d)", ret);
                 goto file_error;
             }
 
-            r->last_sync_time_ms = uptime_ms;
+            data->last_sync_time_ms = uptime_ms;
         }
     }
     if (new_file) {
@@ -309,13 +288,13 @@ int record_buffer(const struct audio_block *block) {
         if (old_file) {
             record_close_file();
         }
-        r->last_sync_time_ms = k_uptime_get();
+        data->last_sync_time_ms = k_uptime_get();
 
         char file_name[sizeof(RECORD_FILE_PATH_PREFIX) /* includes terminator */
                        + 10 /* max digits */ + 4 /*.wav*/];
         ret = snprintf(file_name, sizeof(file_name),
                        RECORD_FILE_PATH_PREFIX "%04" PRIu32 ".wav",
-                       r->file_index);
+                       data->file_index);
         if (ret < 0) {
             goto error;
         } else if (ret >= sizeof(file_name)) {
@@ -326,7 +305,7 @@ int record_buffer(const struct audio_block *block) {
         LOG_INF("creating new file: %s", file_name);
 
         // TODO: don't hardcode format
-        ret = wav_open(&r->file, file_name,
+        ret = wav_open(&data->file, file_name,
                        &(struct wav_format){
                            .channels = 2,
                            .sample_rate = 44100,
@@ -337,16 +316,16 @@ int record_buffer(const struct audio_block *block) {
             LOG_ERR("failed to create file: %s (err %d)", file_name, ret);
             goto file_error;
         }
-        r->file_index++;
+        data->file_index++;
 
         size_t write_len = block->len - split_offset;
-        ret = wav_write(&r->file, block->buf + split_offset, write_len);
+        ret = wav_write(&data->file, block->buf + split_offset, write_len);
         if (ret != write_len) {
             LOG_ERR("WAV write failed (err %d)", ret);
             goto file_error;
         }
 
-        r->state = RECORD_RUNNING;
+        data->state = RECORD_RUNNING;
     }
 
     ret = 0;
@@ -356,9 +335,58 @@ file_error:
     record_close_file();
 
 error:
-    r->state = RECORD_STOPPED;
+    data->state = RECORD_STOPPED;
 
 unlock:
-    k_mutex_unlock(r->mutex);
+    k_mutex_unlock(config->mutex);
+    return ret;
+}
+
+static int record_stop_unlocked(void) {
+    struct record_data *data = &record_data;
+
+    if (!data->init) {
+        return -EINVAL;
+    }
+
+    switch (data->state) {
+        case RECORD_STOPPED:
+        case RECORD_WAITING_START:
+            break;
+        case RECORD_WAITING_NEW_FILE:
+        case RECORD_RUNNING:
+            record_close_file();
+            break;
+    }
+
+    led_record_stopped();
+    data->state = RECORD_STOPPED;
+    return 0;
+}
+
+int record_stop(void) {
+    const struct record_config *config = &record_config;
+
+    k_mutex_lock(config->mutex, K_FOREVER);
+    int ret = record_stop_unlocked();
+    k_mutex_unlock(config->mutex);
+    return ret;
+}
+
+int record_shutdown(void) {
+    const struct record_config *config = &record_config;
+    struct record_data *data = &record_data;
+    int ret;
+
+    k_mutex_lock(config->mutex, K_FOREVER);
+
+    ret = record_stop_unlocked();
+    if (ret < 0) goto unlock;
+
+    // Clear init to prevent any other recordings from being started
+    data->init = false;
+
+unlock:
+    k_mutex_unlock(config->mutex);
     return ret;
 }

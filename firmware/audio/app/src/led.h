@@ -16,6 +16,14 @@ int led_record_started(void);
 
 int led_record_stopped(void);
 
+int led_battery_charging(void);
+
+int led_battery_full(void);
+
+int led_battery_discharging(void);
+
+int led_shutdown(void);
+
 #ifdef __cplusplus
 }
 #endif

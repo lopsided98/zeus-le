@@ -12,6 +12,7 @@ target_sources(app PRIVATE
     main.c
     mgr.cpp
     net_audio.c
+    power.c
     record.c
     sd_card.c
     shell.c

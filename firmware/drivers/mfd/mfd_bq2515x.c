@@ -26,6 +26,7 @@ struct mfd_bq2515x_config {
 	struct i2c_dt_spec i2c;
 	struct gpio_dt_spec lp_gpio;
 	struct gpio_dt_spec int_gpio;
+	uint8_t pg_mode;
 };
 
 struct mfd_bq2515x_data {
@@ -35,7 +36,18 @@ struct mfd_bq2515x_data {
 	struct k_work int_work;
 	sys_slist_t callbacks;
 	uint32_t int_mask;
+	uint32_t pending_flags;
 };
+
+static int mfd_bq2515x_write_int_mask(const struct device *dev)
+{
+	const struct mfd_bq2515x_config *config = dev->config;
+	struct mfd_bq2515x_data *data = dev->data;
+	uint8_t buf[1 + sizeof(data->int_mask)] = {BQ2515X_MASK0_ADDR};
+	memcpy(buf + 1, &data->int_mask, sizeof(data->int_mask));
+
+	return i2c_write_dt(&config->i2c, buf, sizeof(buf));
+}
 
 static void bq2515x_int_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
@@ -59,22 +71,23 @@ static void bq2515x_int_work_handler(struct k_work *work)
 
 	/* Treat 4 flag registers as a 32-bit LE integer */
 	flags = sys_le32_to_cpu(flags);
+	/*
+	 * Add saved pending flags. This avoids different behavior depending on the
+	 * order in which callbacks are added. Any pending interrupts are fired when
+	 * a callback for them is added, but currently masked interrupts would be
+	 * cleared and ignored, even if they are going to be unmasked as soon as the
+	 * next callback is added. By saving the pending masked interrupts, we avoid
+	 * this problem.
+	 */
+	flags |= data->pending_flags;
+	/* Save flags that are currently masked */
+	data->pending_flags = flags & data->int_mask;
+	/* Filter only unmasked interrupts to fire right now */
+	flags &= ~data->int_mask;
 
 	if (flags != 0) {
 		gpio_fire_callbacks(&data->callbacks, data->dev, flags);
-	} else {
-		LOG_WRN("Spurious interrupt");
 	}
-}
-
-static int mfd_bq2515x_write_int_mask(const struct device *dev)
-{
-	const struct mfd_bq2515x_config *config = dev->config;
-	struct mfd_bq2515x_data *data = dev->data;
-	uint8_t buf[1 + sizeof(data->int_mask)] = {BQ2515X_MASK0_ADDR};
-	memcpy(buf + 1, &data->int_mask, sizeof(data->int_mask));
-
-	return i2c_write_dt(&config->i2c, buf, sizeof(buf));
 }
 
 static int mfd_bq2515x_init(const struct device *dev)
@@ -155,10 +168,18 @@ static int mfd_bq2515x_init(const struct device *dev)
 			return ret;
 		}
 
-		ret = gpio_pin_interrupt_configure_dt(&config->int_gpio, GPIO_INT_EDGE_TO_ACTIVE);
+		/* TODO: this has to be a level interrupt to wake nRF53. How to avoid baking in
+		 * platform specific assumptions? */
+		ret = gpio_pin_interrupt_configure_dt(&config->int_gpio, GPIO_INT_LEVEL_ACTIVE);
 		if (ret < 0) {
 			return ret;
 		}
+	}
+
+	val = FIELD_PREP(BQ2515X_ICCTRL1_PG_MODE, config->pg_mode);
+	ret = mfd_bq2515x_reg_write(dev, BQ2515X_ICCTRL1_ADDR, val);
+	if (ret < 0) {
+		return ret;
 	}
 
 	return 0;
@@ -237,6 +258,9 @@ int mfd_bq2515x_add_callback(const struct device *dev, struct gpio_callback *cal
 	if (ret < 0) {
 		return ret;
 	}
+	/* Hardware doesn't trigger pending interrupts when they are unmasked,
+	 * so check manually */
+	k_work_submit(&data->int_work);
 
 	return gpio_manage_callback(&data->callbacks, callback, true);
 }
@@ -264,6 +288,7 @@ int mfd_bq2515x_remove_callback(const struct device *dev, struct gpio_callback *
 		.i2c = I2C_DT_SPEC_INST_GET(inst),                                                 \
 		.lp_gpio = GPIO_DT_SPEC_INST_GET_OR(inst, lp_gpios, {0}),                          \
 		.int_gpio = GPIO_DT_SPEC_INST_GET_OR(inst, int_gpios, {0}),                        \
+		.pg_mode = DT_INST_ENUM_IDX_OR(inst, pg_mode, 0),                                  \
 	};                                                                                         \
                                                                                                    \
 	DEVICE_DT_INST_DEFINE(inst, mfd_bq2515x_init, NULL, &data_##inst, &config##inst,           \

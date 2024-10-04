@@ -10,6 +10,8 @@ description: |
   bq25155@6b {
     compatible = "ti,bq2515x";
     reg = <0x6b>;
+    lp-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
+    int-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
 
     charger {
       compatible = "ti,bq2515x-charger";
@@ -18,8 +20,14 @@ description: |
       input-current-max-milliamp = <500>;
     };
 
-    ldo {
+    regulators {
       compatible = "ti,bq2515x-regulator";
+
+      ldo {
+        regulator-initial-mode = <BQ2515X_REGULATOR_MODE_LDO>;
+        regulator-min-microvolt = <3100000>;
+        regulator-max-microvolt = <3500000>;
+      };
     };
   };
 
@@ -29,7 +37,15 @@ include: i2c-device.yaml
 
 properties:
   lp-gpios:
-      type: phandle-array
+    type: phandle-array
 
   int-gpios:
-      type: phandle-array
+    type: phandle-array
+
+  pg-mode:
+    type: string
+    default: "pg"
+    enum: ["pg", "mr", "gpo"]
+    description: |
+      Configure PG pin as a VIN power-good output, level shifted MR output or
+      general purpose open-drain output.
