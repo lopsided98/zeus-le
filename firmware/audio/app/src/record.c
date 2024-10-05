@@ -8,7 +8,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net/buf.h>
 
-#include "led.h"
+#include "zeus/led.h"
 #include "wav.h"
 
 LOG_MODULE_REGISTER(record, LOG_LEVEL_DBG);

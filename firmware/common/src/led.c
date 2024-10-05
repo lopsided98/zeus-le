@@ -1,6 +1,5 @@
-#include "led.h"
+#include "zeus/led.h"
 
-#include <zephyr/drivers/led.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zeus/drivers/led/lp58xx.h>

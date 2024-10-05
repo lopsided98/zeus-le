@@ -5,9 +5,9 @@
 #include <zephyr/logging/log.h>
 
 #include "coroutine_zephyr.hpp"
-#include "led.h"
 #include "record.h"
 #include "sync_timer.h"
+#include "zeus/led.h"
 #include "zeus/protocol.h"
 
 LOG_MODULE_REGISTER(mgr, LOG_LEVEL_DBG);

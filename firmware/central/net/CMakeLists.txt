@@ -14,13 +14,13 @@ endif()
 project(zeus_le_central_net LANGUAGES C)
 
 add_subdirectory(../../hci_ipc hci_ipc)
-add_subdirectory(../../common common)
+add_subdirectory(../../protocol protocol)
 add_subdirectory(../common central_common)
 
 target_sources(app PRIVATE src/main.c)
 target_link_libraries(app PRIVATE
     hci_ipc
-    zeus_common
+    zeus_protocol
     zeus_central_common
 )
 target_include_directories(app PRIVATE

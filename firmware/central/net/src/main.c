@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-#include <inttypes.h>
 #include <nrfx_egu.h>
 #include <nrfx_timer.h>
 #include <zephyr/drivers/clock_control/nrf_clock_control.h>

@@ -16,12 +16,14 @@ endif()
 
 project(zeus_le_audio LANGUAGES C)
 
+add_subdirectory(../../protocol protocol)
 add_subdirectory(../../common common)
 add_subdirectory(../common audio_common)
 add_subdirectory(../../lftpd lftpd)
 add_subdirectory(src)
 
 target_link_libraries(app PRIVATE
+    zeus_protocol
     zeus_common
     zeus_audio_common
     lftpd

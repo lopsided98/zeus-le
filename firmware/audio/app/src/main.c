@@ -7,12 +7,12 @@
 
 #include "audio.h"
 #include "ftp.h"
-#include "led.h"
 #include "mgr.h"
-#include "power.h"
 #include "record.h"
 #include "sd_card.h"
 #include "sync_timer.h"
+#include "zeus/led.h"
+#include "zeus/power.h"
 #include "zeus/usb.h"
 #include "zeus/wifi.h"
 
@@ -33,7 +33,10 @@ int cpu_clock_128_mhz(void) {
 int main(void) {
     int ret;
 
-    power_init();
+    ret = power_init();
+    if (ret) {
+        LOG_ERR("power init failed (err %d)", ret);
+    }
 
     // Set CPU clock to 128 MHz
     cpu_clock_128_mhz();

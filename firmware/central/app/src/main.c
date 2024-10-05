@@ -8,6 +8,8 @@
 #include <zephyr/shell/shell.h>
 
 #include "sync.h"
+#include "zeus/led.h"
+#include "zeus/power.h"
 #include "zeus/protocol.h"
 #include "zeus/usb.h"
 #include "zeus/wifi.h"
@@ -171,7 +173,18 @@ int cpu_clock_128_mhz(void) {
 
 int main(void) {
     int ret;
+
+    ret = power_init();
+    if (ret) {
+        LOG_ERR("power init failed (err %d)", ret);
+    }
+
     cpu_clock_128_mhz();
+
+    ret = led_boot();
+    if (ret) {
+        LOG_ERR("failed to set LED (err %d)", ret);
+    }
 
     // Initialize the Bluetooth Subsystem
     ret = bt_enable(NULL);

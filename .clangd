@@ -26,6 +26,12 @@ CompileFlags:
   CompilationDatabase: build/firmware/audio/app/zeus_le/nrf5340/cpuapp/net
 ---
 If:
+  PathMatch: firmware/common/.*
+
+CompileFlags:
+  CompilationDatabase: build/firmware/audio/app/zeus_le/nrf5340/cpuapp/app
+---
+If:
   PathMatch: firmware/hci_ipc/.*
 
 CompileFlags:
