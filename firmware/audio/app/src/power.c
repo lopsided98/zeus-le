@@ -106,6 +106,7 @@ static void power_mr_wake2_handler(const struct device *dev,
 
     if (events &
         (BIT(BQ2515X_EVENT_CHARGE_DONE) | BIT(BQ2515X_EVENT_VIN_PGOOD))) {
+        power_update_charge_status();
         k_event_post(config->event, POWER_EVENT_CHARGE);
     }
 }
@@ -128,6 +129,8 @@ int power_init(void) {
     ret = gpio_pin_configure_dt(&config->button_gpio, GPIO_INPUT);
     if (ret < 0) return ret;
 
+    power_update_charge_status();
+
     gpio_init_callback(
         &data->mr_wake2_cb, power_mr_wake2_handler,
         BIT(BQ2515X_EVENT_MRWAKE2_TIMEOUT) | BIT(BQ2515X_EVENT_CHARGE_DONE));
@@ -142,14 +145,17 @@ int power_init(void) {
     }
     hwinfo_clear_reset_cause();
 
-    LOG_INF("reset: 0x%08" PRIx32, reset);
-
-    power_update_charge_status();
+    LOG_DBG("reset: 0x%08" PRIx32, reset);
 
     bool power_on = false;
     // Continue booting if button is pressed. This allows us to distinguish
     // between wake from ship due to MR_WAKE2 or VIN.
     if (gpio_pin_get_dt(&config->button_gpio)) {
+        power_on = true;
+    }
+
+    // Power on after a software reset. This makes development easier.
+    if (reset & RESET_SOFTWARE) {
         power_on = true;
     }
 

@@ -344,7 +344,7 @@ static int led_pattern_battery_charging(void) {
                     .repeat = 0,
                 },
                 {
-                    .pwm = {50, 20, 5, 20, 50},
+                    .pwm = {50, 20, 2, 20, 50},
                     .time_msec = {540, 800, 800, 540},
                     .repeat = LP58XX_AEU_REPEAT_INFINITE,
                 }},
