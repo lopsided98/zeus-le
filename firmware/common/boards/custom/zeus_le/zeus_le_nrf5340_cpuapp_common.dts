@@ -136,6 +136,11 @@
 			input-current-max-milliamp = <150>;
 		};
 
+		charger_adc: adc {
+			compatible = "ti,bq2515x-adc";
+			read-rate = "1sec";
+		};
+
 		charger_regulators: regulators {
 			compatible = "ti,bq2515x-regulator";
 

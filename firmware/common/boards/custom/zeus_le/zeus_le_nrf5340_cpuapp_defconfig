@@ -27,3 +27,6 @@ CONFIG_REGULATOR=y
 
 # Enable battery charger
 CONFIG_CHARGER=y
+
+# Enable battery charger ADC
+CONFIG_SENSOR=y

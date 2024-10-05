@@ -1,0 +1,12 @@
+# Copyright (c) 2024 Ben Wolsieffer
+#
+# SPDX-License-Identifier: Apache-2.0
+
+config BQ2515X_ADC
+	bool "BQ2515x ADC"
+	default y
+	depends on DT_HAS_TI_BQ2515X_ADC_ENABLED
+	select I2C
+	select MFD
+	help
+	  Enable TI BQ2515x battery charger ADC driver.

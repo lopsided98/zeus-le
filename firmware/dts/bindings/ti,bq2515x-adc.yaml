@@ -1,0 +1,27 @@
+#
+# Copyright (c) 2024 Ben Wolsieffer
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+description: BQ2515x Battery Charger ADC
+
+compatible: "ti,bq2515x-adc"
+
+include: [sensor-device.yaml]
+
+properties:
+  read-rate:
+    type: string
+    default: "manual"
+    description: |
+      ADC read rate during battery operation. When VIN is connected the ADC
+      always operates in continuous mode.
+    enum: ["manual", "continuous", "1sec", "1min"]
+
+  conversion-speed-ms:
+    type: int
+    default: 24
+    description: |
+      ADC conversion time in milliseconds. Longer times give higher accuracy.
+    enum: [24, 12, 6, 3]

@@ -64,7 +64,7 @@ static void bq2515x_int_work_handler(struct k_work *work)
 
 	/* Read (and clear) all flag registers */
 	ret = mfd_bq2515x_reg_read_burst(data->dev, BQ2515X_FLAG0_ADDR, &flags, sizeof(flags));
-	if (ret < 0) {
+	if (ret) {
 		k_work_submit(&data->int_work);
 		return;
 	}
@@ -112,7 +112,7 @@ static int mfd_bq2515x_init(const struct device *dev)
 		}
 
 		ret = gpio_pin_configure_dt(&config->lp_gpio, GPIO_OUTPUT_INACTIVE);
-		if (ret < 0) {
+		if (ret) {
 			return ret;
 		}
 
@@ -122,7 +122,7 @@ static int mfd_bq2515x_init(const struct device *dev)
 
 	/* Check for valid device ID */
 	ret = mfd_bq2515x_reg_read(dev, BQ2515X_DEVICE_ID_ADDR, &val);
-	if (ret < 0) {
+	if (ret) {
 		LOG_ERR("Failed to read device ID (err %d)", ret);
 		return ret;
 	}
@@ -138,12 +138,12 @@ static int mfd_bq2515x_init(const struct device *dev)
 	}
 
 	ret = mfd_bq2515x_software_reset(dev);
-	if (ret < 0) {
+	if (ret) {
 		return ret;
 	}
 
 	ret = mfd_bq2515x_write_int_mask(dev);
-	if (ret < 0) {
+	if (ret) {
 		return ret;
 	}
 
@@ -154,7 +154,7 @@ static int mfd_bq2515x_init(const struct device *dev)
 		}
 
 		ret = gpio_pin_configure_dt(&config->int_gpio, GPIO_INPUT);
-		if (ret < 0) {
+		if (ret) {
 			return ret;
 		}
 
@@ -164,21 +164,21 @@ static int mfd_bq2515x_init(const struct device *dev)
 				   BIT(config->int_gpio.pin));
 
 		ret = gpio_add_callback(config->int_gpio.port, &data->int_callback);
-		if (ret < 0) {
+		if (ret) {
 			return ret;
 		}
 
 		/* TODO: this has to be a level interrupt to wake nRF53. How to avoid baking in
 		 * platform specific assumptions? */
 		ret = gpio_pin_interrupt_configure_dt(&config->int_gpio, GPIO_INT_LEVEL_ACTIVE);
-		if (ret < 0) {
+		if (ret) {
 			return ret;
 		}
 	}
 
 	val = FIELD_PREP(BQ2515X_ICCTRL1_PG_MODE, config->pg_mode);
 	ret = mfd_bq2515x_reg_write(dev, BQ2515X_ICCTRL1_ADDR, val);
-	if (ret < 0) {
+	if (ret) {
 		return ret;
 	}
 
@@ -255,7 +255,7 @@ int mfd_bq2515x_add_callback(const struct device *dev, struct gpio_callback *cal
 
 	data->int_mask &= ~callback->pin_mask;
 	ret = mfd_bq2515x_write_int_mask(dev);
-	if (ret < 0) {
+	if (ret) {
 		return ret;
 	}
 	/* Hardware doesn't trigger pending interrupts when they are unmasked,
@@ -271,7 +271,7 @@ int mfd_bq2515x_remove_callback(const struct device *dev, struct gpio_callback *
 	int ret;
 
 	ret = gpio_manage_callback(&data->callbacks, callback, false);
-	if (ret < 0) {
+	if (ret) {
 		return ret;
 	}
 
