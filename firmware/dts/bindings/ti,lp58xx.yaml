@@ -4,7 +4,7 @@
 include: ["i2c-device.yaml", "led-controller.yaml"]
 
 properties:
-  max-current-microamps:
+  max-current-microamp:
     type: int
     default: 25500
     description: |
@@ -30,13 +30,13 @@ child-binding:
     color-mapping:
       required: true
 
-    manual-current-microamps:
+    manual-current-microamp:
       type: array
       required: true
       description: |
         DC current setting for this LED in manual mode.
 
-    auto-current-microamps:
+    auto-current-microamp:
       type: array
       required: true
       description: |

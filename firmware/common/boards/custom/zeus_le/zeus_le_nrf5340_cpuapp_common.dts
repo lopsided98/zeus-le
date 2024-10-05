@@ -107,15 +107,15 @@
 		compatible = "ti,lp5810";
 		reg = <0x50>;
 
-		max-current-microamps = <25500>;
+		max-current-microamp = <25500>;
 		lsd-threshold-percent = <65>;
 
 		rgb-led {
 			label = "RGB LED";
 			index = <0>;
 			color-mapping = <LED_COLOR_ID_BLUE LED_COLOR_ID_GREEN LED_COLOR_ID_RED>;
-			manual-current-microamps = <6000 7000 9800>;
-			auto-current-microamps = <6000 7000 9800>;
+			manual-current-microamp = <6000 7000 9800>;
+			auto-current-microamp = <6000 7000 9800>;
 			phase-align = "forward", "middle", "backward";
 		};
 	};

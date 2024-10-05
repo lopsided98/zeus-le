@@ -727,19 +727,19 @@ int lp58xx_continue(const struct device *dev)
 
 #define LED_CHANNELS(led_node_id)                                                                  \
 	BUILD_ASSERT(DT_PROP_LEN(led_node_id, color_mapping) ==                                    \
-			     DT_PROP_LEN(led_node_id, manual_current_microamps),                   \
+			     DT_PROP_LEN(led_node_id, manual_current_microamp),                    \
 		     "Wrong number of manual mode currents defined");                              \
 	BUILD_ASSERT(DT_PROP_LEN(led_node_id, color_mapping) ==                                    \
-			     DT_PROP_LEN(led_node_id, auto_current_microamps),                     \
+			     DT_PROP_LEN(led_node_id, auto_current_microamp),                      \
 		     "Wrong number of autonomous mode currents defined");                          \
 	BUILD_ASSERT(DT_PROP_LEN(led_node_id, color_mapping) ==                                    \
 			     DT_PROP_LEN(led_node_id, phase_align),                                \
 		     "Wrong number of phase alignments defined");                                  \
 	static const uint8_t color_mapping_##led_node_id[] = DT_PROP(led_node_id, color_mapping);  \
 	static const uint16_t lp58xx_manual_current_ua_##led_node_id[] =                           \
-		DT_PROP(led_node_id, manual_current_microamps);                                    \
+		DT_PROP(led_node_id, manual_current_microamp);                                     \
 	static const uint16_t lp58xx_auto_current_ua_##led_node_id[] =                             \
-		DT_PROP(led_node_id, auto_current_microamps);
+		DT_PROP(led_node_id, auto_current_microamp);
 // TODO: configure phase alignment
 
 #define LED_INFO(led_node_id)                                                                      \
@@ -774,7 +774,7 @@ int lp58xx_continue(const struct device *dev)
 		.num_leds = ARRAY_SIZE(lp58xx_led_infos_##n),                                      \
 		.led_infos = lp58xx_led_infos_##n,                                                 \
 		.led_configs = lp58xx_led_configs_##n,                                             \
-		.max_current_ua = DT_INST_PROP(n, max_current_microamps),                          \
+		.max_current_ua = DT_INST_PROP(n, max_current_microamp),                           \
 		.lsd_threshold_percent = DT_INST_PROP(n, lsd_threshold_percent),                   \
 		.write_buf_len = sizeof(lp58xx_write_buf_##n),                                     \
 		.write_buf = lp58xx_write_buf_##n,                                                 \
