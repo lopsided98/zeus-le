@@ -29,13 +29,13 @@ int wifi_power_off(void) {
         return -ENODEV;
     }
 
-    int ret = gpio_pin_configure_dt(&iovdd_ctrl_gpio, GPIO_OUTPUT_LOW);
+    int ret = gpio_pin_configure_dt(&iovdd_ctrl_gpio, GPIO_OUTPUT_INACTIVE);
     if (ret) {
         LOG_ERR("IOVDD GPIO configuration failed (err %d)", ret);
         return ret;
     }
 
-    ret = gpio_pin_configure_dt(&bucken_gpio, GPIO_OUTPUT_LOW);
+    ret = gpio_pin_configure_dt(&bucken_gpio, GPIO_OUTPUT_INACTIVE);
     if (ret) {
         LOG_ERR("BUCKEN GPIO configuration failed (err %d)", ret);
         return ret;
