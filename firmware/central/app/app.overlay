@@ -1,18 +1,3 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "../common/central.dtsi"
-
-/ {
-	chosen {
-		zephyr,log-ipc = &ipc_log;
-	};
-
-	ipc {
-		ipc_log: ipc-log {
-			compatible = "zephyr,ipc-openamp-static-vrings";
-			memory-region = <&sram_ipc_log>;
-			mboxes = <&mbox 2>, <&mbox 3>;
-			mbox-names = "tx", "rx";
-			role = "host";
-			status = "okay";
-		};
-	};
-};

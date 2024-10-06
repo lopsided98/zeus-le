@@ -1,21 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "../common/audio.dtsi"
-
-/ {
-	chosen {
-		zephyr,log-ipc = &ipc_log;
-	};
-
-	ipc {
-		ipc_log: ipc-log {
-			compatible = "zephyr,ipc-openamp-static-vrings";
-			memory-region = <&sram_ipc_log>;
-			mboxes = <&mbox 2>, <&mbox 3>;
-			mbox-names = "rx", "tx";
-			role = "remote";
-			status = "okay";
-		};
-	};
-};
 
 // Required to enable BT_LLL_VENDOR_NORDIC
 &timer0 {
