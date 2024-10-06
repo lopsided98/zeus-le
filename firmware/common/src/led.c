@@ -13,19 +13,56 @@ LOG_MODULE_REGISTER(led);
 
 #define LED_FADE_MS 360
 
-#define LED_AEU_FADE(start_pwm, end_pwm)      \
-    {                                         \
-        .pwm = {start_pwm, end_pwm, 0, 0, 0}, \
-        .time_msec = {LED_FADE_MS, 0, 0, 0},  \
-        .repeat = 0,                          \
+#define LED_AEU_FADE(start_pwm, end_pwm)                  \
+    (struct lp58xx_aeu_config) {                          \
+        .pwm = {start_pwm, end_pwm, 0, 0, 0},             \
+        .time_msec = {LED_FADE_MS, 0, 0, 0}, .repeat = 0, \
     }
 
 #define LED_AEU_CONSTANT(pwm_val)                             \
-    {                                                         \
+    (struct lp58xx_aeu_config) {                              \
         .pwm = {pwm_val, pwm_val, pwm_val, pwm_val, pwm_val}, \
         .time_msec = {8050, 8050, 8050, 8050},                \
         .repeat = LP58XX_AEU_REPEAT_INFINITE,                 \
     }
+
+static inline struct lp58xx_aeu_config led_aeu_scale(
+    struct lp58xx_aeu_config aeu, uint8_t scale_pwm) {
+    return (struct lp58xx_aeu_config){
+        .pwm =
+            {
+                aeu.pwm[0] * scale_pwm / 255,
+                aeu.pwm[1] * scale_pwm / 255,
+                aeu.pwm[2] * scale_pwm / 255,
+                aeu.pwm[3] * scale_pwm / 255,
+                aeu.pwm[4] * scale_pwm / 255,
+            },
+        .time_msec =
+            {
+                aeu.time_msec[0],
+                aeu.time_msec[1],
+                aeu.time_msec[2],
+                aeu.time_msec[3],
+            },
+        .repeat = aeu.repeat,
+    };
+}
+
+static inline struct lp58xx_ae_config led_ae_scale(struct lp58xx_ae_config ae,
+                                                   uint8_t scale_pwm) {
+    return (struct lp58xx_ae_config){
+        .pause_start_msec = ae.pause_start_msec,
+        .pause_end_msec = ae.pause_end_msec,
+        .num_aeu = ae.num_aeu,
+        .repeat = ae.repeat,
+        .aeu =
+            {
+                led_aeu_scale(ae.aeu[0], scale_pwm),
+                led_aeu_scale(ae.aeu[1], scale_pwm),
+                led_aeu_scale(ae.aeu[1], scale_pwm),
+            },
+    };
+}
 
 static K_MUTEX_DEFINE(led_mutex);
 
@@ -143,6 +180,7 @@ static int led_pattern_off(void) {
     return lp58xx_start(cfg->led);
 }
 
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
 static int led_pattern_startup(void) {
     const struct led_config* cfg = &led_config;
     int ret;
@@ -169,6 +207,39 @@ static int led_pattern_startup(void) {
 
     return lp58xx_start(cfg->led);
 }
+#elif IS_ENABLED(CONFIG_ZEUS_NODE_CENTRAL)
+static int led_pattern_startup(void) {
+    const struct led_config* cfg = &led_config;
+    int ret;
+
+    static const struct lp58xx_ae_config ae_cfg = {
+        .pause_start_msec = 0,
+        .pause_end_msec = 0,
+        .num_aeu = 2,
+        .repeat = 0,
+        .aeu =
+            {
+                {
+                    .pwm = {0, 255, 50, 50, 50},
+                    .time_msec = {540, 540, 0, 0},
+                    .repeat = 0,
+                },
+                LED_AEU_CONSTANT(50),
+            },
+    };
+
+    const struct lp58xx_ae_config red_ae_cfg = led_ae_scale(ae_cfg, 70);
+    const struct lp58xx_ae_config blue_ae_cfg = led_ae_scale(ae_cfg, 100);
+
+    ret = lp58xx_ae_configure(cfg->led, LED_RED, &red_ae_cfg);
+    if (ret < 0) return ret;
+
+    ret = lp58xx_ae_configure(cfg->led, LED_BLUE, &blue_ae_cfg);
+    if (ret < 0) return ret;
+
+    return lp58xx_start(cfg->led);
+}
+#endif
 
 static int led_pattern_idle_synced(void) {
     const struct led_config* cfg = &led_config;

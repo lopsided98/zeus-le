@@ -1,4 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 source "Kconfig.zephyr"
+rsource "../../common/Kconfig"
 rsource "../../lftpd/Kconfig"
 
 menu "Zeus LE"
