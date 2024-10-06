@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+choice ZEUS_NODE
+    prompt "Zeus node type for common code"
+
+config ZEUS_NODE_AUDIO
+	bool "Zeus audio node"
+
+config ZEUS_NODE_CENTRAL
+	bool "Zeus central node"
+
+endchoice
