@@ -2,6 +2,7 @@
 #include <nrfx_clock.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/uuid.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/settings/settings.h>
@@ -16,22 +17,39 @@
 
 LOG_MODULE_REGISTER(central, LOG_LEVEL_DBG);
 
+static K_MUTEX_DEFINE(central_mutex);
+
+void button_release_work_handler(struct k_work *work);
+static K_WORK_DELAYABLE_DEFINE(central_button_release_work,
+                               button_release_work_handler);
+
 enum central_state {
-    STATE_IDLE,
-    STATE_PAIRING,
-    STATE_RECORDING,
+    CENTRAL_STATE_IDLE,
+    CENTRAL_STATE_PAIRING,
+    CENTRAL_STATE_RECORDING,
 };
 
 static const struct bt_data ad[] = {
     BT_DATA_BYTES(BT_DATA_UUID128_SOME, ZEUS_BT_UUID_VAL),
 };
 
-static struct central {
+static const struct central_config {
+    struct k_mutex *mutex;
+    struct gpio_dt_spec button_gpio;
+    struct k_work_delayable *button_release_work;
+} central_config = {
+    .mutex = &central_mutex,
+    .button_gpio = GPIO_DT_SPEC_GET(DT_NODELABEL(button), gpios),
+    .button_release_work = &central_button_release_work,
+};
+
+static struct central_data {
     enum central_state state;
     struct bt_le_adv_param adv_param;
     struct bt_le_ext_adv *adv;
-} central = {
-    .state = STATE_IDLE,
+    struct gpio_callback button_release_cb;
+} central_data = {
+    .state = CENTRAL_STATE_IDLE,
     .adv_param =
         {
             .id = BT_ID_DEFAULT,
@@ -57,7 +75,7 @@ static void add_bonded_addr_to_filter_list(const struct bt_bond_info *info,
 }
 
 static int connect_adv_init(void) {
-    struct central *c = &central;
+    struct central_data *c = &central_data;
 
     bt_foreach_bond(BT_ID_DEFAULT, add_bonded_addr_to_filter_list, NULL);
 
@@ -83,7 +101,7 @@ static int connect_adv_init(void) {
 }
 
 static int connect_adv_set_pairing(bool pairing) {
-    struct central *c = &central;
+    struct central_data *c = &central_data;
 
     // Allow connections from any device while pairing
     if (pairing) {
@@ -98,34 +116,113 @@ static int connect_adv_set_pairing(bool pairing) {
 }
 
 static int central_pair(void) {
-    struct central *c = &central;
+    const struct central_config *config = &central_config;
+    struct central_data *data = &central_data;
     int ret;
 
-    if (c->state != STATE_IDLE) {
-        return -EALREADY;
+    k_mutex_lock(config->mutex, K_FOREVER);
+
+    if (data->state != CENTRAL_STATE_IDLE) {
+        ret = -EBUSY;
+        goto unlock;
     }
 
-    ret = bt_le_ext_adv_stop(c->adv);
+    ret = bt_le_ext_adv_stop(data->adv);
     if (ret) {
         LOG_INF("failed to stop advertising (err %d)", ret);
-        return ret;
+        goto unlock;
     }
 
     ret = connect_adv_set_pairing(true);
     if (ret) {
         LOG_INF("failed to enable pairing (err %d)", ret);
-        return ret;
+        goto unlock;
     }
 
-    ret = bt_le_ext_adv_start(c->adv, BT_LE_EXT_ADV_START_DEFAULT);
+    ret = bt_le_ext_adv_start(data->adv, BT_LE_EXT_ADV_START_DEFAULT);
     if (ret) {
         LOG_INF("failed to start advertising (err %d)", ret);
-        return ret;
+        goto unlock;
     }
 
-    c->state = STATE_PAIRING;
+    data->state = CENTRAL_STATE_PAIRING;
     LOG_INF("pairing started...");
-    return 0;
+
+unlock:
+    k_mutex_unlock(config->mutex);
+    return ret;
+}
+
+static int central_start(void) {
+    const struct central_config *config = &central_config;
+    struct central_data *data = &central_data;
+    int ret;
+
+    k_mutex_lock(config->mutex, K_FOREVER);
+
+    if (data->state == CENTRAL_STATE_PAIRING) {
+        ret = -EBUSY;
+        goto unlock;
+    }
+
+    ret = sync_cmd_start();
+    if (ret) goto unlock;
+
+    data->state = CENTRAL_STATE_RECORDING;
+
+unlock:
+    k_mutex_unlock(config->mutex);
+    return ret;
+}
+
+static int central_stop(void) {
+    const struct central_config *config = &central_config;
+    struct central_data *data = &central_data;
+    int ret;
+
+    k_mutex_lock(config->mutex, K_FOREVER);
+
+    if (data->state == CENTRAL_STATE_PAIRING) {
+        ret = -EBUSY;
+        goto unlock;
+    }
+
+    ret = sync_cmd_stop();
+    if (ret) goto unlock;
+
+    data->state = CENTRAL_STATE_IDLE;
+
+unlock:
+    k_mutex_unlock(config->mutex);
+    return ret;
+}
+
+static int central_toggle(void) {
+    const struct central_config *config = &central_config;
+    struct central_data *data = &central_data;
+    int ret;
+
+    k_mutex_lock(config->mutex, K_FOREVER);
+
+    switch (data->state) {
+        case CENTRAL_STATE_PAIRING:
+            ret = -EBUSY;
+            goto unlock;
+        case CENTRAL_STATE_IDLE:
+            ret = sync_cmd_start();
+            if (ret) goto unlock;
+            data->state = CENTRAL_STATE_RECORDING;
+            break;
+        case CENTRAL_STATE_RECORDING:
+            ret = sync_cmd_stop();
+            if (ret) goto unlock;
+            data->state = CENTRAL_STATE_IDLE;
+            break;
+    }
+
+unlock:
+    k_mutex_unlock(config->mutex);
+    return ret;
 }
 
 static int cmd_pair(const struct shell *sh, size_t argc, char **argv) {
@@ -135,7 +232,7 @@ static int cmd_pair(const struct shell *sh, size_t argc, char **argv) {
 
 static int cmd_start(const struct shell *sh, size_t argc, char **argv) {
     shell_print(sh, "start recording command");
-    int ret = sync_cmd_start();
+    int ret = central_start();
     if (ret) {
         shell_fprintf(sh, SHELL_ERROR, "failed to send start command (err %d)",
                       ret);
@@ -145,7 +242,7 @@ static int cmd_start(const struct shell *sh, size_t argc, char **argv) {
 
 static int cmd_stop(const struct shell *sh, size_t argc, char **argv) {
     shell_print(sh, "stop recording command");
-    int ret = sync_cmd_stop();
+    int ret = central_stop();
     if (ret) {
         shell_fprintf(sh, SHELL_ERROR, "failed to send stop command (err %d)",
                       ret);
@@ -158,6 +255,37 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(start, NULL, "Start recording", cmd_start),
     SHELL_CMD(stop, NULL, "Stop recording", cmd_stop), SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(zeus, &sub_zeus, "Zeus commands", NULL);
+
+void button_release_work_handler(struct k_work *work) { central_toggle(); }
+
+void button_release_handler(const struct device *port, struct gpio_callback *cb,
+                            gpio_port_pins_t pins) {
+    const struct central_config *config = &central_config;
+    // Delay for debouncing
+    k_work_reschedule(config->button_release_work, K_MSEC(10));
+}
+
+int button_init(void) {
+    const struct central_config *config = &central_config;
+    struct central_data *data = &central_data;
+    int ret;
+
+    gpio_init_callback(&data->button_release_cb, button_release_handler,
+                       BIT(config->button_gpio.pin));
+
+    ret = gpio_add_callback(config->button_gpio.port, &data->button_release_cb);
+    if (ret) {
+        return ret;
+    }
+
+    ret = gpio_pin_interrupt_configure_dt(&config->button_gpio,
+                                          GPIO_INT_EDGE_TO_INACTIVE);
+    if (ret) {
+        return ret;
+    }
+
+    return 0;
+}
 
 WIFI_POWER_OFF_REGISTER();
 
@@ -210,6 +338,8 @@ int main(void) {
     if (ret) {
         return 0;
     }
+
+    button_init();
 
     LOG_INF("Booted");
 

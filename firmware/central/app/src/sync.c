@@ -8,82 +8,119 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#include "zeus/led.h"
 #include "zeus/protocol.h"
 
 LOG_MODULE_REGISTER(sync);
 
 /// Delay from start command to start of recording. Must be long enough for
 /// audio nodes to reliably receive command.
-#define SYNC_START_DELAY (2 * ZEUS_TIME_NOMINAL_FREQ)
+#define SYNC_START_DELAY_SEC 2
+/// Start delay in timer units
+#define SYNC_START_DELAY (SYNC_START_DELAY_SEC * ZEUS_TIME_NOMINAL_FREQ)
 
 static void sync_adv_update_handler(struct k_work *work);
 static K_WORK_DEFINE(sync_update_work, sync_adv_update_handler);
 
 K_MSGQ_DEFINE(sync_cmd_queue, sizeof(struct zeus_adv_cmd), 2, 1);
 
-static struct sync {
+static const struct sync_config {
+    struct k_work *update_work;
+    struct k_msgq *cmd_queue;
+} sync_config = {
+    .update_work = &sync_update_work,
+    .cmd_queue = &sync_cmd_queue,
+};
+
+static struct sync_data {
     // Resources
     struct ipc_ept ept;
     struct bt_le_ext_adv *adv;
-    struct zeus_adv_data adv_data;
-    struct k_work *update_work;
-    struct k_msgq *cmd_queue;
 
     // State
+    struct zeus_adv_data adv_data;
     bool first_seq;
     uint8_t prev_seq;
     /// Timestamp of the last advertising packet sent
     atomic_t last_pkt_time;
     /// Current command sequence number
     uint16_t cmd_seq;
-} sync = {
-    .update_work = &sync_update_work,
-    .cmd_queue = &sync_cmd_queue,
-
+} sync_data = {
     .first_seq = true,
 };
 
-#define LED_ENABLED DT_NODE_EXISTS(DT_NODELABEL(led0))
-
-#if LED_ENABLED
-static const struct gpio_dt_spec led =
-    GPIO_DT_SPEC_GET(DT_NODELABEL(led0), gpios);
-
-static void led_off_work_handler(struct k_work *work) {
-    gpio_pin_set_dt(&led, 0);
+static int32_t sync_time_diff(uint32_t a, uint32_t b) {
+    return (int32_t)(a - b);
 }
-K_WORK_DELAYABLE_DEFINE(led_off_work, led_off_work_handler);
-#endif
 
 static int sync_adv_update_data(void) {
-    struct sync *t = &sync;
+    const struct sync_config *config = &sync_config;
+    struct sync_data *data = &sync_data;
 
-    size_t body_len;
-    switch (t->adv_data.cmd.hdr.id) {
+    bool new_cmd = false;
+    int err = k_msgq_get(config->cmd_queue, &data->adv_data.cmd, K_NO_WAIT);
+    if (!err) {
+        new_cmd = true;
+    }
+
+    switch (data->adv_data.cmd.id) {
+        case ZEUS_ADV_CMD_START: {
+            int32_t waiting_time = sync_time_diff(data->adv_data.cmd.start.time,
+                                                  data->adv_data.hdr.sync.time);
+            // FIXME: what if another non-recording related command arrives
+            // before the waiting period expires
+            if (waiting_time > 0) {
+                led_record_waiting();
+            } else {
+                led_record_started();
+            }
+            // Clear out old start command once twice the start delay has
+            // passed.
+            if (waiting_time < -SYNC_START_DELAY) {
+                data->adv_data.cmd =
+                    (struct zeus_adv_cmd){.id = ZEUS_ADV_CMD_NONE};
+                new_cmd = true;
+            }
+        } break;
+        case ZEUS_ADV_CMD_STOP:
+            led_record_stopped();
+            break;
+        default:
+            break;
+    }
+
+    if (new_cmd) {
+        data->adv_data.hdr.seq = ++data->cmd_seq;
+    }
+
+    size_t cmd_len;
+    switch (data->adv_data.cmd.id) {
         case ZEUS_ADV_CMD_START:
-            body_len = sizeof(struct zeus_adv_cmd_header) +
-                       sizeof(struct zeus_adv_cmd_start);
+            cmd_len = sizeof(struct zeus_adv_cmd_start);
             break;
         case ZEUS_ADV_CMD_STOP:
-            body_len = sizeof(struct zeus_adv_cmd_header);
+            cmd_len = 0;
             break;
         default:
         case ZEUS_ADV_CMD_NONE:
-            t->adv_data.cmd = (struct zeus_adv_cmd){
-                .hdr.id = ZEUS_ADV_CMD_NONE,
-            };
-            body_len = 0;
+            // Make sure the cmd is NONE in the default case
+            data->adv_data.cmd.id = ZEUS_ADV_CMD_NONE;
+            cmd_len = 0;
             break;
     }
-    size_t len = sizeof(struct zeus_adv_header) + body_len;
+    size_t len = sizeof(struct zeus_adv_header) +
+                 // No body is implicit ZEUS_ADV_CMD_NONE
+                 (data->adv_data.cmd.id == ZEUS_ADV_CMD_NONE
+                      ? 0
+                      : sizeof(enum zeus_adv_cmd_id) + cmd_len);
     __ASSERT(len <= sizeof(struct zeus_adv_data),
              "Advertising data length calculation error");
 
     struct bt_data ad[] = {
-        BT_DATA(BT_DATA_MANUFACTURER_DATA, &t->adv_data, len),
+        BT_DATA(BT_DATA_MANUFACTURER_DATA, &data->adv_data, len),
     };
 
-    return bt_le_per_adv_set_data(t->adv, ad, ARRAY_SIZE(ad));
+    return bt_le_per_adv_set_data(data->adv, ad, ARRAY_SIZE(ad));
 }
 
 static void sync_adv_update_handler(struct k_work *work) {
@@ -95,8 +132,8 @@ static void sync_adv_update_handler(struct k_work *work) {
 }
 
 static void sync_ipc_recv(const void *data, size_t len, void *priv) {
-    struct sync *t = priv;
-    int err;
+    const struct sync_config *config = &sync_config;
+    struct sync_data *t = &sync_data;
     const struct zeus_sync_msg *msg = data;
 
     if (msg->seq != (uint8_t)(t->prev_seq + 1) && !t->first_seq) {
@@ -109,40 +146,24 @@ static void sync_ipc_recv(const void *data, size_t len, void *priv) {
 
     // LOG_INF("pkt");
 
-#if LED_ENABLED
-    gpio_pin_set_dt(&led, 1);
-    k_work_schedule(&led_off_work, K_MSEC(50));
-#endif
-
-    t->adv_data = (struct zeus_adv_data){
-        .hdr =
-            {
-                .seq = msg->seq,
-                .time = msg->time,
-            },
+    t->adv_data.hdr.sync = (struct zeus_adv_sync){
+        .seq = msg->seq,
+        .time = msg->time,
     };
 
-    err = k_msgq_get(t->cmd_queue, &t->adv_data.cmd, K_NO_WAIT);
-    if (err) {
-        // Queue empty, no command
-        t->adv_data.cmd = (struct zeus_adv_cmd){
-            .hdr.id = ZEUS_ADV_CMD_NONE,
-        };
-    } else {
-        t->adv_data.cmd.hdr.seq = t->cmd_seq++;
-    }
-
-    k_work_submit(t->update_work);
+    k_work_submit(config->update_work);
 }
 
 static const struct ipc_ept_cfg sync_ept_cfg = {
     .name = "packet_timer",
     .cb.received = sync_ipc_recv,
-    .priv = &sync,
+    .priv = &sync_data,
 };
 
 /// Initialize periodic advertisements for syncing
 static int sync_adv_init(void) {
+    struct sync_data *data = &sync_data;
+
     struct bt_le_adv_param adv_param = {
         .id = BT_ID_DEFAULT,
         .sid = 1,
@@ -153,7 +174,7 @@ static int sync_adv_init(void) {
         .peer = NULL,
     };
 
-    int ret = bt_le_ext_adv_create(&adv_param, NULL, &sync.adv);
+    int ret = bt_le_ext_adv_create(&adv_param, NULL, &data->adv);
     if (ret) {
         LOG_ERR("failed to create sync advertising set (err %d)", ret);
         return ret;
@@ -161,9 +182,9 @@ static int sync_adv_init(void) {
 
     // Set periodic advertising parameters
     ret = bt_le_per_adv_set_param(
-        sync.adv, BT_LE_PER_ADV_PARAM(BT_GAP_PER_ADV_FAST_INT_MIN_2,
-                                      BT_GAP_PER_ADV_FAST_INT_MAX_2,
-                                      BT_LE_PER_ADV_OPT_NONE));
+        data->adv, BT_LE_PER_ADV_PARAM(BT_GAP_PER_ADV_FAST_INT_MIN_2,
+                                       BT_GAP_PER_ADV_FAST_INT_MAX_2,
+                                       BT_LE_PER_ADV_OPT_NONE));
     if (ret) {
         LOG_ERR("failed to set periodic sync advertising parameters (err %d)",
                 ret);
@@ -171,13 +192,13 @@ static int sync_adv_init(void) {
     }
 
     // Enable Periodic Advertising
-    ret = bt_le_per_adv_start(sync.adv);
+    ret = bt_le_per_adv_start(data->adv);
     if (ret) {
         LOG_ERR("failed to enable periodic sync advertising (err %d)\n", ret);
         return ret;
     }
 
-    ret = bt_le_ext_adv_start(sync.adv, BT_LE_EXT_ADV_START_DEFAULT);
+    ret = bt_le_ext_adv_start(data->adv, BT_LE_EXT_ADV_START_DEFAULT);
     if (ret) {
         LOG_ERR("failed to start sync advertising (err %d)\n", ret);
         return ret;
@@ -187,12 +208,8 @@ static int sync_adv_init(void) {
 }
 
 int sync_init(void) {
-    struct sync *s = &sync;
+    struct sync_data *data = &sync_data;
     int ret;
-
-#if LED_ENABLED
-    gpio_pin_configure_dt(&led, GPIO_OUTPUT);
-#endif
 
     const struct device *ipc = DEVICE_DT_GET(DT_NODELABEL(ipc0));
 
@@ -201,7 +218,7 @@ int sync_init(void) {
         LOG_ERR("failed to initialize IPC (err %d)", ret);
         return ret;
     }
-    ret = ipc_service_register_endpoint(ipc, &s->ept, &sync_ept_cfg);
+    ret = ipc_service_register_endpoint(ipc, &data->ept, &sync_ept_cfg);
     if (ret < 0) {
         LOG_ERR("failed to register IPC endpoint (err %d)", ret);
         return ret;
@@ -214,24 +231,25 @@ int sync_init(void) {
 }
 
 int sync_cmd_start(void) {
-    struct sync *s = &sync;
+    const struct sync_config *config = &sync_config;
+    struct sync_data *data = &sync_data;
 
-    uint32_t start_time = atomic_get(&s->last_pkt_time) + SYNC_START_DELAY;
+    uint32_t start_time = atomic_get(&data->last_pkt_time) + SYNC_START_DELAY;
 
-    return k_msgq_put(s->cmd_queue,
+    return k_msgq_put(config->cmd_queue,
                       &(struct zeus_adv_cmd){
-                          .hdr.id = ZEUS_ADV_CMD_START,
+                          .id = ZEUS_ADV_CMD_START,
                           .start.time = start_time,
                       },
                       K_NO_WAIT);
 }
 
 int sync_cmd_stop(void) {
-    struct sync *s = &sync;
+    const struct sync_config *config = &sync_config;
 
-    return k_msgq_put(s->cmd_queue,
+    return k_msgq_put(config->cmd_queue,
                       &(struct zeus_adv_cmd){
-                          .hdr.id = ZEUS_ADV_CMD_STOP,
+                          .id = ZEUS_ADV_CMD_STOP,
                       },
                       K_NO_WAIT);
 }

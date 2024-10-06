@@ -89,12 +89,16 @@ enum led_battery_state {
 enum led_pattern {
     LED_PATTERN_OFF,
     LED_PATTERN_STARTUP,
-    LED_PATTERN_IDLE_SYNCED,
-    LED_PATTERN_IDLE_NOT_SYNCED,
-    LED_PATTERN_RECORD_WAITING,
-    LED_PATTERN_RECORD_RUNNING,
     LED_PATTERN_BATTERY_CHARGING,
     LED_PATTERN_BATTERY_FULL,
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
+    LED_PATTERN_IDLE_SYNCED,
+    LED_PATTERN_IDLE_NOT_SYNCED,
+#elif IS_ENABLED(CONFIG_ZEUS_NODE_CENTRAL)
+    LED_PATTERN_IDLE,
+#endif
+    LED_PATTERN_RECORD_WAITING,
+    LED_PATTERN_RECORD_RUNNING,
     LED_PATTERN_COUNT,
 };
 
@@ -102,12 +106,16 @@ typedef int(led_pattern_func)(void);
 
 static int led_pattern_off(void);
 static int led_pattern_startup(void);
-static int led_pattern_idle_synced(void);
-static int led_pattern_idle_not_synced(void);
-static int led_pattern_record_waiting(void);
-static int led_pattern_record_running(void);
 static int led_pattern_battery_charging(void);
 static int led_pattern_battery_full(void);
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
+static int led_pattern_idle_synced(void);
+static int led_pattern_idle_not_synced(void);
+#elif IS_ENABLED(CONFIG_ZEUS_NODE_CENTRAL)
+static int led_pattern_idle(void);
+#endif
+static int led_pattern_record_waiting(void);
+static int led_pattern_record_running(void);
 
 static const struct led_config {
     const struct device* led;
@@ -120,26 +128,34 @@ static const struct led_config {
         {
             [LED_PATTERN_OFF] = led_pattern_off,
             [LED_PATTERN_STARTUP] = led_pattern_startup,
-            [LED_PATTERN_IDLE_SYNCED] = led_pattern_idle_synced,
-            [LED_PATTERN_IDLE_NOT_SYNCED] = led_pattern_idle_not_synced,
-            [LED_PATTERN_RECORD_WAITING] = led_pattern_record_waiting,
-            [LED_PATTERN_RECORD_RUNNING] = led_pattern_record_running,
             [LED_PATTERN_BATTERY_CHARGING] = led_pattern_battery_charging,
             [LED_PATTERN_BATTERY_FULL] = led_pattern_battery_full,
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
+            [LED_PATTERN_IDLE_SYNCED] = led_pattern_idle_synced,
+            [LED_PATTERN_IDLE_NOT_SYNCED] = led_pattern_idle_not_synced,
+#elif IS_ENABLED(CONFIG_ZEUS_NODE_CENTRAL)
+            [LED_PATTERN_IDLE] = led_pattern_idle,
+#endif
+            [LED_PATTERN_RECORD_WAITING] = led_pattern_record_waiting,
+            [LED_PATTERN_RECORD_RUNNING] = led_pattern_record_running,
         },
 };
 
 static struct led_data {
     enum led_power_state power_state;
-    bool synced;
-    enum led_record_state record_state;
     enum led_battery_state battery_state;
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
+    bool synced;
+#endif
+    enum led_record_state record_state;
     enum led_pattern pattern;
 } led_data = {
     .power_state = LED_POWER_UNKNOWN,
+    .battery_state = LED_BATTERY_DISCHARGING,
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
     .synced = false,
     .record_state = LED_RECORD_IDLE,
-    .battery_state = LED_BATTERY_DISCHARGING,
+#endif
     .pattern = LED_PATTERN_OFF,
 };
 
@@ -241,157 +257,6 @@ static int led_pattern_startup(void) {
 }
 #endif
 
-static int led_pattern_idle_synced(void) {
-    const struct led_config* cfg = &led_config;
-    int ret;
-
-    ret = lp58xx_pause(cfg->led);
-    if (ret < 0) return ret;
-
-    uint8_t start_pwm[LED_CHANNELS];
-    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
-    if (ret < 0) return ret;
-
-    const struct lp58xx_ae_config blue_ae_cfg = {
-        .pause_start_msec = 0,
-        .pause_end_msec = 0,
-        .num_aeu = 2,
-        .repeat = 0,
-        .aeu =
-            {
-                LED_AEU_FADE(start_pwm[LED_BLUE], 50),
-                LED_AEU_CONSTANT(50),
-            },
-    };
-
-    ret = lp58xx_ae_configure(cfg->led, LED_BLUE, &blue_ae_cfg);
-    if (ret < 0) return ret;
-
-    ret = led_configure_fade_out(LED_GREEN, start_pwm[LED_GREEN]);
-    if (ret < 0) return ret;
-
-    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
-    if (ret < 0) return ret;
-
-    return lp58xx_start(cfg->led);
-}
-
-static int led_pattern_idle_not_synced(void) {
-    const struct led_config* cfg = &led_config;
-    int ret;
-
-    ret = lp58xx_pause(cfg->led);
-    if (ret < 0) return ret;
-
-    uint8_t start_pwm[LED_CHANNELS];
-    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
-    if (ret < 0) return ret;
-
-    const struct lp58xx_ae_config blue_ae_cfg = {
-        .pause_start_msec = 0,
-        .pause_end_msec = 0,
-        .num_aeu = 2,
-        .repeat = 0,
-        .aeu = {LED_AEU_FADE(start_pwm[LED_BLUE], 100),
-                {
-                    .pwm = {100, 50, 2, 50, 100},
-                    .time_msec = {360, 360, 360, 360},
-                    .repeat = LP58XX_AEU_REPEAT_INFINITE,
-                }},
-    };
-
-    ret = lp58xx_ae_configure(cfg->led, LED_BLUE, &blue_ae_cfg);
-    if (ret < 0) return ret;
-
-    ret = led_configure_fade_out(LED_GREEN, start_pwm[LED_GREEN]);
-    if (ret < 0) return ret;
-
-    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
-    if (ret < 0) return ret;
-
-    return lp58xx_start(cfg->led);
-}
-
-static int led_pattern_record_waiting(void) {
-    const struct led_config* cfg = &led_config;
-    int ret;
-
-    ret = lp58xx_pause(cfg->led);
-    if (ret < 0) return ret;
-
-    uint8_t start_pwm[LED_CHANNELS];
-    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
-    if (ret < 0) return ret;
-
-    const struct lp58xx_ae_config green_ae_cfg = {
-        .pause_start_msec = 0,
-        .pause_end_msec = 0,
-        .num_aeu = 2,
-        .repeat = 0,
-        .aeu = {{
-                    .pwm = {start_pwm[LED_GREEN], 100, 100, 100, 100},
-                    .time_msec = {90, 0, 0, 0},
-                    .repeat = 0,
-                },
-                {
-                    .pwm = {100, 2, 100, 0, 0},
-                    .time_msec = {90, 90, 0, 0},
-                    .repeat = LP58XX_AEU_REPEAT_INFINITE,
-                }},
-    };
-
-    ret = led_configure_fade_out(LED_BLUE, start_pwm[LED_GREEN]);
-    if (ret < 0) return ret;
-
-    ret = lp58xx_ae_configure(cfg->led, LED_GREEN, &green_ae_cfg);
-    if (ret < 0) return ret;
-
-    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
-    if (ret < 0) return ret;
-
-    return lp58xx_start(cfg->led);
-}
-
-static int led_pattern_record_running(void) {
-    const struct led_config* cfg = &led_config;
-    int ret;
-
-    ret = lp58xx_pause(cfg->led);
-    if (ret < 0) return ret;
-
-    uint8_t start_pwm[LED_CHANNELS];
-    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
-    if (ret < 0) return ret;
-
-    const struct lp58xx_ae_config green_ae_cfg = {
-        .pause_start_msec = 0,
-        .pause_end_msec = 0,
-        .num_aeu = 2,
-        .repeat = 0,
-        .aeu = {{
-                    .pwm = {start_pwm[LED_GREEN], 0, 0, 0, 0},
-                    .time_msec = {1070, 0, 0, 0},
-                    .repeat = 0,
-                },
-                {
-                    .pwm = {0, 0, 50, 0, 0},
-                    .time_msec = {8050, 90, 90, 0},
-                    .repeat = LP58XX_AEU_REPEAT_INFINITE,
-                }},
-    };
-
-    ret = led_configure_fade_out(LED_BLUE, start_pwm[LED_BLUE]);
-    if (ret < 0) return ret;
-
-    ret = lp58xx_ae_configure(cfg->led, LED_GREEN, &green_ae_cfg);
-    if (ret < 0) return ret;
-
-    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
-    if (ret < 0) return ret;
-
-    return lp58xx_start(cfg->led);
-}
-
 static int led_pattern_battery_charging(void) {
     const struct led_config* cfg = &led_config;
     int ret;
@@ -467,6 +332,210 @@ static int led_pattern_battery_full(void) {
     return lp58xx_start(cfg->led);
 }
 
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
+
+static int led_pattern_idle_synced(void) {
+    const struct led_config* cfg = &led_config;
+    int ret;
+
+    ret = lp58xx_pause(cfg->led);
+    if (ret < 0) return ret;
+
+    uint8_t start_pwm[LED_CHANNELS];
+    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
+    if (ret < 0) return ret;
+
+    const struct lp58xx_ae_config blue_ae_cfg = {
+        .pause_start_msec = 0,
+        .pause_end_msec = 0,
+        .num_aeu = 2,
+        .repeat = 0,
+        .aeu =
+            {
+                LED_AEU_FADE(start_pwm[LED_BLUE], 50),
+                LED_AEU_CONSTANT(50),
+            },
+    };
+
+    ret = lp58xx_ae_configure(cfg->led, LED_BLUE, &blue_ae_cfg);
+    if (ret < 0) return ret;
+
+    ret = led_configure_fade_out(LED_GREEN, start_pwm[LED_GREEN]);
+    if (ret < 0) return ret;
+
+    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
+    if (ret < 0) return ret;
+
+    return lp58xx_start(cfg->led);
+}
+
+static int led_pattern_idle_not_synced(void) {
+    const struct led_config* cfg = &led_config;
+    int ret;
+
+    ret = lp58xx_pause(cfg->led);
+    if (ret < 0) return ret;
+
+    uint8_t start_pwm[LED_CHANNELS];
+    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
+    if (ret < 0) return ret;
+
+    const struct lp58xx_ae_config blue_ae_cfg = {
+        .pause_start_msec = 0,
+        .pause_end_msec = 0,
+        .num_aeu = 2,
+        .repeat = 0,
+        .aeu = {LED_AEU_FADE(start_pwm[LED_BLUE], 100),
+                {
+                    .pwm = {100, 50, 2, 50, 100},
+                    .time_msec = {360, 360, 360, 360},
+                    .repeat = LP58XX_AEU_REPEAT_INFINITE,
+                }},
+    };
+
+    ret = lp58xx_ae_configure(cfg->led, LED_BLUE, &blue_ae_cfg);
+    if (ret < 0) return ret;
+
+    ret = led_configure_fade_out(LED_GREEN, start_pwm[LED_GREEN]);
+    if (ret < 0) return ret;
+
+    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
+    if (ret < 0) return ret;
+
+    return lp58xx_start(cfg->led);
+}
+
+#elif IS_ENABLED(CONFIG_ZEUS_NODE_CENTRAL)
+
+static int led_pattern_idle(void) {
+    const struct led_config* cfg = &led_config;
+    int ret;
+
+    ret = lp58xx_pause(cfg->led);
+    if (ret < 0) return ret;
+
+    uint8_t start_pwm[LED_CHANNELS];
+    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
+    if (ret < 0) return ret;
+
+    const struct lp58xx_ae_config red_ae_cfg = {
+        .pause_start_msec = 0,
+        .pause_end_msec = 0,
+        .num_aeu = 2,
+        .repeat = 0,
+        .aeu =
+            {
+                LED_AEU_FADE(start_pwm[LED_RED], 19),
+                LED_AEU_CONSTANT(19),
+            },
+    };
+
+    const struct lp58xx_ae_config blue_ae_cfg = {
+        .pause_start_msec = 0,
+        .pause_end_msec = 0,
+        .num_aeu = 2,
+        .repeat = 0,
+        .aeu =
+            {
+                LED_AEU_FADE(start_pwm[LED_BLUE], 14),
+                LED_AEU_CONSTANT(14),
+            },
+    };
+
+    ret = lp58xx_ae_configure(cfg->led, LED_RED, &red_ae_cfg);
+    if (ret < 0) return ret;
+
+    ret = led_configure_fade_out(LED_GREEN, start_pwm[LED_GREEN]);
+    if (ret < 0) return ret;
+
+    ret = lp58xx_ae_configure(cfg->led, LED_BLUE, &blue_ae_cfg);
+    if (ret < 0) return ret;
+
+    return lp58xx_start(cfg->led);
+}
+
+#endif
+
+static int led_pattern_record_waiting(void) {
+    const struct led_config* cfg = &led_config;
+    int ret;
+
+    ret = lp58xx_pause(cfg->led);
+    if (ret < 0) return ret;
+
+    uint8_t start_pwm[LED_CHANNELS];
+    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
+    if (ret < 0) return ret;
+
+    const struct lp58xx_ae_config green_ae_cfg = {
+        .pause_start_msec = 0,
+        .pause_end_msec = 0,
+        .num_aeu = 2,
+        .repeat = 0,
+        .aeu = {{
+                    .pwm = {start_pwm[LED_GREEN], 100, 100, 100, 100},
+                    .time_msec = {90, 0, 0, 0},
+                    .repeat = 0,
+                },
+                {
+                    .pwm = {100, 2, 100, 0, 0},
+                    .time_msec = {90, 90, 0, 0},
+                    .repeat = LP58XX_AEU_REPEAT_INFINITE,
+                }},
+    };
+
+    ret = led_configure_fade_out(LED_BLUE, start_pwm[LED_BLUE]);
+    if (ret < 0) return ret;
+
+    ret = lp58xx_ae_configure(cfg->led, LED_GREEN, &green_ae_cfg);
+    if (ret < 0) return ret;
+
+    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
+    if (ret < 0) return ret;
+
+    return lp58xx_start(cfg->led);
+}
+
+static int led_pattern_record_running(void) {
+    const struct led_config* cfg = &led_config;
+    int ret;
+
+    ret = lp58xx_pause(cfg->led);
+    if (ret < 0) return ret;
+
+    uint8_t start_pwm[LED_CHANNELS];
+    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
+    if (ret < 0) return ret;
+
+    const struct lp58xx_ae_config green_ae_cfg = {
+        .pause_start_msec = 0,
+        .pause_end_msec = 0,
+        .num_aeu = 2,
+        .repeat = 0,
+        .aeu = {{
+                    .pwm = {start_pwm[LED_GREEN], 0, 0, 0, 0},
+                    .time_msec = {800, 0, 0, 0},
+                    .repeat = 0,
+                },
+                {
+                    .pwm = {0, 0, 50, 0, 0},
+                    .time_msec = {8050, 90, 90, 0},
+                    .repeat = LP58XX_AEU_REPEAT_INFINITE,
+                }},
+    };
+
+    ret = led_configure_fade_out(LED_BLUE, start_pwm[LED_BLUE]);
+    if (ret < 0) return ret;
+
+    ret = lp58xx_ae_configure(cfg->led, LED_GREEN, &green_ae_cfg);
+    if (ret < 0) return ret;
+
+    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
+    if (ret < 0) return ret;
+
+    return lp58xx_start(cfg->led);
+}
+
 static int led_set_pattern(enum led_pattern pattern) {
     const struct led_config* cfg = &led_config;
     struct led_data* data = &led_data;
@@ -485,6 +554,7 @@ static int led_set_pattern(enum led_pattern pattern) {
     }
 }
 
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
 static int led_update(void) {
     struct led_data* data = &led_data;
 
@@ -528,6 +598,47 @@ static int led_update(void) {
 
     return led_set_pattern(pattern);
 }
+#elif IS_ENABLED(CONFIG_ZEUS_NODE_CENTRAL)
+static int led_update(void) {
+    struct led_data* data = &led_data;
+
+    enum led_pattern pattern = LED_PATTERN_OFF;
+    switch (data->power_state) {
+        case LED_POWER_ON:
+            switch (data->record_state) {
+                case LED_RECORD_WAITING:
+                    pattern = LED_PATTERN_RECORD_WAITING;
+                    break;
+                case LED_RECORD_RUNNING:
+                    pattern = LED_PATTERN_RECORD_RUNNING;
+                    break;
+                case LED_RECORD_IDLE:
+                    pattern = LED_PATTERN_IDLE;
+                    break;
+            }
+            break;
+        case LED_POWER_OFF:
+            switch (data->battery_state) {
+                case LED_BATTERY_CHARGING:
+                    pattern = LED_PATTERN_BATTERY_CHARGING;
+                    break;
+                case LED_BATTERY_FULL:
+                    pattern = LED_PATTERN_BATTERY_FULL;
+                    break;
+                case LED_BATTERY_DISCHARGING:
+                case LED_BATTERY_ERROR:
+                    pattern = LED_PATTERN_OFF;
+                    break;
+            }
+            break;
+        case LED_POWER_UNKNOWN:
+            pattern = LED_PATTERN_OFF;
+            break;
+    }
+
+    return led_set_pattern(pattern);
+}
+#endif
 
 int led_boot(void) {
     const struct led_config* cfg = &led_config;
@@ -537,66 +648,6 @@ int led_boot(void) {
     k_mutex_lock(cfg->mutex, K_FOREVER);
     data->power_state = LED_POWER_ON;
     ret = led_set_pattern(LED_PATTERN_STARTUP);
-    k_mutex_unlock(cfg->mutex);
-    return ret;
-}
-
-int led_sync_started(void) {
-    const struct led_config* cfg = &led_config;
-    struct led_data* data = &led_data;
-    int ret;
-
-    k_mutex_lock(cfg->mutex, K_FOREVER);
-    data->synced = true;
-    ret = led_update();
-    k_mutex_unlock(cfg->mutex);
-    return ret;
-}
-
-int led_sync_terminated(void) {
-    const struct led_config* cfg = &led_config;
-    struct led_data* data = &led_data;
-    int ret;
-
-    k_mutex_lock(cfg->mutex, K_FOREVER);
-    data->synced = false;
-    ret = led_update();
-    k_mutex_unlock(cfg->mutex);
-    return ret;
-}
-
-int led_record_waiting(void) {
-    const struct led_config* cfg = &led_config;
-    struct led_data* data = &led_data;
-    int ret;
-
-    k_mutex_lock(cfg->mutex, K_FOREVER);
-    data->record_state = LED_RECORD_WAITING;
-    ret = led_update();
-    k_mutex_unlock(cfg->mutex);
-    return ret;
-}
-
-int led_record_started(void) {
-    const struct led_config* cfg = &led_config;
-    struct led_data* data = &led_data;
-    int ret;
-
-    k_mutex_lock(cfg->mutex, K_FOREVER);
-    data->record_state = LED_RECORD_RUNNING;
-    ret = led_update();
-    k_mutex_unlock(cfg->mutex);
-    return ret;
-}
-
-int led_record_stopped(void) {
-    const struct led_config* cfg = &led_config;
-    struct led_data* data = &led_data;
-    int ret;
-
-    k_mutex_lock(cfg->mutex, K_FOREVER);
-    data->record_state = LED_RECORD_IDLE;
-    ret = led_update();
     k_mutex_unlock(cfg->mutex);
     return ret;
 }
@@ -632,6 +683,69 @@ int led_battery_discharging(void) {
 
     k_mutex_lock(cfg->mutex, K_FOREVER);
     data->battery_state = LED_BATTERY_DISCHARGING;
+    ret = led_update();
+    k_mutex_unlock(cfg->mutex);
+    return ret;
+}
+
+#if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
+int led_sync_started(void) {
+    const struct led_config* cfg = &led_config;
+    struct led_data* data = &led_data;
+    int ret;
+
+    k_mutex_lock(cfg->mutex, K_FOREVER);
+    data->synced = true;
+    ret = led_update();
+    k_mutex_unlock(cfg->mutex);
+    return ret;
+}
+
+int led_sync_terminated(void) {
+    const struct led_config* cfg = &led_config;
+    struct led_data* data = &led_data;
+    int ret;
+
+    k_mutex_lock(cfg->mutex, K_FOREVER);
+    data->synced = false;
+    ret = led_update();
+    k_mutex_unlock(cfg->mutex);
+    return ret;
+}
+
+#endif
+
+int led_record_waiting(void) {
+    const struct led_config* cfg = &led_config;
+    struct led_data* data = &led_data;
+    int ret;
+
+    k_mutex_lock(cfg->mutex, K_FOREVER);
+    data->record_state = LED_RECORD_WAITING;
+    ret = led_update();
+    k_mutex_unlock(cfg->mutex);
+    return ret;
+}
+
+int led_record_started(void) {
+    const struct led_config* cfg = &led_config;
+    struct led_data* data = &led_data;
+    int ret;
+
+    k_mutex_lock(cfg->mutex, K_FOREVER);
+    data->record_state = LED_RECORD_RUNNING;
+    ret = led_update();
+    k_mutex_unlock(cfg->mutex);
+    return ret;
+}
+
+int led_record_stopped(void) {
+    const struct led_config* cfg = &led_config;
+    struct led_data* data = &led_data;
+    int ret;
+
+    k_mutex_lock(cfg->mutex, K_FOREVER);
+    data->record_state = LED_RECORD_IDLE;
     ret = led_update();
     k_mutex_unlock(cfg->mutex);
     return ret;

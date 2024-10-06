@@ -12,7 +12,7 @@ extern "C" {
 
 int sync_timer_init(void);
 
-void sync_timer_recv_adv(const struct zeus_adv_header *hdr);
+void sync_timer_recv_adv(const struct zeus_adv_sync *hdr);
 
 uint8_t sync_timer_get_i2s_dppi(void);
 

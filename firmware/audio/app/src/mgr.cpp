@@ -116,6 +116,7 @@ struct mgr {
     co_loan<const struct mgr_auth_event> auth;
     co_sync<mgr_run> run;
 
+    uint16_t last_cmd_seq = 0;
     mgr_cmd cmd = mgr_cmd::NONE;
     bool cancel_command = false;
 } mgr;
@@ -539,12 +540,12 @@ bool mgr_parse_adv_data(const struct bt_data& adv, struct zeus_adv_data& data) {
     size_t body_len = len - sizeof(data.hdr);
     if (body_len == 0) {
         // Empty body means no command
-        data.cmd = {.hdr = {.id = ZEUS_ADV_CMD_NONE}};
+        data.cmd = {.id = ZEUS_ADV_CMD_NONE};
         return true;
     }
 
-    size_t cmd_len = body_len - sizeof(data.cmd.hdr);
-    switch (data.cmd.hdr.id) {
+    size_t cmd_len = body_len - sizeof(data.cmd.id);
+    switch (data.cmd.id) {
         case ZEUS_ADV_CMD_NONE:
         case ZEUS_ADV_CMD_STOP:
             if (cmd_len != 0) return false;
@@ -561,13 +562,21 @@ bool mgr_parse_adv_data(const struct bt_data& adv, struct zeus_adv_data& data) {
 }
 
 void mgr_handle_adv_data(const struct zeus_adv_data& data) {
-    sync_timer_recv_adv(&data.hdr);
+    auto& m = mgr;
 
-    if (data.cmd.hdr.id != ZEUS_ADV_CMD_NONE) {
-        LOG_DBG("received command: %d", data.cmd.hdr.id);
+    sync_timer_recv_adv(&data.hdr.sync);
+
+    if (data.hdr.seq == m.last_cmd_seq) {
+        // Ignore commands received multiple times
+        return;
+    }
+    m.last_cmd_seq = data.hdr.seq;
+
+    if (data.cmd.id != ZEUS_ADV_CMD_NONE) {
+        LOG_DBG("received command: %d", data.cmd.id);
     }
 
-    switch (data.cmd.hdr.id) {
+    switch (data.cmd.id) {
         case ZEUS_ADV_CMD_NONE:
             break;
         case ZEUS_ADV_CMD_START:

@@ -128,22 +128,22 @@ int sync_timer_init(void) {
     return 0;
 }
 
-void sync_timer_recv_adv(const struct zeus_adv_header *hdr) {
+void sync_timer_recv_adv(const struct zeus_adv_sync *sync) {
     struct sync_timer *t = &sync_timer;
     if (!t->init) return;
 
-    if (t->last_adv_valid && hdr->seq == t->last_adv_seq) {
+    if (t->last_adv_valid && sync->seq == t->last_adv_seq) {
         // printk("sync,%" PRIu32 ",%" PRIu32 "\n", t->last_adv_time,
         // hdr->time);
         freq_est_update(&t->freq_est, qu32_32_from_int(t->last_adv_time),
-                        qu32_32_from_int(hdr->time), 0);
+                        qu32_32_from_int(sync->time), 0);
     }
 
     uint32_t time =
         nrfx_timer_capture_get(&t->timer, SYNC_TIMER_CAPTURE_CHANNEL_ADV);
 
     t->last_adv_valid = true;
-    t->last_adv_seq = hdr->seq + 1;
+    t->last_adv_seq = sync->seq + 1;
     t->last_adv_time = time;
 }
 

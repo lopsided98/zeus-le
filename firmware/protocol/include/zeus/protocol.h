@@ -15,37 +15,37 @@ extern "C" {
 
 #define ZEUS_BT_UUID BT_UUID_DECLARE_128(ZEUS_BT_UUID_VAL)
 
-struct zeus_adv_header {
+struct zeus_adv_sync {
     uint8_t seq;
     uint32_t time;
-} __attribute__((packed));
+} __packed;
 
 enum zeus_adv_cmd_id {
     ZEUS_ADV_CMD_NONE = 0,
     ZEUS_ADV_CMD_START,
     ZEUS_ADV_CMD_STOP,
-} __attribute__((packed));
+} __packed;
 
-struct zeus_adv_cmd_header {
+struct zeus_adv_header {
+    struct zeus_adv_sync sync;
     uint16_t seq;
-    enum zeus_adv_cmd_id id;
-} __attribute__((packed));
+}__packed;
 
 struct zeus_adv_cmd_start {
     uint32_t time;
-} __attribute__((packed));
+} __packed;
 
 struct zeus_adv_cmd {
-    struct zeus_adv_cmd_header hdr;
+    enum zeus_adv_cmd_id id;
     union {
         struct zeus_adv_cmd_start start;
     };
-} __attribute__((packed));
+} __packed;
 
 struct zeus_adv_data {
     struct zeus_adv_header hdr;
     struct zeus_adv_cmd cmd;
-} __attribute__((packed));
+} __packed;
 
 #ifdef __cplusplus
 }
