@@ -28,7 +28,7 @@ struct audio_block_time {
 };
 
 // TODO: sample rate must currently be divisible by the number of samples
-#define AUDIO_BLOCK_SIZE 8820
+#define AUDIO_BLOCK_SIZE 14400
 #if IS_ENABLED(CONFIG_I2S_NRFX)
 // Queue size limits the number of buffered blocks, so no point having more than
 // the queue size plus one for the block currently being used by the hardware.
@@ -60,8 +60,8 @@ static K_THREAD_STACK_DEFINE(audio_thread_stack, 1536);
 #define AUDIO_HFCLKAUDIO_FREQ_NOMINAL 11289600
 #endif
 
-#define AUDIO_HFCLKAUDIO_FREQ_REG_MIN 12519
-#define AUDIO_HFCLKAUDIO_FREQ_REG_MAX 18068
+#define AUDIO_HFCLKAUDIO_FREQ_REG_MIN 36834
+#define AUDIO_HFCLKAUDIO_FREQ_REG_MAX 42874
 
 K_MSGQ_DEFINE(audio_block_time_queue, sizeof(struct audio_block_time),
               AUDIO_BLOCK_COUNT, 1);
@@ -181,6 +181,17 @@ static bool audio_sync_update(const struct audio_block_time *block_time,
     return true;
 }
 
+static size_t audio_buffer_32_to_24(uint8_t *buf, size_t len) {
+    __ASSERT(len % 4 == 0, "Buffer size not a multiple of 32-bits");
+
+    int i, j;
+    for (i = 1, j = 0; i < len; i += 4, j += 3) {
+        memmove(buf + j, buf + i, 3);
+    }
+
+    return len / 4 * 3;
+}
+
 static void audio_thread_run(void *p1, void *p2, void *p3) {
     const struct audio_config *config = &audio_config;
     struct audio_data *data = &audio_data;
@@ -239,13 +250,17 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
         // Don't pass buffer to recording module if we don't have a valid
         // timestamp for it
         if (block_start_time_valid) {
+            // Audio is transferred as 32-bit samples but we want to save as
+            // 24-bit
+            block_size = audio_buffer_32_to_24(block_buf, block_size);
+
             const struct audio_block block = {
                 .buf = block_buf,
                 .len = block_size,
                 .start_time = block_start_time,
                 .duration = qu32_32_whole(data->block_duration),
                 // TODO: don't hardcode
-                .bytes_per_frame = 4,
+                .bytes_per_frame = 6,
             };
 
             record_buffer(&block);
@@ -301,11 +316,11 @@ int audio_init() {
         .dai_type = AUDIO_DAI_TYPE_I2S,
         .dai_cfg.i2s =
             {
-                .word_size = 16,
+                .word_size = 32,
                 .channels = 2,
                 .format = I2S_FMT_DATA_FORMAT_LEFT_JUSTIFIED,
                 .options = I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER,
-                .frame_clk_freq = 44100,
+                .frame_clk_freq = 48000,
                 .mem_slab = config->slab,
                 .block_size = config->slab->info.block_size,
                 .timeout = 1000,
@@ -317,12 +332,19 @@ int audio_init() {
 
     uint32_t frames_per_block = AUDIO_BLOCK_SIZE / cfg.dai_cfg.i2s.channels /
                                 (cfg.dai_cfg.i2s.word_size / 8);
+    __ASSERT(frames_per_block * cfg.dai_cfg.i2s.channels *
+                     cfg.dai_cfg.i2s.word_size ==
+                 AUDIO_BLOCK_SIZE * 8,
+             "Block size not a multiple of frame size");
     // TODO: allow sample-rates that aren't a multiple of frame/block.
     // Naive implementation overflows 64-bit integer with intermediate
     // result.
     data->block_duration =
         qu32_32_from_int((uint64_t)ZEUS_TIME_NOMINAL_FREQ * frames_per_block /
                          cfg.dai_cfg.i2s.frame_clk_freq);
+    __ASSERT(data->block_duration * cfg.dai_cfg.i2s.frame_clk_freq ==
+                 (uint64_t)ZEUS_TIME_NOMINAL_FREQ * frames_per_block,
+             "Block duration not a whole number of timer ticks");
 
     freq_est_init(&data->freq_est, &config->freq_est_cfg);
 

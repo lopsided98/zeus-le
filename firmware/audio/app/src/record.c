@@ -308,8 +308,8 @@ int record_buffer(const struct audio_block *block) {
         ret = wav_open(&data->file, file_name,
                        &(struct wav_format){
                            .channels = 2,
-                           .sample_rate = 44100,
-                           .bits_per_sample = 16,
+                           .sample_rate = 48000,
+                           .bits_per_sample = 24,
                            .max_file_size = RECORD_FILE_MAX_SIZE,
                        });
         if (ret) {
