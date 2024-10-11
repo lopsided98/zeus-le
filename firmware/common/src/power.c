@@ -7,6 +7,7 @@
 #include <zephyr/drivers/hwinfo.h>
 #include <zephyr/drivers/regulator.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
 #include <zephyr/sys/poweroff.h>
 #include <zeus/drivers/mfd/bq2515x.h>
 
@@ -46,6 +47,12 @@ static void power_off(void) {
     int err;
 
     led_shutdown();
+
+    // Enable logging panic mode to flush logs before shutting down
+    LOG_PANIC();
+    // Shell backend doesn't actually flush synchronously (bug), so wait a
+    // little bit
+    k_sleep(K_MSEC(100));
 
     err = regulator_parent_ship_mode(config->charger_regulators);
     if (err) {
@@ -111,10 +118,15 @@ static void power_mr_wake2_handler(const struct device *dev,
     }
 }
 
+extern void zeus_shell_hack(void);
+
 int power_init(void) {
     const struct power_config *config = &power_config;
     struct power_data *data = &power_data;
     int ret;
+
+    // Stupid hack to make iterable sections work
+    zeus_shell_hack();
 
     if (!device_is_ready(config->charger)) {
         LOG_ERR("battery charger not ready");
