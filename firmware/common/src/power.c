@@ -143,9 +143,10 @@ int power_init(void) {
 
     power_update_charge_status();
 
-    gpio_init_callback(
-        &data->mr_wake2_cb, power_mr_wake2_handler,
-        BIT(BQ2515X_EVENT_MRWAKE2_TIMEOUT) | BIT(BQ2515X_EVENT_CHARGE_DONE));
+    gpio_init_callback(&data->mr_wake2_cb, power_mr_wake2_handler,
+                       BIT(BQ2515X_EVENT_MRWAKE2_TIMEOUT) |
+                           BIT(BQ2515X_EVENT_CHARGE_DONE) |
+                           BIT(BQ2515X_EVENT_VIN_PGOOD));
     ret = mfd_bq2515x_add_callback(config->mfd, &data->mr_wake2_cb);
     if (ret) return ret;
 
