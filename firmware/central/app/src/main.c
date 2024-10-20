@@ -260,7 +260,7 @@ void button_release_handler(const struct device *port, struct gpio_callback *cb,
                             gpio_port_pins_t pins) {
     const struct central_config *config = &central_config;
     // Delay for debouncing
-    k_work_reschedule(config->button_release_work, K_MSEC(10));
+    k_work_reschedule(config->button_release_work, K_MSEC(50));
 }
 
 int button_init(void) {
