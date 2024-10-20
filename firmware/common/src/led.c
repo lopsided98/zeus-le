@@ -154,8 +154,8 @@ static struct led_data {
     .battery_state = LED_BATTERY_DISCHARGING,
 #if IS_ENABLED(CONFIG_ZEUS_NODE_AUDIO)
     .synced = false,
-    .record_state = LED_RECORD_IDLE,
 #endif
+    .record_state = LED_RECORD_IDLE,
     .pattern = LED_PATTERN_OFF,
 };
 

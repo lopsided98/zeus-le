@@ -73,7 +73,7 @@ static void power_shutdown(void) {
     power_off();
 }
 
-/// Update the LED state according to the
+/// Update the LED state according to the charging status
 static int power_update_charge_status(void) {
     const struct power_config *config = &power_config;
     int ret;
