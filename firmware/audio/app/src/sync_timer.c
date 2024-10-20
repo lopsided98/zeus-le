@@ -136,7 +136,7 @@ void sync_timer_recv_adv(const struct zeus_adv_sync *sync) {
         // printk("sync,%" PRIu32 ",%" PRIu32 "\n", t->last_adv_time,
         // hdr->time);
         freq_est_update(&t->freq_est, qu32_32_from_int(t->last_adv_time),
-                        qu32_32_from_int(sync->time), 0);
+                        qu32_32_from_int(sync->prev_time), 0);
     }
 
     uint32_t time =

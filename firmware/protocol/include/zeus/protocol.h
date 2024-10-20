@@ -17,7 +17,8 @@ extern "C" {
 
 struct zeus_adv_sync {
     uint8_t seq;
-    uint32_t time;
+    /// Timestamp of the previous packet transmitted
+    uint32_t prev_time;
 } __packed;
 
 enum zeus_adv_cmd_id {

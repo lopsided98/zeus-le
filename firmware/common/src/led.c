@@ -4,7 +4,14 @@
 #include <zephyr/logging/log.h>
 #include <zeus/drivers/led/lp58xx.h>
 
+#include "zeus/protocol.h"
+#include "zeus/util.h"
+
 LOG_MODULE_REGISTER(led);
+
+/// Interval between LED sync pulses while recording, in sync timer units. Power
+/// of two to avoid dealing with uneven interval at timer wraparound.
+#define LED_RECORD_SYNC_INTERVAL NHPOT(ZEUS_TIME_NOMINAL_FREQ * 8)
 
 #define LED_CHANNELS 3
 #define LED_BLUE 0
@@ -64,8 +71,6 @@ static inline struct lp58xx_ae_config led_ae_scale(struct lp58xx_ae_config ae,
     };
 }
 
-static K_MUTEX_DEFINE(led_mutex);
-
 enum led_power_state {
     /// Not known yet whether the system will boot or power off
     LED_POWER_UNKNOWN,
@@ -117,13 +122,21 @@ static int led_pattern_idle(void);
 static int led_pattern_record_waiting(void);
 static int led_pattern_record_running(void);
 
+static void led_record_sync_work_handler(struct k_work* work);
+static K_WORK_DELAYABLE_DEFINE(led_record_sync_work,
+                               led_record_sync_work_handler);
+
+static K_MUTEX_DEFINE(led_mutex);
+
 static const struct led_config {
     const struct device* led;
     struct k_mutex* mutex;
+    struct k_work_delayable* record_sync_work;
     led_pattern_func* patterns[LED_PATTERN_COUNT];
 } led_config = {
     .led = DEVICE_DT_GET(DT_NODELABEL(rgb_led)),
     .mutex = &led_mutex,
+    .record_sync_work = &led_record_sync_work,
     .patterns =
         {
             [LED_PATTERN_OFF] = led_pattern_off,
@@ -510,18 +523,48 @@ static int led_pattern_record_running(void) {
     const struct lp58xx_ae_config green_ae_cfg = {
         .pause_start_msec = 0,
         .pause_end_msec = 0,
-        .num_aeu = 2,
+        .num_aeu = 1,
         .repeat = 0,
         .aeu = {{
-                    .pwm = {start_pwm[LED_GREEN], 0, 0, 0, 0},
-                    .time_msec = {800, 0, 0, 0},
-                    .repeat = 0,
-                },
-                {
-                    .pwm = {0, 0, 50, 0, 0},
-                    .time_msec = {8050, 90, 90, 0},
-                    .repeat = LP58XX_AEU_REPEAT_INFINITE,
-                }},
+            .pwm = {start_pwm[LED_GREEN], 0, 0, 0, 0},
+            .time_msec = {800, 0, 0, 0},
+            .repeat = 0,
+        }},
+    };
+
+    ret = led_configure_fade_out(LED_BLUE, start_pwm[LED_BLUE]);
+    if (ret < 0) return ret;
+
+    ret = lp58xx_ae_configure(cfg->led, LED_GREEN, &green_ae_cfg);
+    if (ret < 0) return ret;
+
+    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
+    if (ret < 0) return ret;
+
+    return lp58xx_start(cfg->led);
+}
+
+static int led_pattern_record_sync_pulse(void) {
+    const struct led_config* cfg = &led_config;
+    int ret;
+
+    ret = lp58xx_pause(cfg->led);
+    if (ret < 0) return ret;
+
+    uint8_t start_pwm[LED_CHANNELS];
+    ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
+    if (ret < 0) return ret;
+
+    const struct lp58xx_ae_config green_ae_cfg = {
+        .pause_start_msec = 0,
+        .pause_end_msec = 0,
+        .num_aeu = 1,
+        .repeat = 0,
+        .aeu = {{
+            .pwm = {start_pwm[LED_GREEN], 50, 0, 0, 0},
+            .time_msec = {90, 90, 0, 0},
+            .repeat = 0,
+        }},
     };
 
     ret = led_configure_fade_out(LED_BLUE, start_pwm[LED_BLUE]);
@@ -640,6 +683,16 @@ static int led_update(void) {
 }
 #endif
 
+static void led_record_sync_work_handler(struct k_work* work) {
+    const struct led_config* config = &led_config;
+    struct led_data* data = &led_data;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (data->record_state == LED_RECORD_RUNNING) {
+        led_pattern_record_sync_pulse();
+    }
+}
+
 int led_boot(void) {
     const struct led_config* cfg = &led_config;
     struct led_data* data = &led_data;
@@ -737,6 +790,21 @@ int led_record_started(void) {
     ret = led_update();
     k_mutex_unlock(cfg->mutex);
     return ret;
+}
+
+int led_record_sync(uint32_t time) {
+    const struct led_config* cfg = &led_config;
+    struct led_data* data = &led_data;
+
+    K_MUTEX_AUTO_LOCK(cfg->mutex);
+    if (data->record_state == LED_RECORD_RUNNING) {
+        uint32_t sync_delay =
+            LED_RECORD_SYNC_INTERVAL - (time % LED_RECORD_SYNC_INTERVAL);
+        uint64_t sync_delay_ms =
+            (uint64_t)sync_delay * 1000 / ZEUS_TIME_NOMINAL_FREQ;
+        k_work_schedule(cfg->record_sync_work, K_MSEC(sync_delay_ms));
+    }
+    return 0;
 }
 
 int led_record_stopped(void) {

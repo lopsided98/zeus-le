@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,6 +22,8 @@ int led_sync_terminated(void);
 int led_record_waiting(void);
 
 int led_record_started(void);
+
+int led_record_sync(uint32_t time);
 
 int led_record_stopped(void);
 

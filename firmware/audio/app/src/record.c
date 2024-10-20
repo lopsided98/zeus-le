@@ -228,8 +228,15 @@ int record_buffer(const struct audio_block *block) {
             old_file = true;
             // fallthrough
         case RECORD_WAITING_START: {
-            uint32_t wait_time = data->start_time - block->start_time;
-            LOG_INF("waiting: %" PRIu32, wait_time);
+            int32_t wait_time = (int32_t)(data->start_time - block->start_time);
+            // If start time is in the past (according to serial number
+            // arithmetic), start immediately.
+            if (wait_time < 0) {
+                LOG_WRN("missed start time by %" PRIu32, -wait_time);
+                wait_time = 0;
+            } else {
+                LOG_INF("waiting: %" PRIu32, wait_time);
+            }
             if (wait_time <= block->duration) {
                 new_file = true;
                 uint32_t block_frames = block->len / block->bytes_per_frame;
@@ -249,6 +256,8 @@ int record_buffer(const struct audio_block *block) {
             split_offset = block->len;
         } break;
     }
+
+    led_record_sync(block->start_time);
 
     if (old_file) {
         ret = wav_write(&data->file, block->buf, split_offset);

@@ -65,8 +65,9 @@ static int sync_adv_update_data(void) {
 
     switch (data->adv_data.cmd.id) {
         case ZEUS_ADV_CMD_START: {
-            int32_t waiting_time = sync_time_diff(data->adv_data.cmd.start.time,
-                                                  data->adv_data.hdr.sync.time);
+            int32_t waiting_time =
+                sync_time_diff(data->adv_data.cmd.start.time,
+                               data->adv_data.hdr.sync.prev_time);
             // FIXME: what if another non-recording related command arrives
             // before the waiting period expires
             if (waiting_time > 0) {
@@ -124,11 +125,14 @@ static int sync_adv_update_data(void) {
 }
 
 static void sync_adv_update_handler(struct k_work *work) {
+    struct sync_data *data = &sync_data;
+
     int err = sync_adv_update_data();
     if (err < 0) {
         LOG_ERR("failed to set advertising data (err %d)", err);
-        return;
     }
+
+    led_record_sync(data->adv_data.hdr.sync.prev_time);
 }
 
 static void sync_ipc_recv(const void *data, size_t len, void *priv) {
@@ -148,7 +152,7 @@ static void sync_ipc_recv(const void *data, size_t len, void *priv) {
 
     t->adv_data.hdr.sync = (struct zeus_adv_sync){
         .seq = msg->seq,
-        .time = msg->time,
+        .prev_time = msg->time,
     };
 
     k_work_submit(config->update_work);
