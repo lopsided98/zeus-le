@@ -16,12 +16,20 @@
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/drivers/regulator.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/sys/util.h>
+#include <zephyr/pm/device.h>
+#include <zephyr/pm/device_runtime.h>
 #include <zephyr/sys/linear_range.h>
 
 #include "input_codec.h"
 
 LOG_MODULE_REGISTER(tlv320adcx120, CONFIG_AUDIO_CODEC_LOG_LEVEL);
+
+/*
+ * Codec must not be woken up until at least 10 ms after suspend. This is also used as the
+ * pm_device_runtime_put_async() delay to avoid constantly suspending the codec and then having to
+ * wait the min suspend delay before resuming.
+ */
+#define CODEC_MIN_SUSPEND_MSEC 10
 
 #define CODEC_NUM_CHANNELS        4
 #define CODEC_NUM_ANALOG_CHANNELS 2
@@ -56,17 +64,10 @@ struct codec_driver_config {
 struct codec_driver_data {
 	uint8_t reg_page_cache;
 	struct codec_channel_data channels[CODEC_NUM_CHANNELS];
+	/* Time the codec last entered suspend; used to enforce minimum suspend time. */
+	int64_t suspend_time_msec;
+	bool started;
 };
-
-static int codec_write_reg(const struct device *dev, struct reg_addr reg, uint8_t val);
-static int codec_read_reg(const struct device *dev, struct reg_addr reg, uint8_t *val);
-static int codec_soft_reset(const struct device *dev);
-static int codec_configure_dai(const struct device *dev, const audio_dai_cfg_t *cfg);
-static int codec_configure_power(const struct device *dev);
-static int codec_configure_input(const struct device *dev);
-static int codec_set_analog_gain(const struct device *dev, uint8_t channel, int gain);
-static int codec_set_digital_gain(const struct device *dev, uint8_t channel, int gain);
-static int codec_set_mute(const struct device *dev, uint8_t channel, bool mute);
 
 #if (LOG_LEVEL >= LOG_LEVEL_DEBUG)
 static void codec_read_all_regs(const struct device *dev);
@@ -102,7 +103,7 @@ static struct codec_channel_data *codec_get_channel_data(const struct device *de
 	return &data->channels[channel - 1];
 }
 
-static int codec_write_reg(const struct device *dev, struct reg_addr reg, uint8_t val)
+static int codec_write_reg_no_pm(const struct device *dev, struct reg_addr reg, uint8_t val)
 {
 	struct codec_driver_data *const dev_data = dev->data;
 	const struct codec_driver_config *const dev_cfg = dev->config;
@@ -125,27 +126,53 @@ static int codec_write_reg(const struct device *dev, struct reg_addr reg, uint8_
 	return 0;
 }
 
+static int codec_write_reg(const struct device *dev, struct reg_addr reg, uint8_t val)
+{
+	int ret;
+
+	ret = pm_device_runtime_get(dev);
+	if (ret) {
+		return ret;
+	}
+
+	ret = codec_write_reg_no_pm(dev, reg, val);
+
+	pm_device_runtime_put_async(dev, K_MSEC(CODEC_MIN_SUSPEND_MSEC));
+
+	return ret;
+}
+
 static int codec_read_reg(const struct device *dev, struct reg_addr reg, uint8_t *val)
 {
 	struct codec_driver_data *const dev_data = dev->data;
 	const struct codec_driver_config *const dev_cfg = dev->config;
 	int ret;
 
+	ret = pm_device_runtime_get(dev);
+	if (ret) {
+		return ret;
+	}
+
 	/* set page if different */
 	if (dev_data->reg_page_cache != reg.page) {
 		ret = i2c_reg_write_byte_dt(&dev_cfg->bus, PAGE_CFG_ADDR, reg.page);
 		if (ret < 0) {
-			return ret;
+			goto pm_put;
 		}
 		dev_data->reg_page_cache = reg.page;
 	}
 
 	i2c_reg_read_byte_dt(&dev_cfg->bus, reg.reg_addr, val);
 	if (ret < 0) {
-		return ret;
+		goto pm_put;
 	}
 	LOG_DBG("RD PG:%u REG:%02u VAL:0x%02x", reg.page, reg.reg_addr, *val);
-	return 0;
+
+	ret = 0;
+
+pm_put:
+	pm_device_runtime_put_async(dev, K_MSEC(CODEC_MIN_SUSPEND_MSEC));
+	return ret;
 }
 
 static int codec_soft_reset(const struct device *dev)
@@ -168,17 +195,20 @@ static int codec_soft_reset(const struct device *dev)
 	return 0;
 }
 
-static int codec_configure_power(const struct device *dev)
+static int codec_configure_power(const struct device *dev, bool sleep)
 {
 	const struct codec_driver_config *const cfg = dev->config;
 
-	uint8_t val =
-		FIELD_PREP(SLEEP_CFG_VREF_QCHG, SLEEP_CFG_VREF_QCHG_3_5_MS) | SLEEP_CFG_SLEEP_ENZ;
+	uint8_t val = FIELD_PREP(SLEEP_CFG_VREF_QCHG, SLEEP_CFG_VREF_QCHG_3_5_MS);
 	if (cfg->internal_areg) {
 		val |= SLEEP_CFG_AREG_SELECT;
 	}
+	if (!sleep) {
+		val |= SLEEP_CFG_SLEEP_ENZ;
+	}
 
-	return codec_write_reg(dev, SLEEP_CFG_ADDR, val);
+	/* No PM get/put because this is used to implement PM */
+	return codec_write_reg_no_pm(dev, SLEEP_CFG_ADDR, val);
 }
 
 static int codec_configure_dai(const struct device *dev, const audio_dai_cfg_t *cfg)
@@ -392,6 +422,10 @@ static int codec_set_digital_gain(const struct device *dev, uint8_t channel, int
 		return ret;
 	}
 
+	if (dvol == channel_data->dvol) {
+		return 0;
+	}
+
 	if (!channel_data->mute) {
 		ret = codec_write_reg(dev, CH_CFG2_ADDR(channel), FIELD_PREP(CH_CFG2_DVOL, dvol));
 		if (ret) {
@@ -441,19 +475,23 @@ static int codec_set_mute(const struct device *dev, uint8_t channel, bool mute)
 
 static int codec_initialize(const struct device *dev)
 {
-	const struct codec_driver_config *const dev_cfg = dev->config;
+	const struct codec_driver_config *const config = dev->config;
 	int ret;
 
-	if (!device_is_ready(dev_cfg->bus.bus)) {
+	if (!device_is_ready(config->bus.bus)) {
 		LOG_ERR("I2C device not ready");
 		return -ENODEV;
 	}
 
 #if IS_ENABLED(CONFIG_REGULATOR)
-	if (dev_cfg->avdd_supply != NULL) {
-		ret = regulator_enable(dev_cfg->avdd_supply);
-		if (ret < 0) {
-			LOG_ERR("Failed to enable AVDD supply (err %d)", ret);
+	if (config->avdd_supply != NULL) {
+		if (!device_is_ready(config->avdd_supply)) {
+			LOG_ERR("AVDD regulator not ready");
+			return -ENODEV;
+		}
+
+		ret = regulator_enable(config->avdd_supply);
+		if (ret) {
 			return ret;
 		}
 	}
@@ -464,61 +502,95 @@ static int codec_initialize(const struct device *dev)
 		return ret;
 	}
 
-	if (dev_cfg->int_gpio.port) {
-		if (!gpio_is_ready_dt(&dev_cfg->int_gpio)) {
+	ret = codec_configure_power(dev, false);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = codec_configure_input(dev);
+	if (ret < 0) {
+		return ret;
+	}
+
+	if (config->int_gpio.port) {
+		if (!gpio_is_ready_dt(&config->int_gpio)) {
 			LOG_ERR("GPIO device not ready");
 			return -ENODEV;
 		}
 
-		ret = gpio_pin_configure_dt(&dev_cfg->int_gpio, GPIO_INPUT);
+		ret = gpio_pin_configure_dt(&config->int_gpio, GPIO_INPUT);
 		if (ret < 0) {
 			return ret;
 		}
 	}
 
-	return 0;
+	return pm_device_runtime_enable(dev);
 }
 
 static int codec_configure(const struct device *dev, struct audio_codec_cfg *cfg)
 {
-	int ret;
-
 	if (cfg->dai_type != AUDIO_DAI_TYPE_I2S) {
 		LOG_ERR("dai_type must be AUDIO_DAI_TYPE_I2S");
 		return -EINVAL;
 	}
 
-	ret = codec_configure_power(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = codec_configure_dai(dev, &cfg->dai_cfg);
-	if (ret < 0) {
-		return ret;
-	}
-
-	return codec_configure_input(dev);
+	return codec_configure_dai(dev, &cfg->dai_cfg);
 }
 
 static int codec_start_input(const struct device *dev)
 {
+	struct codec_driver_data *data = dev->data;
 	int ret;
 
-	/* power on ADC */
-	ret = codec_write_reg(dev, PWR_CFG_ADDR, PWR_CFG_ADC_PDZ | PWR_CFG_PLL_PDZ);
-	if (ret < 0) {
+	if (data->started) {
+		return -EALREADY;
+	}
+
+	ret = pm_device_runtime_get(dev);
+	if (ret) {
 		return ret;
 	}
 
+	/* Power on ADC */
+	ret = codec_write_reg(dev, PWR_CFG_ADDR, PWR_CFG_ADC_PDZ | PWR_CFG_PLL_PDZ);
+	if (ret) {
+		goto error_i2c;
+	}
+
+	data->started = true;
+
 	CODEC_DUMP_REGS(dev);
 	return 0;
+
+error_i2c:
+	pm_device_runtime_put_async(dev, K_MSEC(CODEC_MIN_SUSPEND_MSEC));
+
+	return ret;
 }
 
 static int codec_stop_input(const struct device *dev)
 {
-	/* power off ADC */
-	return codec_write_reg(dev, PWR_CFG_ADDR, 0);
+	struct codec_driver_data *data = dev->data;
+	int ret;
+
+	if (!data->started) {
+		return -EALREADY;
+	}
+
+	/* Power off ADC */
+	ret = codec_write_reg(dev, PWR_CFG_ADDR, 0);
+	if (ret) {
+		return ret;
+	}
+
+	ret = pm_device_runtime_put_async(dev, K_MSEC(CODEC_MIN_SUSPEND_MSEC));
+	if (ret) {
+		return ret;
+	}
+
+	data->started = false;
+
+	return 0;
 }
 
 static int codec_get_property(const struct device *dev, enum input_codec_property property,
@@ -578,6 +650,48 @@ static int codec_apply_properties(const struct device *dev)
 	/* nothing to do because there is nothing cached */
 	return 0;
 }
+
+#ifdef CONFIG_PM_DEVICE
+static int codec_pm_action(const struct device *dev, enum pm_device_action action)
+{
+	struct codec_driver_data *data = dev->data;
+	int ret;
+	bool sleep;
+
+	switch (action) {
+	case PM_DEVICE_ACTION_SUSPEND:
+		sleep = true;
+		break;
+	case PM_DEVICE_ACTION_RESUME:
+		sleep = false;
+		break;
+	default:
+		return -ENOTSUP;
+	}
+
+	if (!sleep) {
+		/* Enforce minimum suspend time */
+		int64_t suspend_duration_msec = k_uptime_get() - data->suspend_time_msec;
+		if (suspend_duration_msec < CODEC_MIN_SUSPEND_MSEC) {
+			k_sleep(K_MSEC(CODEC_MIN_SUSPEND_MSEC - suspend_duration_msec));
+		}
+	}
+
+	ret = codec_configure_power(dev, sleep);
+	if (ret) {
+		return ret;
+	}
+
+	if (sleep) {
+		data->suspend_time_msec = k_uptime_get();
+	} else {
+		/* Wait 1 ms for internal wakeup sequence to complete */
+		k_sleep(K_MSEC(1));
+	}
+
+	return 0;
+}
+#endif
 
 #if (LOG_LEVEL >= LOG_LEVEL_DEBUG)
 static void codec_read_all_regs(const struct device *dev)
@@ -645,8 +759,9 @@ static const struct input_codec_api codec_driver_api = {
 		.channels = codec_channel_configs_##inst,                                          \
 	};                                                                                         \
 	static struct codec_driver_data codec_device_data_##inst;                                  \
-	DEVICE_DT_INST_DEFINE(inst, codec_initialize, NULL, &codec_device_data_##inst,             \
-			      &codec_device_config_##inst, POST_KERNEL,                            \
+	PM_DEVICE_DT_INST_DEFINE(inst, codec_pm_action);                                           \
+	DEVICE_DT_INST_DEFINE(inst, codec_initialize, PM_DEVICE_DT_INST_GET(inst),                 \
+			      &codec_device_data_##inst, &codec_device_config_##inst, POST_KERNEL, \
 			      CONFIG_AUDIO_CODEC_INIT_PRIORITY, &codec_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(CREATE_CODEC)

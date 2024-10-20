@@ -253,8 +253,6 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
 
         k_sem_give(config->started);
 
-        int64_t record_start_time = k_uptime_ticks();
-
         // Don't pass buffer to recording module if we don't have a valid
         // timestamp for it
         if (block_start_time_valid) {
@@ -273,12 +271,6 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
 
             record_buffer(&block);
         }
-        int64_t record_us =
-            k_ticks_to_us_near64(k_uptime_ticks() - record_start_time);
-
-        // LOG_INF("bt: %" PRIi64 ", rt: %" PRIu64 ", s: %u, b: %p",
-        //         block_time_wait_us, record_us,
-        //         k_mem_slab_num_used_get(config->slab), block_buf);
 
         k_mem_slab_free(config->slab, block_buf);
     }
@@ -504,12 +496,6 @@ int audio_init() {
         return ret;
     }
 
-    ret = input_codec_start_input(config->codec);
-    if (ret) {
-        LOG_ERR("failed to start codec (err %d)", ret);
-        return ret;
-    }
-
     k_thread_create(&data->thread, audio_thread_stack,
                     K_THREAD_STACK_SIZEOF(audio_thread_stack), audio_thread_run,
                     NULL, NULL, NULL, K_PRIO_COOP(12), 0, K_NO_WAIT);
@@ -526,6 +512,20 @@ int audio_init() {
     return 0;
 }
 
+int audio_start(void) {
+    const struct audio_config *config = &audio_config;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    return input_codec_start_input(config->codec);
+}
+
+int audio_stop(void) {
+    const struct audio_config *config = &audio_config;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    return input_codec_stop_input(config->codec);
+}
+
 int audio_channel_from_string(const char *str, audio_channel_t *channel) {
     return audio_channel_from_string_prefix(str, strlen(str), channel);
 }
@@ -537,7 +537,6 @@ int audio_get_analog_gain(audio_channel_t channel, int32_t *gain) {
     int ret;
 
     K_MUTEX_AUTO_LOCK(config->mutex);
-
     if (!data->init) return -EINVAL;
 
     ret = input_codec_get_property(
@@ -554,7 +553,6 @@ int audio_set_analog_gain(audio_channel_t channel, int32_t gain) {
     int ret;
 
     K_MUTEX_AUTO_LOCK(config->mutex);
-
     if (!data->init) return -EINVAL;
 
     ret = input_codec_set_property(config->codec,
@@ -562,6 +560,9 @@ int audio_set_analog_gain(audio_channel_t channel, int32_t gain) {
                                    (union input_codec_property_value){
                                        .gain = gain,
                                    });
+    if (ret) return ret;
+
+    ret = input_codec_apply_properties(config->codec);
     if (ret) return ret;
 
     return audio_settings_channel_save(channel, "a_gain", &gain, sizeof(gain));
@@ -574,7 +575,6 @@ int audio_get_digital_gain(audio_channel_t channel, int32_t *gain) {
     int ret;
 
     K_MUTEX_AUTO_LOCK(config->mutex);
-
     if (!data->init) return -EINVAL;
 
     ret = input_codec_get_property(
@@ -591,7 +591,6 @@ int audio_set_digital_gain(audio_channel_t channel, int32_t gain) {
     int ret;
 
     K_MUTEX_AUTO_LOCK(config->mutex);
-
     if (!data->init) return -EINVAL;
 
     ret = input_codec_set_property(config->codec,
@@ -599,6 +598,9 @@ int audio_set_digital_gain(audio_channel_t channel, int32_t gain) {
                                    (union input_codec_property_value){
                                        .gain = gain,
                                    });
+    if (ret) return ret;
+
+    ret = input_codec_apply_properties(config->codec);
     if (ret) return ret;
 
     return audio_settings_channel_save(channel, "d_gain", &gain, sizeof(gain));

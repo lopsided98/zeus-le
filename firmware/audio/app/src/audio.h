@@ -20,6 +20,14 @@ struct audio_block {
 
 int audio_init(void);
 
+/// Power on the ADC. The I2S peripheral is always running to allow
+/// synchronization. Return -EALREADY if ADC is already running.
+int audio_start(void);
+
+/// Shutdown the ADC to save power. The I2S peripheral is remaings running to
+/// allow synchronization. Return -EALREADY if ADC is already powered off.
+int audio_stop(void);
+
 /// Convert the name of a channel into its channel enum value. Return 0 if
 /// successful, or -1 if the name does not match any supported channel.
 int audio_channel_from_string(const char *str, audio_channel_t *channel);

@@ -8,8 +8,9 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/net/buf.h>
 
-#include "zeus/led.h"
 #include "wav.h"
+#include "zeus/led.h"
+#include "zeus/util.h"
 
 LOG_MODULE_REGISTER(record, LOG_LEVEL_DBG);
 
@@ -154,11 +155,8 @@ int record_init(void) {
     struct record_data *data = &record_data;
     int ret;
 
-    k_mutex_lock(config->mutex, K_FOREVER);
-    if (data->init) {
-        ret = -EALREADY;
-        goto unlock;
-    }
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (data->init) return -EALREADY;
 
     k_thread_create(&data->close_thread, record_close_thread_stack,
                     K_THREAD_STACK_SIZEOF(record_close_thread_stack),
@@ -169,15 +167,11 @@ int record_init(void) {
     ret = record_get_next_file_index(&data->file_index);
     if (ret < 0) {
         LOG_WRN("failed to get next file index (err %d)", ret);
-        goto unlock;
+        return ret;
     }
 
     data->init = true;
-    ret = 0;
-
-unlock:
-    k_mutex_unlock(config->mutex);
-    return ret;
+    return 0;
 }
 
 int record_start(uint32_t time) {
@@ -185,10 +179,12 @@ int record_start(uint32_t time) {
     struct record_data *data = &record_data;
     int ret;
 
-    k_mutex_lock(config->mutex, K_FOREVER);
-    if (!data->init) {
-        ret = -EINVAL;
-        goto unlock;
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (!data->init) return -EINVAL;
+
+    ret = audio_start();
+    if (ret && ret != -EALREADY) {
+        return ret;
     }
 
     switch (data->state) {
@@ -202,25 +198,20 @@ int record_start(uint32_t time) {
             break;
     }
     data->start_time = time;
-    ret = 0;
+
     led_record_waiting();
     LOG_INF("start");
 
-unlock:
-    k_mutex_unlock(config->mutex);
-    return ret;
+    return 0;
 }
 
 int record_buffer(const struct audio_block *block) {
     const struct record_config *config = &record_config;
     struct record_data *data = &record_data;
-    k_mutex_lock(config->mutex, K_FOREVER);
-
     int ret;
-    if (!data->init) {
-        ret = -EINVAL;
-        goto unlock;
-    }
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (!data->init) return -EINVAL;
 
     __ASSERT(block->len % block->bytes_per_frame == 0,
              "Block contains partial frame");
@@ -232,8 +223,7 @@ int record_buffer(const struct audio_block *block) {
     switch (data->state) {
         default:
         case RECORD_STOPPED:
-            ret = 0;
-            goto unlock;
+            return 0;
         case RECORD_WAITING_NEW_FILE:
             old_file = true;
             // fallthrough
@@ -328,8 +318,7 @@ int record_buffer(const struct audio_block *block) {
         data->state = RECORD_RUNNING;
     }
 
-    ret = 0;
-    goto unlock;
+    return 0;
 
 file_error:
     record_close_file();
@@ -337,8 +326,6 @@ file_error:
 error:
     data->state = RECORD_STOPPED;
 
-unlock:
-    k_mutex_unlock(config->mutex);
     return ret;
 }
 
@@ -359,6 +346,7 @@ static int record_stop_unlocked(void) {
             break;
     }
 
+    audio_stop();
     led_record_stopped();
     data->state = RECORD_STOPPED;
     return 0;
@@ -367,10 +355,8 @@ static int record_stop_unlocked(void) {
 int record_stop(void) {
     const struct record_config *config = &record_config;
 
-    k_mutex_lock(config->mutex, K_FOREVER);
-    int ret = record_stop_unlocked();
-    k_mutex_unlock(config->mutex);
-    return ret;
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    return record_stop_unlocked();
 }
 
 int record_shutdown(void) {
@@ -378,15 +364,15 @@ int record_shutdown(void) {
     struct record_data *data = &record_data;
     int ret;
 
-    k_mutex_lock(config->mutex, K_FOREVER);
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (!data->init) {
+        return -EALREADY;
+    }
 
     ret = record_stop_unlocked();
-    if (ret < 0) goto unlock;
+    if (ret < 0) return ret;
 
     // Clear init to prevent any other recordings from being started
     data->init = false;
-
-unlock:
-    k_mutex_unlock(config->mutex);
-    return ret;
+    return 0;
 }
