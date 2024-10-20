@@ -8,6 +8,7 @@
 #include <zephyr/drivers/i2s.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/settings/settings.h>
 
 #include "drivers/input_codec.h"
 #include "fixed.h"
@@ -15,6 +16,7 @@
 #include "freq_est.h"
 #include "record.h"
 #include "sync_timer.h"
+#include "zeus/util.h"
 
 LOG_MODULE_REGISTER(audio, LOG_LEVEL_DBG);
 
@@ -63,10 +65,13 @@ static K_THREAD_STACK_DEFINE(audio_thread_stack, 1536);
 #define AUDIO_HFCLKAUDIO_FREQ_REG_MIN 36834
 #define AUDIO_HFCLKAUDIO_FREQ_REG_MAX 42874
 
+static K_MUTEX_DEFINE(audio_mutex);
+
 K_MSGQ_DEFINE(audio_block_time_queue, sizeof(struct audio_block_time),
               AUDIO_BLOCK_COUNT, 1);
 
 static const struct audio_config {
+    struct k_mutex *mutex;
     const struct device *const codec;
     const struct device *const i2s;
     struct k_mem_slab *const slab;
@@ -77,6 +82,7 @@ static const struct audio_config {
 
     struct k_msgq *const block_time_queue;
 } audio_config = {
+    .mutex = &audio_mutex,
     .codec = DEVICE_DT_GET(DT_ALIAS(codec)),
     .i2s = DEVICE_DT_GET(DT_ALIAS(i2s)),
     .slab = &audio_slab,
@@ -181,6 +187,8 @@ static bool audio_sync_update(const struct audio_block_time *block_time,
     return true;
 }
 
+/// Convert a buffer of 32-bit LE integers to packed 24-bit in place by
+/// discarding the least significant byte. Return the new length of the buffer.
 static size_t audio_buffer_32_to_24(uint8_t *buf, size_t len) {
     __ASSERT(len % 4 == 0, "Buffer size not a multiple of 32-bits");
 
@@ -291,10 +299,124 @@ static void audio_egu_handler(uint8_t event_idx, void *p_context) {
     }
 }
 
+/// Check whether the first `str_len` characters of `str` are equal to `match`,
+/// including being the same length.
+static bool string_partial_match(const char *str, size_t str_len,
+                                 const char *match) {
+    return strlen(match) == str_len && strncmp(str, match, str_len) == 0;
+}
+
+static const char *audio_channel_to_string(audio_channel_t channel) {
+    switch (channel) {
+        case AUDIO_CHANNEL_FRONT_LEFT:
+            return "left";
+        case AUDIO_CHANNEL_FRONT_RIGHT:
+            return "right";
+        default:
+            return NULL;
+    }
+}
+
+/// Convert the prefix of the specified string to a channel enum value. Pass the
+/// string and the length of the prefix to match. Return 0 on success, or -1 if
+/// the string does not match a channel name.
+int audio_channel_from_string_prefix(const char *str, size_t str_len,
+                                     audio_channel_t *channel) {
+    if (string_partial_match(str, str_len, "left")) {
+        *channel = AUDIO_CHANNEL_FRONT_LEFT;
+    } else if (string_partial_match(str, str_len, "right")) {
+        *channel = AUDIO_CHANNEL_FRONT_RIGHT;
+    } else {
+        return -1;
+    }
+    return 0;
+}
+
+/// Wrapper around settings_save_one() to save a setting for the specified ADC
+/// channel.
+static int audio_settings_channel_save(audio_channel_t channel,
+                                       const char *setting, void *val,
+                                       size_t len) {
+    int ret;
+
+    const char *channel_str = audio_channel_to_string(channel);
+    if (!channel_str) return -EINVAL;
+
+    char key[32];
+    ret = snprintf(key, sizeof(key), "audio/ch/%s/%s", channel_str, setting);
+    if (ret < 0) return ret;
+    if (ret >= sizeof(key)) return -EINVAL;
+
+    return settings_save_one(key, val, len);
+}
+
+/// Callback for settings_load_subtree_direct() to apply audio settings.
+static int audio_settings_load_cb(const char *key, size_t len,
+                                  settings_read_cb read_cb, void *cb_arg,
+                                  void *param) {
+    const struct audio_config *config = &audio_config;
+    int ret;
+    const char *next;
+
+    if (settings_name_steq(key, "ch", &next)) {
+        if (!next) return 0;
+
+        const char *channel_str = next;
+        int channel_len = settings_name_next(next, &next);
+        audio_channel_t channel;
+        ret = audio_channel_from_string_prefix(channel_str, channel_len,
+                                               &channel);
+        if (ret) {
+            LOG_WRN("setting for unknown channel: %s", next);
+            return 0;
+        }
+
+        if (strcmp(next, "a_gain") == 0) {
+            int32_t gain;
+            ret = read_cb(cb_arg, &gain, sizeof(gain));
+            if (ret != sizeof(gain)) {
+                LOG_WRN("failed to read setting: %s (read %d)", key, ret);
+            }
+
+            ret = input_codec_set_property(
+                config->codec, INPUT_CODEC_PROPERTY_ANALOG_GAIN, channel,
+                (union input_codec_property_value){
+                    .gain = gain,
+                });
+            if (ret) {
+                LOG_WRN("failed to apply analog gain (err %d)", ret);
+            }
+        } else if (strcmp(next, "d_gain") == 0) {
+            int32_t gain;
+            ret = read_cb(cb_arg, &gain, sizeof(gain));
+            if (ret != sizeof(gain)) {
+                LOG_WRN("failed to read setting: %s (read %d)", key, ret);
+            }
+
+            ret = input_codec_set_property(
+                config->codec, INPUT_CODEC_PROPERTY_DIGITAL_GAIN, channel,
+                (union input_codec_property_value){
+                    .gain = gain,
+                });
+            if (ret) {
+                LOG_WRN("failed to apply digital gain (err %d)", ret);
+            }
+        } else {
+            LOG_WRN("unknown channel setting: %s", key);
+        }
+    } else {
+        LOG_WRN("unknown audio setting: %s", key);
+    }
+
+    return 0;
+}
+
 int audio_init() {
-    int err;
+    int ret;
     const struct audio_config *config = &audio_config;
     struct audio_data *data = &audio_data;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
     if (data->init) return -EALREADY;
 
     if (!device_is_ready(config->codec)) {
@@ -368,10 +490,24 @@ int audio_init() {
         nrfx_dppi_channel_enable(i2s_dppi);
     }
 
-    err = i2s_configure(config->i2s, I2S_DIR_RX, &cfg.dai_cfg.i2s);
-    if (err < 0) {
-        LOG_ERR("failed to configure I2S (err %d)", err);
-        return err;
+    settings_load_subtree_direct("audio", audio_settings_load_cb, NULL);
+
+    ret = i2s_configure(config->i2s, I2S_DIR_RX, &cfg.dai_cfg.i2s);
+    if (ret) {
+        LOG_ERR("failed to configure I2S (err %d)", ret);
+        return ret;
+    }
+
+    ret = input_codec_configure(config->codec, &cfg);
+    if (ret) {
+        LOG_ERR("failed to configure codec (err %d)", ret);
+        return ret;
+    }
+
+    ret = input_codec_start_input(config->codec);
+    if (ret) {
+        LOG_ERR("failed to start codec (err %d)", ret);
+        return ret;
     }
 
     k_thread_create(&data->thread, audio_thread_stack,
@@ -379,25 +515,91 @@ int audio_init() {
                     NULL, NULL, NULL, K_PRIO_COOP(12), 0, K_NO_WAIT);
     k_thread_name_set(&data->thread, "audio");
 
-    err = k_sem_take(config->started, K_MSEC(2000));
-    if (err < 0) {
+    ret = k_sem_take(config->started, K_MSEC(2000));
+    if (ret) {
         LOG_ERR("audio did not start");
-        return err;
+        return ret;
     }
     LOG_INF("audio started");
 
-    err = input_codec_configure(config->codec, &cfg);
-    if (err < 0) {
-        LOG_ERR("failed to configure codec (err %d)", err);
-        return err;
-    }
-
-    err = input_codec_start_input(config->codec);
-    if (err < 0) {
-        LOG_ERR("failed to start codec (err %d)", err);
-        return err;
-    }
-
     data->init = true;
     return 0;
+}
+
+int audio_channel_from_string(const char *str, audio_channel_t *channel) {
+    return audio_channel_from_string_prefix(str, strlen(str), channel);
+}
+
+int audio_get_analog_gain(audio_channel_t channel, int32_t *gain) {
+    const struct audio_config *config = &audio_config;
+    struct audio_data *data = &audio_data;
+    union input_codec_property_value prop;
+    int ret;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+
+    if (!data->init) return -EINVAL;
+
+    ret = input_codec_get_property(
+        config->codec, INPUT_CODEC_PROPERTY_ANALOG_GAIN, channel, &prop);
+    if (ret) return ret;
+
+    *gain = prop.gain;
+    return 0;
+}
+
+int audio_set_analog_gain(audio_channel_t channel, int32_t gain) {
+    const struct audio_config *config = &audio_config;
+    struct audio_data *data = &audio_data;
+    int ret;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+
+    if (!data->init) return -EINVAL;
+
+    ret = input_codec_set_property(config->codec,
+                                   INPUT_CODEC_PROPERTY_ANALOG_GAIN, channel,
+                                   (union input_codec_property_value){
+                                       .gain = gain,
+                                   });
+    if (ret) return ret;
+
+    return audio_settings_channel_save(channel, "a_gain", &gain, sizeof(gain));
+}
+
+int audio_get_digital_gain(audio_channel_t channel, int32_t *gain) {
+    const struct audio_config *config = &audio_config;
+    struct audio_data *data = &audio_data;
+    union input_codec_property_value prop;
+    int ret;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+
+    if (!data->init) return -EINVAL;
+
+    ret = input_codec_get_property(
+        config->codec, INPUT_CODEC_PROPERTY_DIGITAL_GAIN, channel, &prop);
+    if (ret) return ret;
+
+    *gain = prop.gain;
+    return 0;
+}
+
+int audio_set_digital_gain(audio_channel_t channel, int32_t gain) {
+    const struct audio_config *config = &audio_config;
+    struct audio_data *data = &audio_data;
+    int ret;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+
+    if (!data->init) return -EINVAL;
+
+    ret = input_codec_set_property(config->codec,
+                                   INPUT_CODEC_PROPERTY_DIGITAL_GAIN, channel,
+                                   (union input_codec_property_value){
+                                       .gain = gain,
+                                   });
+    if (ret) return ret;
+
+    return audio_settings_channel_save(channel, "d_gain", &gain, sizeof(gain));
 }

@@ -90,8 +90,11 @@ extern "C" {
 #define CH_CFG0_DREEN			BIT(0)
 
 #define CH_CFG1_ADDR(ch)		(struct reg_addr){0, 0x3d + ((ch) - 1) * 5}
+#define CH_CFG1_GAIN			GENMASK(7, 1)
+#define CH_CFG1_GAIN_SIGN_BIT		BIT(0)
 
 #define CH_CFG2_ADDR(ch)		(struct reg_addr){0, 0x3e + ((ch) - 1) * 5}
+#define CH_CFG2_DVOL			GENMASK(7, 0)
 
 #define CH_CFG3_ADDR(ch)		(struct reg_addr){0, 0x3f + ((ch) - 1) * 5}
 

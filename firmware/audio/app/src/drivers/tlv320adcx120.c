@@ -17,13 +17,19 @@
 #include <zephyr/drivers/regulator.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
+#include <zephyr/sys/linear_range.h>
 
 #include "input_codec.h"
 
 LOG_MODULE_REGISTER(tlv320adcx120, CONFIG_AUDIO_CODEC_LOG_LEVEL);
 
-#define CODEC_OUTPUT_VOLUME_MAX 0
-#define CODEC_OUTPUT_VOLUME_MIN (-78 * 2)
+#define CODEC_NUM_CHANNELS        4
+#define CODEC_NUM_ANALOG_CHANNELS 2
+
+#define CODEC_DEFAULT_DVOL 201
+
+static const struct linear_range analog_gain_range = LINEAR_RANGE_INIT(0, 1, 0, 84);
+static const struct linear_range digital_gain_range = LINEAR_RANGE_INIT(-100 * 2, 1, 1, 255);
 
 struct codec_channel_config {
 	uint8_t channel;
@@ -31,6 +37,11 @@ struct codec_channel_config {
 	bool dc_coupled;
 	uint16_t impedance_ohms;
 	uint8_t slot;
+};
+
+struct codec_channel_data {
+	bool mute;
+	uint8_t dvol;
 };
 
 struct codec_driver_config {
@@ -43,7 +54,8 @@ struct codec_driver_config {
 };
 
 struct codec_driver_data {
-	struct reg_addr reg_addr_cache;
+	uint8_t reg_page_cache;
+	struct codec_channel_data channels[CODEC_NUM_CHANNELS];
 };
 
 static int codec_write_reg(const struct device *dev, struct reg_addr reg, uint8_t val);
@@ -52,7 +64,9 @@ static int codec_soft_reset(const struct device *dev);
 static int codec_configure_dai(const struct device *dev, const audio_dai_cfg_t *cfg);
 static int codec_configure_power(const struct device *dev);
 static int codec_configure_input(const struct device *dev);
-static int codec_set_input_volume(const struct device *dev, int vol);
+static int codec_set_analog_gain(const struct device *dev, uint8_t channel, int gain);
+static int codec_set_digital_gain(const struct device *dev, uint8_t channel, int gain);
+static int codec_set_mute(const struct device *dev, uint8_t channel, bool mute);
 
 #if (LOG_LEVEL >= LOG_LEVEL_DEBUG)
 static void codec_read_all_regs(const struct device *dev);
@@ -61,143 +75,31 @@ static void codec_read_all_regs(const struct device *dev);
 #define CODEC_DUMP_REGS(dev)
 #endif
 
-static int codec_initialize(const struct device *dev)
+static int codec_channel_to_index(audio_channel_t channel, uint8_t *channel_num)
 {
-	const struct codec_driver_config *const dev_cfg = dev->config;
-	int ret;
-
-	if (!device_is_ready(dev_cfg->bus.bus)) {
-		LOG_ERR("I2C device not ready");
-		return -ENODEV;
-	}
-
-	if (dev_cfg->int_gpio.port) {
-		if (!gpio_is_ready_dt(&dev_cfg->int_gpio)) {
-			LOG_ERR("GPIO device not ready");
-			return -ENODEV;
-		}
-	}
-
-#if IS_ENABLED(CONFIG_REGULATOR)
-	if (dev_cfg->avdd_supply != NULL) {
-		ret = regulator_enable(dev_cfg->avdd_supply);
-		if (ret < 0) {
-			LOG_ERR("Failed to enable AVDD supply (err %d)", ret);
-			return ret;
-		}
-	}
-#else
-	(void)ret;
-#endif
-
-	return 0;
-}
-
-static int codec_configure(const struct device *dev, struct audio_codec_cfg *cfg)
-{
-	const struct codec_driver_config *const dev_cfg = dev->config;
-	int ret;
-
-	if (cfg->dai_type != AUDIO_DAI_TYPE_I2S) {
-		LOG_ERR("dai_type must be AUDIO_DAI_TYPE_I2S");
-		return -EINVAL;
-	}
-
-	if (dev_cfg->int_gpio.port) {
-		ret = gpio_pin_configure_dt(&dev_cfg->int_gpio, GPIO_INPUT);
-		if (ret < 0) {
-			return ret;
-		}
-	}
-
-	ret = codec_soft_reset(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = codec_configure_power(dev);
-	if (ret < 0) {
-		return ret;
-	}
-
-	ret = codec_configure_dai(dev, &cfg->dai_cfg);
-	if (ret < 0) {
-		return ret;
-	}
-
-	return codec_configure_input(dev);
-}
-
-static int codec_start_input(const struct device *dev)
-{
-	int ret;
-
-	/* power on ADC */
-	ret = codec_write_reg(dev, PWR_CFG_ADDR, PWR_CFG_ADC_PDZ | PWR_CFG_PLL_PDZ);
-	if (ret < 0) {
-		return ret;
-	}
-
-	/* unmute ADC channels */
-	// codec_write_reg(dev, VOL_CTRL_ADDR, VOL_CTRL_UNMUTE_DEFAULT);
-
-	CODEC_DUMP_REGS(dev);
-	return 0;
-}
-
-static int codec_stop_input(const struct device *dev)
-{
-	/* mute DAC channels */
-	// codec_write_reg(dev, VOL_CTRL_ADDR, VOL_CTRL_MUTE_DEFAULT);
-
-	/* power off ADC */
-	return codec_write_reg(dev, PWR_CFG_ADDR, 0);
-}
-
-static void codec_mute_input(const struct device *dev)
-{
-	/* mute DAC channels */
-	// codec_write_reg(dev, VOL_CTRL_ADDR, VOL_CTRL_MUTE_DEFAULT);
-}
-
-static void codec_unmute_input(const struct device *dev)
-{
-	/* unmute DAC channels */
-	// codec_write_reg(dev, VOL_CTRL_ADDR, VOL_CTRL_UNMUTE_DEFAULT);
-}
-
-static int codec_set_property(const struct device *dev, enum input_codec_property property,
-			      audio_channel_t channel, union input_codec_property_value val)
-{
-	/* individual channel control not currently supported */
-	if (channel != AUDIO_CHANNEL_ALL) {
-		LOG_ERR("channel %u invalid. must be AUDIO_CHANNEL_ALL", channel);
-		return -EINVAL;
-	}
-
-	switch (property) {
-	case INPUT_CODEC_PROPERTY_VOLUME:
-		return codec_set_input_volume(dev, val.vol);
-
-	case INPUT_CODEC_PROPERTY_MUTE:
-		if (val.mute) {
-			codec_mute_input(dev);
-		} else {
-			codec_unmute_input(dev);
-		}
-		return 0;
-
-	default:
+	switch (channel) {
+	case AUDIO_CHANNEL_FRONT_LEFT:
+		*channel_num = 1;
 		break;
+	case AUDIO_CHANNEL_FRONT_RIGHT:
+		*channel_num = 2;
+		break;
+	default:
+		/* TODO: decide how to map the other channels */
+		return -ENOTSUP;
 	}
-
-	return -EINVAL;
+	return 0;
 }
 
-static int codec_apply_properties(const struct device *dev)
+static struct codec_channel_data *codec_get_channel_data(const struct device *dev, uint8_t channel)
 {
-	/* nothing to do because there is nothing cached */
-	return 0;
+	struct codec_driver_data *data = dev->data;
+
+	if (channel < 1 || channel > CODEC_NUM_CHANNELS) {
+		return NULL;
+	}
+
+	return &data->channels[channel - 1];
 }
 
 static int codec_write_reg(const struct device *dev, struct reg_addr reg, uint8_t val)
@@ -207,12 +109,12 @@ static int codec_write_reg(const struct device *dev, struct reg_addr reg, uint8_
 	int ret;
 
 	/* set page if different */
-	if (dev_data->reg_addr_cache.page != reg.page) {
+	if (dev_data->reg_page_cache != reg.page) {
 		ret = i2c_reg_write_byte_dt(&dev_cfg->bus, PAGE_CFG_ADDR, reg.page);
 		if (ret < 0) {
 			return ret;
 		}
-		dev_data->reg_addr_cache.page = reg.page;
+		dev_data->reg_page_cache = reg.page;
 	}
 
 	ret = i2c_reg_write_byte_dt(&dev_cfg->bus, reg.reg_addr, val);
@@ -230,12 +132,12 @@ static int codec_read_reg(const struct device *dev, struct reg_addr reg, uint8_t
 	int ret;
 
 	/* set page if different */
-	if (dev_data->reg_addr_cache.page != reg.page) {
+	if (dev_data->reg_page_cache != reg.page) {
 		ret = i2c_reg_write_byte_dt(&dev_cfg->bus, PAGE_CFG_ADDR, reg.page);
 		if (ret < 0) {
 			return ret;
 		}
-		dev_data->reg_addr_cache.page = reg.page;
+		dev_data->reg_page_cache = reg.page;
 	}
 
 	i2c_reg_read_byte_dt(&dev_cfg->bus, reg.reg_addr, val);
@@ -248,8 +150,22 @@ static int codec_read_reg(const struct device *dev, struct reg_addr reg, uint8_t
 
 static int codec_soft_reset(const struct device *dev)
 {
-	/* soft reset the DAC */
-	return codec_write_reg(dev, SW_RESET_ADDR, SW_RESET_ASSERT);
+	struct codec_driver_data *const data = dev->data;
+	int ret;
+	/* Soft reset the ADC */
+	ret = codec_write_reg(dev, SW_RESET_ADDR, SW_RESET_ASSERT);
+	if (ret) {
+		return ret;
+	}
+
+	/* Reset cached page address and property values */
+	data->reg_page_cache = 0;
+	for (size_t i = 0; i < ARRAY_SIZE(data->channels); ++i) {
+		struct codec_channel_data *channel = &data->channels[i];
+		channel->dvol = CODEC_DEFAULT_DVOL;
+		channel->mute = false;
+	}
+	return 0;
 }
 
 static int codec_configure_power(const struct device *dev)
@@ -351,7 +267,7 @@ static int codec_configure_input(const struct device *dev)
 	uint8_t in_ch_en = 0;
 	uint8_t asi_out_ch_en = 0;
 
-	if (cfg->num_channels > 4) {
+	if (cfg->num_channels > CODEC_NUM_CHANNELS) {
 		LOG_ERR("Too many (%u) channels configured", cfg->num_channels);
 		return -EINVAL;
 	}
@@ -360,41 +276,45 @@ static int codec_configure_input(const struct device *dev)
 		const struct codec_channel_config *channel = &cfg->channels[i];
 		uint8_t val = 0;
 
-		if (channel->channel < 1 || channel->channel > 4) {
+		if (channel->channel < 1 || channel->channel > CODEC_NUM_CHANNELS) {
 			LOG_ERR("Channel out of range: %u", channel->channel);
 			return -EINVAL;
 		}
 
-		if (channel->line_in) {
-			val |= CH_CFG0_INTYP;
-		}
-		if (channel->dc_coupled) {
-			val |= CH_CFG0_DC;
-		}
+		if (channel->channel <= CODEC_NUM_ANALOG_CHANNELS) {
+			/* Only channels 1 and 2 have analog input */
 
-		uint8_t imp;
-		switch (channel->impedance_ohms) {
-		case 2500:
-			imp = CH_CFG0_IMP_2_5_KOHM;
-			break;
-		case 10000:
-			imp = CH_CFG0_IMP_10_KOHM;
-			break;
-		case 20000:
-			imp = CH_CFG0_IMP_20_KOHM;
-			break;
-		default:
-			return -EINVAL;
+			if (channel->line_in) {
+				val |= CH_CFG0_INTYP;
+			}
+			if (channel->dc_coupled) {
+				val |= CH_CFG0_DC;
+			}
+
+			uint8_t imp;
+			switch (channel->impedance_ohms) {
+			case 2500:
+				imp = CH_CFG0_IMP_2_5_KOHM;
+				break;
+			case 10000:
+				imp = CH_CFG0_IMP_10_KOHM;
+				break;
+			case 20000:
+				imp = CH_CFG0_IMP_20_KOHM;
+				break;
+			default:
+				return -EINVAL;
+			}
+			val |= FIELD_PREP(CH_CFG0_IMP, imp);
+
+			ret = codec_write_reg(dev, CH_CFG0_ADDR(channel->channel), val);
+			if (ret < 0) {
+				return ret;
+			}
 		}
-		val |= FIELD_PREP(CH_CFG0_IMP, imp);
 
 		in_ch_en |= IN_CH_EN(channel->channel);
 		asi_out_ch_en |= ASI_OUT_CH_EN(channel->channel);
-
-		ret = codec_write_reg(dev, CH_CFG0_ADDR(channel->channel), val);
-		if (ret < 0) {
-			return ret;
-		}
 
 		if (channel->slot > 63) {
 			LOG_ERR("ASI slot out of range: %u > 63", channel->slot);
@@ -415,38 +335,247 @@ static int codec_configure_input(const struct device *dev)
 	return codec_write_reg(dev, ASI_OUT_CH_EN_ADDR, asi_out_ch_en);
 }
 
-static int codec_set_input_volume(const struct device *dev, int vol)
+static int codec_get_analog_gain(const struct device *dev, uint8_t channel, int32_t *gain)
 {
-	return -ENOTSUP;
-	// uint8_t vol_val;
-	// int vol_index;
-	// uint8_t vol_array[] = {107, 108, 110, 113, 116, 120, 125, 128, 132, 138, 144};
+	int ret;
+	uint8_t val;
 
-	if ((vol > CODEC_OUTPUT_VOLUME_MAX) || (vol < CODEC_OUTPUT_VOLUME_MIN)) {
-		LOG_ERR("Invalid volume %d.%d dB", vol >> 1, ((uint32_t)vol & 1) ? 5 : 0);
+	/* Only first two channels have analog gain */
+	if (channel < 1 || channel > CODEC_NUM_ANALOG_CHANNELS) {
+		return -ENOTSUP;
+	}
+
+	ret = codec_read_reg(dev, CH_CFG1_ADDR(channel), &val);
+	if (ret) {
+		return ret;
+	}
+
+	return linear_range_get_value(&analog_gain_range, FIELD_GET(CH_CFG1_GAIN, val), gain);
+}
+
+static int codec_set_analog_gain(const struct device *dev, uint8_t channel, int32_t gain)
+{
+	int ret;
+	uint16_t idx;
+
+	/* Only first two channels have analog gain */
+	if (channel < 1 || channel > CODEC_NUM_ANALOG_CHANNELS) {
+		return -ENOTSUP;
+	}
+
+	ret = linear_range_get_index(&analog_gain_range, gain, &idx);
+	if (ret) {
+		return ret;
+	}
+
+	return codec_write_reg(dev, CH_CFG1_ADDR(channel), FIELD_PREP(CH_CFG1_GAIN, idx));
+}
+
+static int codec_get_digital_gain(const struct device *dev, uint8_t channel, int32_t *gain)
+{
+	struct codec_channel_data *channel_data = codec_get_channel_data(dev, channel);
+
+	return linear_range_get_value(&digital_gain_range, channel_data->dvol, gain);
+}
+
+static int codec_set_digital_gain(const struct device *dev, uint8_t channel, int32_t gain)
+{
+	int ret;
+	uint16_t dvol;
+	struct codec_channel_data *channel_data = codec_get_channel_data(dev, channel);
+	if (!channel_data) {
 		return -EINVAL;
 	}
 
-	/* remove sign */
-	vol = -vol;
+	ret = linear_range_get_index(&digital_gain_range, gain, &dvol);
+	if (ret) {
+		return ret;
+	}
 
-	/* if volume is near floor, set minimum */
-	// if (vol > HPX_ANA_VOL_FLOOR) {
-	// 	vol_val = HPX_ANA_VOL_FLOOR;
-	// } else if (vol > HPX_ANA_VOL_LOW_THRESH) {
-	// 	/* lookup low volume values */
-	// 	for (vol_index = 0; vol_index < ARRAY_SIZE(vol_array); vol_index++) {
-	// 		if (vol_array[vol_index] >= vol) {
-	// 			break;
-	// 		}
-	// 	}
-	// 	vol_val = HPX_ANA_VOL_LOW_THRESH + vol_index + 1;
-	// } else {
-	// 	vol_val = (uint8_t)vol;
-	// }
+	if (!channel_data->mute) {
+		ret = codec_write_reg(dev, CH_CFG2_ADDR(channel), FIELD_PREP(CH_CFG2_DVOL, dvol));
+		if (ret) {
+			return ret;
+		}
+	}
 
-	// codec_write_reg(dev, HPL_ANA_VOL_CTRL_ADDR, HPX_ANA_VOL(vol_val));
-	// codec_write_reg(dev, HPR_ANA_VOL_CTRL_ADDR, HPX_ANA_VOL(vol_val));
+	channel_data->dvol = dvol;
+	return 0;
+}
+
+static int codec_get_mute(const struct device *dev, uint8_t channel, bool *mute)
+{
+	struct codec_channel_data *channel_data = codec_get_channel_data(dev, channel);
+
+	*mute = channel_data->mute;
+	return 0;
+}
+
+static int codec_set_mute(const struct device *dev, uint8_t channel, bool mute)
+{
+	int ret;
+	uint8_t dvol;
+	struct codec_channel_data *channel_data = codec_get_channel_data(dev, channel);
+	if (!channel_data) {
+		return -EINVAL;
+	}
+
+	if (mute == channel_data->mute) {
+		return 0;
+	}
+
+	if (mute) {
+		dvol = 0;
+	} else {
+		dvol = channel_data->dvol;
+	}
+
+	ret = codec_write_reg(dev, CH_CFG2_ADDR(channel), FIELD_PREP(CH_CFG2_DVOL, dvol));
+	if (ret) {
+		return ret;
+	}
+
+	channel_data->mute = mute;
+	return 0;
+}
+
+static int codec_initialize(const struct device *dev)
+{
+	const struct codec_driver_config *const dev_cfg = dev->config;
+	int ret;
+
+	if (!device_is_ready(dev_cfg->bus.bus)) {
+		LOG_ERR("I2C device not ready");
+		return -ENODEV;
+	}
+
+#if IS_ENABLED(CONFIG_REGULATOR)
+	if (dev_cfg->avdd_supply != NULL) {
+		ret = regulator_enable(dev_cfg->avdd_supply);
+		if (ret < 0) {
+			LOG_ERR("Failed to enable AVDD supply (err %d)", ret);
+			return ret;
+		}
+	}
+#endif
+
+	ret = codec_soft_reset(dev);
+	if (ret < 0) {
+		return ret;
+	}
+
+	if (dev_cfg->int_gpio.port) {
+		if (!gpio_is_ready_dt(&dev_cfg->int_gpio)) {
+			LOG_ERR("GPIO device not ready");
+			return -ENODEV;
+		}
+
+		ret = gpio_pin_configure_dt(&dev_cfg->int_gpio, GPIO_INPUT);
+		if (ret < 0) {
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
+static int codec_configure(const struct device *dev, struct audio_codec_cfg *cfg)
+{
+	int ret;
+
+	if (cfg->dai_type != AUDIO_DAI_TYPE_I2S) {
+		LOG_ERR("dai_type must be AUDIO_DAI_TYPE_I2S");
+		return -EINVAL;
+	}
+
+	ret = codec_configure_power(dev);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = codec_configure_dai(dev, &cfg->dai_cfg);
+	if (ret < 0) {
+		return ret;
+	}
+
+	return codec_configure_input(dev);
+}
+
+static int codec_start_input(const struct device *dev)
+{
+	int ret;
+
+	/* power on ADC */
+	ret = codec_write_reg(dev, PWR_CFG_ADDR, PWR_CFG_ADC_PDZ | PWR_CFG_PLL_PDZ);
+	if (ret < 0) {
+		return ret;
+	}
+
+	CODEC_DUMP_REGS(dev);
+	return 0;
+}
+
+static int codec_stop_input(const struct device *dev)
+{
+	/* power off ADC */
+	return codec_write_reg(dev, PWR_CFG_ADDR, 0);
+}
+
+static int codec_get_property(const struct device *dev, enum input_codec_property property,
+			      audio_channel_t channel, union input_codec_property_value *val)
+{
+	uint8_t channel_num;
+	int ret;
+
+	ret = codec_channel_to_index(channel, &channel_num);
+	if (ret) {
+		return ret;
+	}
+
+	switch (property) {
+	case INPUT_CODEC_PROPERTY_ANALOG_GAIN:
+		return codec_get_analog_gain(dev, channel_num, &val->gain);
+
+	case INPUT_CODEC_PROPERTY_DIGITAL_GAIN:
+		return codec_get_digital_gain(dev, channel_num, &val->gain);
+
+	case INPUT_CODEC_PROPERTY_MUTE:
+		return codec_get_mute(dev, channel_num, &val->mute);
+
+	default:
+		return -ENOTSUP;
+	}
+}
+
+static int codec_set_property(const struct device *dev, enum input_codec_property property,
+			      audio_channel_t channel, union input_codec_property_value val)
+{
+	uint8_t channel_num;
+	int ret;
+
+	ret = codec_channel_to_index(channel, &channel_num);
+	if (ret) {
+		return ret;
+	}
+
+	switch (property) {
+	case INPUT_CODEC_PROPERTY_ANALOG_GAIN:
+		return codec_set_analog_gain(dev, channel_num, val.gain);
+
+	case INPUT_CODEC_PROPERTY_DIGITAL_GAIN:
+		return codec_set_digital_gain(dev, channel_num, val.gain);
+
+	case INPUT_CODEC_PROPERTY_MUTE:
+		return codec_set_mute(dev, channel_num, val.mute);
+
+	default:
+		return -ENOTSUP;
+	}
+}
+
+static int codec_apply_properties(const struct device *dev)
+{
+	/* nothing to do because there is nothing cached */
 	return 0;
 }
 
@@ -468,26 +597,15 @@ static void codec_read_all_regs(const struct device *dev)
 	codec_read_reg(dev, ASI_CH_ADDR(4), &val);
 	codec_read_reg(dev, MST_CFG0_ADDR, &val);
 	codec_read_reg(dev, MST_CFG1_ADDR, &val);
-	codec_read_reg(dev, CH_CFG0_ADDR(1), &val);
-	codec_read_reg(dev, CH_CFG0_ADDR(2), &val);
-	codec_read_reg(dev, CH_CFG0_ADDR(3), &val);
-	codec_read_reg(dev, CH_CFG0_ADDR(4), &val);
-	codec_read_reg(dev, CH_CFG1_ADDR(1), &val);
-	codec_read_reg(dev, CH_CFG1_ADDR(2), &val);
-	codec_read_reg(dev, CH_CFG1_ADDR(3), &val);
-	codec_read_reg(dev, CH_CFG1_ADDR(4), &val);
-	codec_read_reg(dev, CH_CFG2_ADDR(1), &val);
-	codec_read_reg(dev, CH_CFG2_ADDR(2), &val);
-	codec_read_reg(dev, CH_CFG2_ADDR(3), &val);
-	codec_read_reg(dev, CH_CFG2_ADDR(4), &val);
-	codec_read_reg(dev, CH_CFG3_ADDR(1), &val);
-	codec_read_reg(dev, CH_CFG3_ADDR(2), &val);
-	codec_read_reg(dev, CH_CFG3_ADDR(3), &val);
-	codec_read_reg(dev, CH_CFG3_ADDR(4), &val);
-	codec_read_reg(dev, CH_CFG4_ADDR(1), &val);
-	codec_read_reg(dev, CH_CFG4_ADDR(2), &val);
-	codec_read_reg(dev, CH_CFG4_ADDR(3), &val);
-	codec_read_reg(dev, CH_CFG4_ADDR(4), &val);
+	for (uint8_t ch = 1; ch <= CODEC_NUM_CHANNELS; ++ch) {
+		if (ch <= CODEC_NUM_ANALOG_CHANNELS) {
+			codec_read_reg(dev, CH_CFG0_ADDR(ch), &val);
+			codec_read_reg(dev, CH_CFG1_ADDR(ch), &val);
+		}
+		codec_read_reg(dev, CH_CFG2_ADDR(ch), &val);
+		codec_read_reg(dev, CH_CFG3_ADDR(ch), &val);
+		codec_read_reg(dev, CH_CFG4_ADDR(ch), &val);
+	}
 	codec_read_reg(dev, IN_CH_EN_ADDR, &val);
 	codec_read_reg(dev, ASI_OUT_CH_EN_ADDR, &val);
 	codec_read_reg(dev, PWR_CFG_ADDR, &val);
@@ -498,13 +616,14 @@ static const struct input_codec_api codec_driver_api = {
 	.configure = codec_configure,
 	.start_input = codec_start_input,
 	.stop_input = codec_stop_input,
+	.get_property = codec_get_property,
 	.set_property = codec_set_property,
 	.apply_properties = codec_apply_properties,
 };
 
 #define CHANNEL_CONFIG(id)                                                                         \
 	{                                                                                          \
-		.channel = DT_PROP(id, channel),                                                       \
+		.channel = DT_PROP(id, channel),                                                   \
 		.line_in = DT_PROP(id, line_in),                                                   \
 		.dc_coupled = DT_PROP(id, dc_coupled),                                             \
 		.impedance_ohms = DT_PROP(id, impedance_ohms),                                     \

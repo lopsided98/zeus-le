@@ -234,8 +234,7 @@ static int cmd_start(const struct shell *sh, size_t argc, char **argv) {
     shell_print(sh, "start recording command");
     int ret = central_start();
     if (ret) {
-        shell_fprintf(sh, SHELL_ERROR, "failed to send start command (err %d)",
-                      ret);
+        shell_error(sh, "failed to send start command (err %d)", ret);
     }
     return ret;
 }
@@ -244,8 +243,7 @@ static int cmd_stop(const struct shell *sh, size_t argc, char **argv) {
     shell_print(sh, "stop recording command");
     int ret = central_stop();
     if (ret) {
-        shell_fprintf(sh, SHELL_ERROR, "failed to send stop command (err %d)",
-                      ret);
+        shell_error(sh, "failed to send stop command (err %d)", ret);
     }
     return ret;
 }
