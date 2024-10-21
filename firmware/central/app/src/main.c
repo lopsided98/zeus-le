@@ -235,6 +235,8 @@ static int cmd_pair(const struct shell *sh, size_t argc, char **argv) {
     return central_pair();
 }
 
+SHELL_SUBCMD_ADD((zeus), pair, NULL, "Pair new audio node", cmd_pair, 1, 0);
+
 static int cmd_start(const struct shell *sh, size_t argc, char **argv) {
     shell_print(sh, "start recording command");
     int ret = central_start();
@@ -243,6 +245,8 @@ static int cmd_start(const struct shell *sh, size_t argc, char **argv) {
     }
     return ret;
 }
+
+SHELL_SUBCMD_ADD((zeus), start, NULL, "Start recording", cmd_start, 1, 0);
 
 static int cmd_stop(const struct shell *sh, size_t argc, char **argv) {
     shell_print(sh, "stop recording command");
@@ -253,11 +257,7 @@ static int cmd_stop(const struct shell *sh, size_t argc, char **argv) {
     return ret;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
-    sub_zeus, SHELL_CMD(pair, NULL, "Pair new audio node", cmd_pair),
-    SHELL_CMD(start, NULL, "Start recording", cmd_start),
-    SHELL_CMD(stop, NULL, "Stop recording", cmd_stop), SHELL_SUBCMD_SET_END);
-SHELL_CMD_REGISTER(zeus, &sub_zeus, "Zeus commands", NULL);
+SHELL_SUBCMD_ADD((zeus), stop, NULL, "Stop recording", cmd_stop, 1, 0);
 
 void button_release_work_handler(struct k_work *work) {
     struct central_data *data = &central_data;
