@@ -48,6 +48,10 @@ static struct central_data {
     struct bt_le_adv_param adv_param;
     struct bt_le_ext_adv *adv;
     struct gpio_callback button_release_cb;
+    /// Whether the button has entered the released state at least once since
+    /// booting. This is to avoid triggering recording immediately on startup
+    /// when the button is released after being held down to turn the device on.
+    atomic_t button_boot_released;
 } central_data = {
     .state = CENTRAL_STATE_IDLE,
     .adv_param =
@@ -63,6 +67,7 @@ static struct central_data {
             .interval_max = BT_GAP_ADV_SLOW_INT_MAX,
             .peer = NULL,
         },
+    .button_boot_released = ATOMIC_INIT(0),
 };
 
 static void add_bonded_addr_to_filter_list(const struct bt_bond_info *info,
@@ -254,7 +259,16 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD(stop, NULL, "Stop recording", cmd_stop), SHELL_SUBCMD_SET_END);
 SHELL_CMD_REGISTER(zeus, &sub_zeus, "Zeus commands", NULL);
 
-void button_release_work_handler(struct k_work *work) { central_toggle(); }
+void button_release_work_handler(struct k_work *work) {
+    struct central_data *data = &central_data;
+
+    // Only trigger if a button release has already been recorded. If the user
+    // has held the button down to start the device, this prevents the first
+    // release from triggering a recording.
+    if (atomic_set(&data->button_boot_released, 1)) {
+        central_toggle();
+    }
+}
 
 void button_release_handler(const struct device *port, struct gpio_callback *cb,
                             gpio_port_pins_t pins) {
@@ -280,6 +294,10 @@ int button_init(void) {
                                           GPIO_INT_EDGE_TO_INACTIVE);
     if (ret) {
         return ret;
+    }
+
+    if (!gpio_pin_get_dt(&config->button_gpio)) {
+        atomic_set(&data->button_boot_released, 1);
     }
 
     return 0;
