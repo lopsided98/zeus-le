@@ -520,14 +520,14 @@ static int led_pattern_record_running(void) {
     ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
     if (ret < 0) return ret;
 
-    const struct lp58xx_ae_config green_ae_cfg = {
+    const struct lp58xx_ae_config red_ae_cfg = {
         .pause_start_msec = 0,
         .pause_end_msec = 0,
         .num_aeu = 1,
         .repeat = 0,
         .aeu = {{
-            .pwm = {start_pwm[LED_GREEN], 0, 0, 0, 0},
-            .time_msec = {800, 0, 0, 0},
+            .pwm = {start_pwm[LED_RED], 150, 0, 0, 0},
+            .time_msec = {180, 800, 0, 0},
             .repeat = 0,
         }},
     };
@@ -535,10 +535,10 @@ static int led_pattern_record_running(void) {
     ret = led_configure_fade_out(LED_BLUE, start_pwm[LED_BLUE]);
     if (ret < 0) return ret;
 
-    ret = lp58xx_ae_configure(cfg->led, LED_GREEN, &green_ae_cfg);
+    ret = led_configure_fade_out(LED_GREEN, start_pwm[LED_GREEN]);
     if (ret < 0) return ret;
 
-    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
+    ret = lp58xx_ae_configure(cfg->led, LED_RED, &red_ae_cfg);
     if (ret < 0) return ret;
 
     return lp58xx_start(cfg->led);
@@ -555,13 +555,13 @@ static int led_pattern_record_sync_pulse(void) {
     ret = lp58xx_get_auto_pwm(cfg->led, 0, ARRAY_SIZE(start_pwm), start_pwm);
     if (ret < 0) return ret;
 
-    const struct lp58xx_ae_config green_ae_cfg = {
+    const struct lp58xx_ae_config red_ae_cfg = {
         .pause_start_msec = 0,
         .pause_end_msec = 0,
         .num_aeu = 1,
         .repeat = 0,
         .aeu = {{
-            .pwm = {start_pwm[LED_GREEN], 50, 0, 0, 0},
+            .pwm = {start_pwm[LED_RED], 100, 0, 0, 0},
             .time_msec = {90, 90, 0, 0},
             .repeat = 0,
         }},
@@ -570,10 +570,10 @@ static int led_pattern_record_sync_pulse(void) {
     ret = led_configure_fade_out(LED_BLUE, start_pwm[LED_BLUE]);
     if (ret < 0) return ret;
 
-    ret = lp58xx_ae_configure(cfg->led, LED_GREEN, &green_ae_cfg);
+    ret = led_configure_fade_out(LED_GREEN, start_pwm[LED_GREEN]);
     if (ret < 0) return ret;
 
-    ret = led_configure_fade_out(LED_RED, start_pwm[LED_RED]);
+    ret = lp58xx_ae_configure(cfg->led, LED_RED, &red_ae_cfg);
     if (ret < 0) return ret;
 
     return lp58xx_start(cfg->led);
