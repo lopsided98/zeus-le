@@ -4,6 +4,7 @@
 
 #include "audio.h"
 #include "mgr.h"
+#include "record.h"
 
 static int parse_uint32(const char *str, uint32_t *u) {
     BUILD_ASSERT(sizeof(unsigned long) == sizeof(uint32_t),
@@ -47,6 +48,18 @@ static int cmd_pair(const struct shell *sh, size_t argc, char **argv) {
 }
 
 SHELL_SUBCMD_ADD((zeus), pair, NULL, "Pair with a central node", cmd_pair, 1,
+                 0);
+
+static int cmd_prefix(const struct shell *sh, size_t argc, char **argv) {
+    int ret = record_set_file_name_prefix(argv[1]);
+    if (ret) {
+        shell_error(sh, "failed to set prefix (err %d)", ret);
+        return ret;
+    }
+    return 0;
+}
+
+SHELL_SUBCMD_ADD((zeus), prefix, NULL, "Set file name prefix", cmd_prefix, 2,
                  0);
 
 static int cmd_analog_gain(const struct shell *sh, size_t argc, char **argv) {

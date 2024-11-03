@@ -368,6 +368,7 @@ static int audio_settings_load_cb(const char *key, size_t len,
             ret = read_cb(cb_arg, &gain, sizeof(gain));
             if (ret != sizeof(gain)) {
                 LOG_WRN("failed to read setting: %s (read %d)", key, ret);
+                return 0;
             }
 
             ret = input_codec_set_property(
@@ -377,12 +378,14 @@ static int audio_settings_load_cb(const char *key, size_t len,
                 });
             if (ret) {
                 LOG_WRN("failed to apply analog gain (err %d)", ret);
+                return 0;
             }
         } else if (strcmp(next, "d_gain") == 0) {
             int32_t gain;
             ret = read_cb(cb_arg, &gain, sizeof(gain));
             if (ret != sizeof(gain)) {
                 LOG_WRN("failed to read setting: %s (read %d)", key, ret);
+                return 0;
             }
 
             ret = input_codec_set_property(
@@ -392,12 +395,14 @@ static int audio_settings_load_cb(const char *key, size_t len,
                 });
             if (ret) {
                 LOG_WRN("failed to apply digital gain (err %d)", ret);
+                return 0;
             }
         } else if (strcmp(next, "imp") == 0) {
             uint32_t impedance_ohms;
             ret = read_cb(cb_arg, &impedance_ohms, sizeof(impedance_ohms));
             if (ret != sizeof(impedance_ohms)) {
                 LOG_WRN("failed to read setting: %s (read %d)", key, ret);
+                return 0;
             }
 
             ret = input_codec_set_property(
@@ -407,12 +412,15 @@ static int audio_settings_load_cb(const char *key, size_t len,
                 });
             if (ret) {
                 LOG_WRN("failed to apply impedance (err %d)", ret);
+                return 0;
             }
         } else {
             LOG_WRN("unknown channel setting: %s", key);
+            return 0;
         }
     } else {
         LOG_WRN("unknown audio setting: %s", key);
+        return 0;
     }
 
     return 0;
@@ -497,7 +505,10 @@ int audio_init() {
         nrfx_dppi_channel_enable(i2s_dppi);
     }
 
-    settings_load_subtree_direct("audio", audio_settings_load_cb, NULL);
+    ret = settings_load_subtree_direct("audio", audio_settings_load_cb, NULL);
+    if (ret) {
+        LOG_WRN("failed to load settings (err %d)", ret);
+    }
 
     ret = i2s_configure(config->i2s, I2S_DIR_RX, &cfg.dai_cfg.i2s);
     if (ret) {

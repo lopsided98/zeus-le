@@ -6,6 +6,8 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/storage/disk_access.h>
 
+#include "record.h"
+
 LOG_MODULE_REGISTER(sd_card);
 
 static void sd_card_work_handler(struct k_work* work);
@@ -99,6 +101,9 @@ static int sd_card_inserted(void) {
 
         data->mounted = true;
     }
+
+    ret = record_card_inserted();
+    if (ret) return ret;
 
     return 0;
 }

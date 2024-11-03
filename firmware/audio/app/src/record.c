@@ -6,7 +6,7 @@
 #include <zephyr/fs/fs.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net/buf.h>
+#include <zephyr/settings/settings.h>
 
 #include "wav.h"
 #include "zeus/led.h"
@@ -15,8 +15,6 @@
 LOG_MODULE_REGISTER(record, LOG_LEVEL_DBG);
 
 #define RECORD_FILE_DIR "/SD:"
-#define RECORD_FILE_NAME_PREFIX "REC_"
-#define RECORD_FILE_PATH_PREFIX RECORD_FILE_DIR "/" RECORD_FILE_NAME_PREFIX
 // 2 GiB, because some programs use a signed 32-bit integer
 #define RECORD_FILE_MAX_SIZE INT32_MAX
 
@@ -46,6 +44,7 @@ static struct record_data {
     struct k_thread close_thread;
 
     bool init;
+    char file_name_prefix[32];
     /// Current open file
     struct wav file;
     /// Next unused file index
@@ -55,6 +54,7 @@ static struct record_data {
     // Last time the WAV file size was updated (ms)
     int64_t last_sync_time_ms;
 } record_data = {
+    .file_name_prefix = "REC",
     .file_index = 0,
     .state = RECORD_STOPPED,
 };
@@ -78,14 +78,15 @@ static void record_close_thread_run(void *p1, void *p2, void *p3) {
     }
 }
 
-static int record_get_next_file_index(uint32_t *next_file_index) {
-    int ret;
+static int record_find_next_file_index(void) {
+    struct record_data *data = &record_data;
     struct fs_dir_t dir;
+    int ret;
     fs_dir_t_init(&dir);
     ret = fs_opendir(&dir, RECORD_FILE_DIR);
-    if (ret < 0) return ret;
+    if (ret) return ret;
 
-    *next_file_index = 0;
+    data->file_index = 0;
 
     while (true) {
         struct fs_dirent entry;
@@ -95,22 +96,27 @@ static int record_get_next_file_index(uint32_t *next_file_index) {
         size_t name_len = strlen(entry.name);
         if (name_len == 0) break;
 
-        const size_t name_prefix_len = sizeof(RECORD_FILE_NAME_PREFIX) - 1;
-        if (name_len < name_prefix_len) {
+        const size_t name_prefix_len = strlen(data->file_name_prefix);
+        // Prefix + underscore
+        if (name_len < name_prefix_len + 1) {
             // Too short
             continue;
         }
-        if (memcmp(entry.name, RECORD_FILE_NAME_PREFIX, name_prefix_len) != 0) {
+        if (memcmp(entry.name, data->file_name_prefix, name_prefix_len) != 0) {
             // Prefix didn't match
             continue;
         }
+        if (entry.name[name_prefix_len] != '_') {
+            // No underscore after prefix
+            continue;
+        }
 
-        const char *index_start = entry.name + name_prefix_len;
+        const char *index_start =
+            entry.name + name_prefix_len + 1 /* underscore */;
         char *suffix_start;
         BUILD_ASSERT(sizeof(unsigned long) == sizeof(uint32_t),
                      "Cannot use strtoul() to parse uint32_t");
-        uint32_t file_index =
-            strtoul(entry.name + name_prefix_len, &suffix_start, 10);
+        uint32_t file_index = strtoul(index_start, &suffix_start, 10);
         if (suffix_start == index_start) {
             // Did not parse any number
             continue;
@@ -127,8 +133,8 @@ static int record_get_next_file_index(uint32_t *next_file_index) {
         }
 
         // +1 to record the next free index
-        if ((file_index + 1) > *next_file_index) {
-            *next_file_index = file_index + 1;
+        if ((file_index + 1) > data->file_index) {
+            data->file_index = file_index + 1;
         }
     }
 
@@ -150,6 +156,36 @@ static void record_close_file(void) {
     }
 }
 
+/// Callback for settings_load_subtree_direct() to apply recording settings.
+static int record_settings_load_cb(const char *key, size_t len,
+                                   settings_read_cb read_cb, void *cb_arg,
+                                   void *param) {
+    struct record_data *data = &record_data;
+    int ret;
+
+    if (0 == strcmp(key, "prefix")) {
+        // Temporary buffer to avoid overwriting old value on failure
+        char file_name_prefix[sizeof(data->file_name_prefix)];
+        ret = read_cb(cb_arg, file_name_prefix, sizeof(file_name_prefix) - 1);
+        if (ret == 0) {
+            // Deleted
+            return 0;
+        } else if (ret < 0) {
+            LOG_WRN("failed to read setting: %s (read %d)", key, ret);
+            return 0;
+        }
+        // Ensure null-termination
+        file_name_prefix[ret] = '\0';
+        memcpy(data->file_name_prefix, file_name_prefix,
+               sizeof(file_name_prefix));
+    } else {
+        LOG_WRN("unknown record setting: %s", key);
+        return 0;
+    }
+
+    return 0;
+}
+
 int record_init(void) {
     const struct record_config *config = &record_config;
     struct record_data *data = &record_data;
@@ -158,19 +194,66 @@ int record_init(void) {
     K_MUTEX_AUTO_LOCK(config->mutex);
     if (data->init) return -EALREADY;
 
+    ret = settings_load_subtree_direct("rec", record_settings_load_cb, NULL);
+    if (ret) {
+        LOG_WRN("failed to load settings (err %d)", ret);
+    }
+
     k_thread_create(&data->close_thread, record_close_thread_stack,
                     K_THREAD_STACK_SIZEOF(record_close_thread_stack),
                     record_close_thread_run, NULL, NULL, NULL,
                     K_PRIO_PREEMPT(2), 0, K_NO_WAIT);
     k_thread_name_set(&data->close_thread, "record_close");
 
-    ret = record_get_next_file_index(&data->file_index);
+    ret = record_find_next_file_index();
     if (ret < 0) {
-        LOG_WRN("failed to get next file index (err %d)", ret);
-        return ret;
+        // Continue anyway, probably means no SD card
+        LOG_WRN("failed to find next file index (err %d)", ret);
     }
 
     data->init = true;
+    return 0;
+}
+
+int record_set_file_name_prefix(const char *prefix) {
+    const struct record_config *config = &record_config;
+    struct record_data *data = &record_data;
+    int ret;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (!data->init) return -EINVAL;
+
+    size_t len = strlen(prefix);
+    if (len >= sizeof(data->file_name_prefix)) {
+        return -EINVAL;
+    }
+    memcpy(data->file_name_prefix, prefix, len + 1);
+
+    ret = settings_save_one("rec/prefix", prefix, len);
+    if (ret) return ret;
+
+    ret = record_find_next_file_index();
+    if (ret) {
+        // Okay, SD card might not be inserted
+        LOG_WRN("failed to find next file index (err %d)", ret);
+    }
+
+    return 0;
+}
+
+int record_card_inserted(void) {
+    const struct record_config *config = &record_config;
+    struct record_data *data = &record_data;
+    int ret;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (!data->init) return -EINVAL;
+
+    ret = record_find_next_file_index();
+    if (ret < 0) {
+        LOG_WRN("failed to find next file index (err %d)", ret);
+        return ret;
+    }
     return 0;
 }
 
@@ -289,11 +372,13 @@ int record_buffer(const struct audio_block *block) {
         }
         data->last_sync_time_ms = k_uptime_get();
 
-        char file_name[sizeof(RECORD_FILE_PATH_PREFIX) /* includes terminator */
-                       + 10 /* max digits */ + 4 /*.wav*/];
+        char file_name[(sizeof(RECORD_FILE_DIR) - 1) + 1 /* / */ +
+                       (sizeof(data->file_name_prefix) - 1) + 1 /* _ */ +
+                       10 /* max digits */
+                       + 4 /* .wav */ + 1 /* terminator */];
         ret = snprintf(file_name, sizeof(file_name),
-                       RECORD_FILE_PATH_PREFIX "%04" PRIu32 ".wav",
-                       data->file_index);
+                       RECORD_FILE_DIR "/%s_%04" PRIu32 ".wav",
+                       data->file_name_prefix, data->file_index);
         if (ret < 0) {
             goto error;
         } else if (ret >= sizeof(file_name)) {

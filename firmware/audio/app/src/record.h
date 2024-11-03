@@ -10,6 +10,10 @@ extern "C" {
 
 int record_init(void);
 
+int record_set_file_name_prefix(const char *prefix);
+
+int record_card_inserted(void);
+
 int record_start(uint32_t time);
 
 int record_buffer(const struct audio_block *block);

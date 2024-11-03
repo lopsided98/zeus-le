@@ -40,12 +40,11 @@ static int wav_write_u32(struct fs_file_t* fp, uint32_t val) {
 }
 
 static int wav_write_header(struct wav* w, const struct wav_format* fmt) {
+    int ret;
+
     uint16_t bytes_per_sample = DIV_ROUND_UP(fmt->bits_per_sample, 8);
     uint16_t bytes_per_frame = fmt->channels * bytes_per_sample;
     uint32_t byte_rate = fmt->sample_rate * bytes_per_frame;
-
-    int ret = fs_truncate(&w->fp, 0);
-    if (ret < 0) return ret;
 
     w->bytes_per_frame = bytes_per_frame;
     // Limit of data chunk size; make sure it doesn't split a frame
@@ -112,7 +111,7 @@ int wav_open(struct wav* w, const char* name, const struct wav_format* fmt) {
 
     *w = (struct wav){.data_size = 0};
     fs_file_t_init(&w->fp);
-    int ret = fs_open(&w->fp, name, FS_O_WRITE | FS_O_CREATE);
+    int ret = fs_open(&w->fp, name, FS_O_WRITE | FS_O_CREATE | FS_O_TRUNC);
     if (ret < 0) return ret;
 
     ret = wav_write_header(w, fmt);
