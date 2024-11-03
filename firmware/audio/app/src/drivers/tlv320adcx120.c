@@ -36,9 +36,6 @@ LOG_MODULE_REGISTER(tlv320adcx120, CONFIG_AUDIO_CODEC_LOG_LEVEL);
 
 #define CODEC_DEFAULT_DVOL 201
 
-static const struct linear_range analog_gain_range = LINEAR_RANGE_INIT(0, 1, 0, 84);
-static const struct linear_range digital_gain_range = LINEAR_RANGE_INIT(-100 * 2, 1, 1, 255);
-
 struct codec_channel_config {
 	uint8_t channel;
 	bool line_in;
@@ -69,6 +66,9 @@ struct codec_driver_data {
 	bool started;
 };
 
+static const struct linear_range analog_gain_range = LINEAR_RANGE_INIT(0, 1, 0, 84);
+static const struct linear_range digital_gain_range = LINEAR_RANGE_INIT(-100 * 2, 1, 1, 255);
+
 #if (LOG_LEVEL >= LOG_LEVEL_DEBUG)
 static void codec_read_all_regs(const struct device *dev);
 #define CODEC_DUMP_REGS(dev) codec_read_all_regs((dev))
@@ -90,6 +90,23 @@ static int codec_channel_to_index(audio_channel_t channel, uint8_t *channel_num)
 		return -ENOTSUP;
 	}
 	return 0;
+}
+
+static const struct codec_channel_config *codec_get_channel_config(const struct device *dev,
+								   uint8_t channel)
+{
+	const struct codec_driver_config *config = dev->config;
+
+	if (channel < 1 || channel > CODEC_NUM_CHANNELS) {
+		return NULL;
+	}
+
+	for (size_t i = 0; i < config->num_channels; ++i) {
+		if (config->channels[i].channel == channel) {
+			return &config->channels[i];
+		}
+	}
+	return NULL;
 }
 
 static struct codec_channel_data *codec_get_channel_data(const struct device *dev, uint8_t channel)
@@ -290,6 +307,46 @@ static int codec_configure_dai(const struct device *dev, const audio_dai_cfg_t *
 	return codec_write_reg(dev, MST_CFG0_ADDR, val);
 }
 
+static int codec_set_cfg0_analog(const struct device *dev, uint8_t channel, bool line_in,
+				 bool dc_coupled, uint32_t impedance, bool dre)
+{
+	uint8_t val = 0;
+
+	/* Only supported for analog channels */
+	if (channel < 1 || channel > CODEC_NUM_ANALOG_CHANNELS) {
+		return -ENOTSUP;
+	}
+
+	if (line_in) {
+		val |= CH_CFG0_INTYP;
+	}
+	if (dc_coupled) {
+		val |= CH_CFG0_DC;
+	}
+
+	uint8_t imp;
+	switch (impedance) {
+	case 2500:
+		imp = CH_CFG0_IMP_2_5_KOHM;
+		break;
+	case 10000:
+		imp = CH_CFG0_IMP_10_KOHM;
+		break;
+	case 20000:
+		imp = CH_CFG0_IMP_20_KOHM;
+		break;
+	default:
+		return -EINVAL;
+	}
+	val |= FIELD_PREP(CH_CFG0_IMP, imp);
+
+	if (dre) {
+		val |= CH_CFG0_DREEN;
+	}
+
+	return codec_write_reg(dev, CH_CFG0_ADDR(channel), val);
+}
+
 static int codec_configure_input(const struct device *dev)
 {
 	const struct codec_driver_config *const cfg = dev->config;
@@ -304,7 +361,6 @@ static int codec_configure_input(const struct device *dev)
 
 	for (uint8_t i = 0; i < cfg->num_channels; ++i) {
 		const struct codec_channel_config *channel = &cfg->channels[i];
-		uint8_t val = 0;
 
 		if (channel->channel < 1 || channel->channel > CODEC_NUM_CHANNELS) {
 			LOG_ERR("Channel out of range: %u", channel->channel);
@@ -314,30 +370,9 @@ static int codec_configure_input(const struct device *dev)
 		if (channel->channel <= CODEC_NUM_ANALOG_CHANNELS) {
 			/* Only channels 1 and 2 have analog input */
 
-			if (channel->line_in) {
-				val |= CH_CFG0_INTYP;
-			}
-			if (channel->dc_coupled) {
-				val |= CH_CFG0_DC;
-			}
-
-			uint8_t imp;
-			switch (channel->impedance_ohms) {
-			case 2500:
-				imp = CH_CFG0_IMP_2_5_KOHM;
-				break;
-			case 10000:
-				imp = CH_CFG0_IMP_10_KOHM;
-				break;
-			case 20000:
-				imp = CH_CFG0_IMP_20_KOHM;
-				break;
-			default:
-				return -EINVAL;
-			}
-			val |= FIELD_PREP(CH_CFG0_IMP, imp);
-
-			ret = codec_write_reg(dev, CH_CFG0_ADDR(channel->channel), val);
+			ret = codec_set_cfg0_analog(dev, channel->channel, channel->line_in,
+						    channel->dc_coupled, channel->impedance_ohms,
+						    false);
 			if (ret < 0) {
 				return ret;
 			}
@@ -404,6 +439,9 @@ static int codec_set_analog_gain(const struct device *dev, uint8_t channel, int3
 static int codec_get_digital_gain(const struct device *dev, uint8_t channel, int32_t *gain)
 {
 	struct codec_channel_data *channel_data = codec_get_channel_data(dev, channel);
+	if (!channel_data) {
+		return -EINVAL;
+	}
 
 	return linear_range_get_value(&digital_gain_range, channel_data->dvol, gain);
 }
@@ -440,6 +478,9 @@ static int codec_set_digital_gain(const struct device *dev, uint8_t channel, int
 static int codec_get_mute(const struct device *dev, uint8_t channel, bool *mute)
 {
 	struct codec_channel_data *channel_data = codec_get_channel_data(dev, channel);
+	if (!channel_data) {
+		return -EINVAL;
+	}
 
 	*mute = channel_data->mute;
 	return 0;
@@ -471,6 +512,65 @@ static int codec_set_mute(const struct device *dev, uint8_t channel, bool mute)
 
 	channel_data->mute = mute;
 	return 0;
+}
+
+static int codec_get_impedance(const struct device *dev, uint8_t channel, uint32_t *impedance)
+{
+	int ret;
+	uint8_t val;
+
+	if (channel < 1 || channel > CODEC_NUM_CHANNELS) {
+		return -EINVAL;
+	}
+
+	/* Only supported for analog channels */
+	if (channel > CODEC_NUM_ANALOG_CHANNELS) {
+		return -ENOTSUP;
+	}
+
+	ret = codec_read_reg(dev, CH_CFG0_ADDR(channel), &val);
+	if (ret) {
+		return ret;
+	}
+
+	switch (FIELD_GET(CH_CFG0_IMP, val)) {
+	case CH_CFG0_IMP_2_5_KOHM:
+		*impedance = 2500;
+		break;
+	case CH_CFG0_IMP_10_KOHM:
+		*impedance = 10000;
+		break;
+	case CH_CFG0_IMP_20_KOHM:
+		*impedance = 20000;
+		break;
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
+static int codec_set_impedance(const struct device *dev, uint8_t channel, uint32_t impedance)
+{
+	const struct codec_channel_config *channel_config = codec_get_channel_config(dev, channel);
+	bool line_in = false;
+	bool dc_coupled = false;
+
+	if (channel < 1 || channel > CODEC_NUM_CHANNELS) {
+		return -EINVAL;
+	}
+
+	/* Only supported for analog channels */
+	if (channel > CODEC_NUM_ANALOG_CHANNELS) {
+		return -ENOTSUP;
+	}
+
+	if (channel_config) {
+		/* Take configuration from device tree if available */
+		line_in = channel_config->line_in;
+		dc_coupled = channel_config->dc_coupled;
+	}
+
+	return codec_set_cfg0_analog(dev, channel, line_in, dc_coupled, impedance, false);
 }
 
 static int codec_initialize(const struct device *dev)
@@ -614,6 +714,9 @@ static int codec_get_property(const struct device *dev, enum input_codec_propert
 	case INPUT_CODEC_PROPERTY_MUTE:
 		return codec_get_mute(dev, channel_num, &val->mute);
 
+	case INPUT_CODEC_PROPERTY_IMPEDANCE:
+		return codec_get_impedance(dev, channel_num, &val->impedance);
+
 	default:
 		return -ENOTSUP;
 	}
@@ -639,6 +742,9 @@ static int codec_set_property(const struct device *dev, enum input_codec_propert
 
 	case INPUT_CODEC_PROPERTY_MUTE:
 		return codec_set_mute(dev, channel_num, val.mute);
+
+	case INPUT_CODEC_PROPERTY_IMPEDANCE:
+		return codec_set_impedance(dev, channel_num, val.impedance);
 
 	default:
 		return -ENOTSUP;

@@ -393,6 +393,21 @@ static int audio_settings_load_cb(const char *key, size_t len,
             if (ret) {
                 LOG_WRN("failed to apply digital gain (err %d)", ret);
             }
+        } else if (strcmp(next, "imp") == 0) {
+            uint32_t impedance_ohms;
+            ret = read_cb(cb_arg, &impedance_ohms, sizeof(impedance_ohms));
+            if (ret != sizeof(impedance_ohms)) {
+                LOG_WRN("failed to read setting: %s (read %d)", key, ret);
+            }
+
+            ret = input_codec_set_property(
+                config->codec, INPUT_CODEC_PROPERTY_IMPEDANCE, channel,
+                (union input_codec_property_value){
+                    .impedance = impedance_ohms,
+                });
+            if (ret) {
+                LOG_WRN("failed to apply impedance (err %d)", ret);
+            }
         } else {
             LOG_WRN("unknown channel setting: %s", key);
         }
@@ -604,4 +619,43 @@ int audio_set_digital_gain(audio_channel_t channel, int32_t gain) {
     if (ret) return ret;
 
     return audio_settings_channel_save(channel, "d_gain", &gain, sizeof(gain));
+}
+
+int audio_get_impedance(audio_channel_t channel, uint32_t *impedance_ohms) {
+    const struct audio_config *config = &audio_config;
+    struct audio_data *data = &audio_data;
+    union input_codec_property_value prop;
+    int ret;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (!data->init) return -EINVAL;
+
+    ret = input_codec_get_property(
+        config->codec, INPUT_CODEC_PROPERTY_IMPEDANCE, channel, &prop);
+    if (ret) return ret;
+
+    *impedance_ohms = prop.impedance;
+    return 0;
+}
+
+int audio_set_impedance(audio_channel_t channel, uint32_t impedance_ohms) {
+    const struct audio_config *config = &audio_config;
+    struct audio_data *data = &audio_data;
+    int ret;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (!data->init) return -EINVAL;
+
+    ret = input_codec_set_property(config->codec,
+                                   INPUT_CODEC_PROPERTY_IMPEDANCE, channel,
+                                   (union input_codec_property_value){
+                                       .impedance = impedance_ohms,
+                                   });
+    if (ret) return ret;
+
+    ret = input_codec_apply_properties(config->codec);
+    if (ret) return ret;
+
+    return audio_settings_channel_save(channel, "imp", &impedance_ohms,
+                                       sizeof(impedance_ohms));
 }

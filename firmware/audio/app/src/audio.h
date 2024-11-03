@@ -32,19 +32,26 @@ int audio_stop(void);
 /// successful, or -1 if the name does not match any supported channel.
 int audio_channel_from_string(const char *str, audio_channel_t *channel);
 
-/// Get the ADC analog gain for the specified channel, in units 0f 0.5dB.
+/// Get the ADC analog gain for the specified channel, in units of 0.5dB.
 int audio_get_analog_gain(audio_channel_t channel, int32_t *gain);
 
 /// Set and save the ADC analog gain for the specified channel, in units of
 /// 0.5dB. The configured gain persists across reboots.
 int audio_set_analog_gain(audio_channel_t channel, int32_t gain);
 
-/// Get the ADC digital gain for the specified channel, in units 0f 0.5dB.
+/// Get the ADC digital gain for the specified channel, in units of 0.5dB.
 int audio_get_digital_gain(audio_channel_t channel, int32_t *gain);
 
 /// Set and save the ADC digital gain for the specified channel, in units of
 /// 0.5dB. The configured gain persists across reboots.
 int audio_set_digital_gain(audio_channel_t channel, int32_t gain);
+
+/// Get the input impedance for the specified channel, in units of ohms.
+int audio_get_impedance(audio_channel_t channel, uint32_t *impedance_ohms);
+
+/// Set and save the input impedance for the specified channel, in units of
+/// ohms. The configured impedance persists across reboots.
+int audio_set_impedance(audio_channel_t channel, uint32_t impedance_ohms);
 
 #ifdef __cplusplus
 }

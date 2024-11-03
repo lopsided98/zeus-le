@@ -14,6 +14,7 @@ enum input_codec_property {
 	INPUT_CODEC_PROPERTY_ANALOG_GAIN,  /**< Input analog gain */
 	INPUT_CODEC_PROPERTY_DIGITAL_GAIN, /**< Input digital gain */
 	INPUT_CODEC_PROPERTY_MUTE,         /**< Input mute/unmute */
+	INPUT_CODEC_PROPERTY_IMPEDANCE,    /**< Input impedance */
 };
 
 /**
@@ -31,6 +32,7 @@ union input_codec_property_value {
 	enum input_codec_source source; /**< Input source */
 	int32_t gain;                   /**< Gain in 0.5dB resolution */
 	bool mute;                      /**< Mute if @a true, unmute if @a false */
+	uint32_t impedance;             /**< Impedance in ohms */
 };
 
 struct input_codec_api {
