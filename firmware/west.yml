@@ -11,7 +11,7 @@ manifest:
   projects:
     - name: zephyr
       remote: lopsided98
-      revision: a6f4d4ef93b7f92cc87fa1b70df341e1b9e78939
+      revision: 6bf887504555a4e5860d6d426100d696760fe9f3
       import:
         name-allowlist:
           - babblesim_base

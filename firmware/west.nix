@@ -15,9 +15,9 @@ nativeBuildInputs = [ lndir ];
         ${lib.escapeShellArg (
         fetchgit {
             url = "https://github.com/lopsided98/zephyr";
-            rev = "a6f4d4ef93b7f92cc87fa1b70df341e1b9e78939";
+            rev = "6bf887504555a4e5860d6d426100d696760fe9f3";
             branchName = "manifest-rev";
-            hash = "sha256-mqOTJTYV113xof7bmb1RAsbfxF2R9uWF9FlZ3iJTexo=";
+            hash = "sha256-RHHhoiJdaN1giaBncGs2/0WFyDDUoZTslN/BMi7iJqk=";
         })} \
         "$out"/'zephyr'
 
