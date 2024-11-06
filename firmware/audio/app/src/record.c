@@ -349,6 +349,10 @@ int record_buffer(const struct audio_block *block) {
             goto file_error;
         } else if (ret != split_offset) {
             // File exceeded max size, split into a new file
+            // FIXME: there is an extremely rare edge case here where a start
+            // command could be triggered during the same buffer, and we would
+            // need to split the buffer across three files to provide completely
+            // correct behavior.
             new_file = true;
             split_offset = ret;
         }

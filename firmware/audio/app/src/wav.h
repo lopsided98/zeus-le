@@ -24,7 +24,7 @@ int wav_open(struct wav* w, const char* name, const struct wav_format* fmt);
 /// Write data to a WAV file. Must have been initialized with wav_init(). The
 /// file length in the header is not updated, and wav_update_size() must be
 /// called periodically to keep it up to date.
-int wav_write(struct wav* w, const uint8_t* buf, size_t len);
+int wav_write(struct wav* w, const uint8_t buf[], uint32_t len);
 
 /// Update the file size fields in the WAV header.
 int wav_update_size(struct wav* w);

@@ -123,11 +123,9 @@ int wav_open(struct wav* w, const char* name, const struct wav_format* fmt) {
     return 0;
 }
 
-int wav_write(struct wav* w, const uint8_t* buf, size_t len) {
-    bool max_size = false;
+int wav_write(struct wav* w, const uint8_t buf[], uint32_t len) {
     if (w->data_size + len > w->max_data_size) {
         len = w->max_data_size - w->data_size;
-        max_size = true;
     }
     int ret = fs_write(&w->fp, buf, len);
     if (ret < 0) {
