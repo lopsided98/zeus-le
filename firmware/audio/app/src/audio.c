@@ -42,7 +42,7 @@ struct audio_block_time {
 K_MEM_SLAB_DEFINE_STATIC(audio_slab, AUDIO_BLOCK_SIZE, AUDIO_BLOCK_COUNT, 4);
 
 static K_SEM_DEFINE(audio_started, 0, 1);
-static K_THREAD_STACK_DEFINE(audio_thread_stack, 1536);
+static K_THREAD_STACK_DEFINE(audio_thread_stack, 2048);
 
 #define AUDIO_SYNC_ENABLED IS_ENABLED(CONFIG_I2S_NRFX)
 
