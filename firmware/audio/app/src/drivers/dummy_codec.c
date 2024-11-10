@@ -21,11 +21,18 @@ static int codec_start_input(const struct device *dev) { return 0; }
 
 static int codec_stop_input(const struct device *dev) { return 0; }
 
+static int codec_get_property(const struct device *dev,
+                              enum input_codec_property property,
+                              audio_channel_t channel,
+                              union input_codec_property_value *val) {
+    return -ENOTSUP;
+}
+
 static int codec_set_property(const struct device *dev,
                               enum input_codec_property property,
                               audio_channel_t channel,
                               union input_codec_property_value val) {
-    return 0;
+    return -ENOTSUP;
 }
 
 static int codec_apply_properties(const struct device *dev) {
@@ -37,6 +44,7 @@ static const struct input_codec_api codec_driver_api = {
     .configure = codec_configure,
     .start_input = codec_start_input,
     .stop_input = codec_stop_input,
+    .get_property = codec_get_property,
     .set_property = codec_set_property,
     .apply_properties = codec_apply_properties,
 };
