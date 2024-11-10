@@ -10,17 +10,25 @@
 
 LOG_MODULE_REGISTER(sd_card);
 
+#define HAS_SDHC DT_NODE_EXISTS(DT_NODELABEL(sdhc0))
+
+#if HAS_SDHC
 static void sd_card_work_handler(struct k_work* work);
 static K_WORK_DELAYABLE_DEFINE(sd_card_work, sd_card_work_handler);
+#endif
 
 static const struct sd_card_config {
     const char* name;
+#if HAS_SDHC
     const struct device* sd;
     struct k_work_delayable* work;
+#endif
 } sd_card_config = {
     .name = "SD",
+#if HAS_SDHC
     .sd = DEVICE_DT_GET(DT_NODELABEL(sdhc0)),
     .work = &sd_card_work,
+#endif
 };
 
 static struct sd_card_data {
@@ -108,6 +116,7 @@ static int sd_card_inserted(void) {
     return 0;
 }
 
+#if HAS_SDHC
 static int sd_card_removed(void) {
     const struct sd_card_config* config = &sd_card_config;
     struct sd_card_data* data = &sd_card;
@@ -155,6 +164,7 @@ static void sd_card_interrupt(const struct device* dev, int reason,
     // TODO: probably shouldn't run this on the global workqueue
     k_work_reschedule(config->work, K_MSEC(100));
 }
+#endif
 
 int sd_card_init(void) {
     const struct sd_card_config* config = &sd_card_config;
@@ -162,9 +172,15 @@ int sd_card_init(void) {
     int ret;
     if (data->init) return -EALREADY;
 
+#if HAS_SDHC
     ret = sdhc_enable_interrupt(config->sd, sd_card_interrupt,
                                 SDHC_INT_INSERTED | SDHC_INT_REMOVED, NULL);
+    if (ret) return ret;
     k_work_schedule(config->work, K_NO_WAIT);
+#else
+    ret = sd_card_inserted();
+    if (ret) return ret;
+#endif
 
     data->init = true;
     return 0;

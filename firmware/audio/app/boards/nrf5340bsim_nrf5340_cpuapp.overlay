@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <dt-bindings/led/led.h>
+#include <zeus/dt-bindings/regulator/bq2515x.h>
+
 / {
 	chosen {
 		zephyr,console = &stdio;
@@ -18,6 +21,96 @@
 		 * DTS binding
 		 */
 		current-speed = <0>;
+	};
+
+	gpio0: gpio0_emul {	
+		status = "okay";
+		compatible = "zephyr,gpio-emul";
+		rising-edge;
+		falling-edge;
+		high-level;
+		low-level;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio1: gpio1_emul {	
+		status = "okay";
+		compatible = "zephyr,gpio-emul";
+		rising-edge;
+		falling-edge;
+		high-level;
+		low-level;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		button: button {
+			label = "Button";
+			gpios = <&gpio1 14 GPIO_ACTIVE_LOW>;
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+
+	i2c0: i2c@100 {
+		status = "okay";
+		compatible = "zephyr,i2c-emul-controller";
+		clock-frequency = <I2C_BITRATE_FAST>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		#forward-cells = <1>;
+		reg = <0x100 4>;
+
+		rgb_led: lp5810@50 {
+			compatible = "ti,lp5810";
+			reg = <0x50>;
+
+			max-current-microamp = <25500>;
+			lsd-threshold-percent = <65>;
+
+			rgb-led {
+				label = "RGB LED";
+				index = <0>;
+				color-mapping = <LED_COLOR_ID_BLUE LED_COLOR_ID_GREEN LED_COLOR_ID_RED>;
+				manual-current-microamp = <6000 7000 9800>;
+				auto-current-microamp = <6000 7000 9800>;
+				phase-align = "forward", "middle", "backward";
+			};
+		};
+
+		charger_mfd: bq25150@6b {
+			compatible = "ti,bq2515x";
+			reg = <0x6b>;
+			lp-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
+			int-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
+
+			pg-mode = "mr";
+
+			charger: charger {
+				compatible = "ti,bq2515x-charger";
+				ce-gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
+
+				constant-charge-current-max-microamp = <300000>;
+				input-current-max-milliamp = <500>;
+			};
+
+			charger_adc: adc {
+				compatible = "ti,bq2515x-adc";
+				read-rate = "1sec";
+			};
+
+			charger_regulators: regulators {
+				compatible = "ti,bq2515x-regulator";
+
+				vdda: ldo {
+					regulator-initial-mode = <BQ2515X_REGULATOR_MODE_LDO>;
+					regulator-min-microvolt = <3100000>;
+					regulator-max-microvolt = <3500000>;
+				};
+			};
+		};
 	};
 
 	sim_flash {

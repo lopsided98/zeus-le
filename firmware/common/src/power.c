@@ -58,9 +58,11 @@ static void power_off(void) {
     if (err) {
         LOG_WRN("failed to enter ship mode (err %d)", err);
     }
+#if IS_ENABLED(CONFIG_POWEROFF)
     // If VIN is connected, ship mode won't activate, so shutdown the processor
     // instead
     sys_poweroff();
+#endif
 }
 
 /// Perform an orderly shutdown and power off
@@ -151,12 +153,16 @@ int power_init(void) {
     if (ret) return ret;
 
     uint32_t reset;
+#if IS_ENABLED(CONFIG_HWINFO)
     ret = hwinfo_get_reset_cause(&reset);
     if (ret) {
         LOG_ERR("failed to get reset cause (err %d)", ret);
         return ret;
     }
     hwinfo_clear_reset_cause();
+#else
+    reset = RESET_SOFTWARE;
+#endif
 
     LOG_DBG("reset: 0x%08" PRIx32, reset);
 

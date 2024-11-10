@@ -305,7 +305,8 @@ int button_init(void) {
 
 WIFI_POWER_OFF_REGISTER();
 
-int cpu_clock_128_mhz(void) {
+#if IS_ENABLED(CONFIG_SOC_SERIES_NRF53X)
+static int cpu_clock_128_mhz(void) {
     nrfx_err_t err =
         nrfx_clock_divider_set(NRF_CLOCK_DOMAIN_HFCLK, NRF_CLOCK_HFCLK_DIV_1);
     if (err != NRFX_SUCCESS) {
@@ -314,6 +315,7 @@ int cpu_clock_128_mhz(void) {
     }
     return 0;
 }
+#endif
 
 int main(void) {
     int ret;
@@ -323,7 +325,9 @@ int main(void) {
         LOG_ERR("power init failed (err %d)", ret);
     }
 
+#if IS_ENABLED(CONFIG_SOC_SERIES_NRF53X)
     cpu_clock_128_mhz();
+#endif
 
     ret = led_boot();
     if (ret) {

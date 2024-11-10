@@ -59,7 +59,7 @@ static K_THREAD_STACK_DEFINE(audio_thread_stack, 2048);
 #define AUDIO_HFCLKAUDIO_FREQ_NOMINAL \
     DT_PROP(DT_NODELABEL(clock), hfclkaudio_frequency)
 #else
-#define AUDIO_HFCLKAUDIO_FREQ_NOMINAL 11289600
+#define AUDIO_HFCLKAUDIO_FREQ_NOMINAL 12288000
 #endif
 
 #define AUDIO_HFCLKAUDIO_FREQ_REG_MIN 36834
@@ -480,7 +480,7 @@ int audio_init() {
         qu32_32_from_int((uint64_t)ZEUS_TIME_NOMINAL_FREQ * frames_per_block /
                          cfg.dai_cfg.i2s.frame_clk_freq);
     __ASSERT(data->block_duration * cfg.dai_cfg.i2s.frame_clk_freq ==
-                 (uint64_t)ZEUS_TIME_NOMINAL_FREQ * frames_per_block,
+                 qu32_32_from_int(ZEUS_TIME_NOMINAL_FREQ * frames_per_block),
              "Block duration not a whole number of timer ticks");
 
     freq_est_init(&data->freq_est, &config->freq_est_cfg);
