@@ -8,7 +8,11 @@
 extern "C" {
 #endif
 
+#define RECORD_FILE_NAME_PREFIX_LEN 32
+
 int record_init(void);
+
+int record_get_file_name_prefix(char *prefix, size_t len);
 
 int record_set_file_name_prefix(const char *prefix);
 

@@ -44,7 +44,7 @@ static struct record_data {
     struct k_thread close_thread;
 
     bool init;
-    char file_name_prefix[32];
+    char file_name_prefix[RECORD_FILE_NAME_PREFIX_LEN];
     /// Current open file
     struct wav file;
     /// Next unused file index
@@ -212,6 +212,22 @@ int record_init(void) {
     }
 
     data->init = true;
+    return 0;
+}
+
+int record_get_file_name_prefix(char *prefix, size_t len) {
+    const struct record_config *config = &record_config;
+    struct record_data *data = &record_data;
+
+    K_MUTEX_AUTO_LOCK(config->mutex);
+    if (!data->init) return -EINVAL;
+
+    size_t prefix_len = strlen(data->file_name_prefix);
+    if (prefix_len >= len) {
+        return -EINVAL;
+    }
+    memcpy(prefix, data->file_name_prefix, prefix_len + 1);
+
     return 0;
 }
 

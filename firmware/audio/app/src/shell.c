@@ -189,6 +189,13 @@ static int channel_status(const struct shell *sh, audio_channel_t channel) {
 static int cmd_status(const struct shell *sh, size_t argc, char **argv) {
     int ret;
 
+    char prefix[RECORD_FILE_NAME_PREFIX_LEN];
+    ret = record_get_file_name_prefix(prefix, sizeof(prefix));
+    if (ret != 0) {
+        strcpy(prefix, "<error>");
+    }
+    shell_print(sh, "File Prefix: %s", prefix);
+
     shell_print(sh, "Left");
     ret = channel_status(sh, AUDIO_CHANNEL_FRONT_LEFT);
     if (ret) return ret;
