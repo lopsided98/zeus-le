@@ -3611,12 +3611,8 @@
 		(uuid "063053db-8620-418b-89ec-33f0354bf275")
 	)
 	(no_connect
-		(at 138.43 104.14)
-		(uuid "2c775e2e-aff4-42b7-8f8c-7a392f7b2b1b")
-	)
-	(no_connect
-		(at 130.81 104.14)
-		(uuid "2fbb9bc3-7299-4fe0-b667-a221c764d087")
+		(at 140.97 104.14)
+		(uuid "436e437d-dbb8-4627-81a3-9e3581a258db")
 	)
 	(no_connect
 		(at 161.29 104.14)
@@ -3928,6 +3924,16 @@
 	)
 	(wire
 		(pts
+			(xy 130.81 116.84) (xy 130.81 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "272d0d3a-b927-40e1-9242-74507daa3905")
+	)
+	(wire
+		(pts
 			(xy 60.96 46.99) (xy 50.8 46.99)
 		)
 		(stroke
@@ -3978,7 +3984,7 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 113.03) (xy 148.59 113.03)
+			(xy 152.4 124.46) (xy 148.59 124.46)
 		)
 		(stroke
 			(width 0)
@@ -4018,6 +4024,16 @@
 	)
 	(wire
 		(pts
+			(xy 130.81 104.14) (xy 130.81 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3b1aace8-d16c-4a35-9cfc-3be395a1913f")
+	)
+	(wire
+		(pts
 			(xy 104.14 133.35) (xy 97.79 133.35)
 		)
 		(stroke
@@ -4045,6 +4061,16 @@
 			(type default)
 		)
 		(uuid "40b228eb-b641-4304-a020-125d08207f35")
+	)
+	(wire
+		(pts
+			(xy 138.43 104.14) (xy 138.43 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "449d48f6-9d57-4b39-b7bb-2b5392ed20f3")
 	)
 	(wire
 		(pts
@@ -4138,7 +4164,7 @@
 	)
 	(wire
 		(pts
-			(xy 148.59 113.03) (xy 148.59 104.14)
+			(xy 148.59 124.46) (xy 148.59 104.14)
 		)
 		(stroke
 			(width 0)
@@ -4155,6 +4181,16 @@
 			(type default)
 		)
 		(uuid "5109391d-3217-43c0-8af6-62fc8049c723")
+	)
+	(wire
+		(pts
+			(xy 139.7 107.95) (xy 139.7 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5163905b-9a29-497b-ae8e-d7f8fbd1ea78")
 	)
 	(wire
 		(pts
@@ -4295,6 +4331,16 @@
 			(type default)
 		)
 		(uuid "767221e6-41bb-4f23-82a5-d8c548bb1067")
+	)
+	(wire
+		(pts
+			(xy 138.43 107.95) (xy 139.7 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "784d96ea-0e33-4b8b-b66f-ee90d361cfb6")
 	)
 	(wire
 		(pts
@@ -4645,6 +4691,16 @@
 			(type default)
 		)
 		(uuid "e4565449-d6c1-4598-b3ba-a465e5225bec")
+	)
+	(wire
+		(pts
+			(xy 139.7 116.84) (xy 139.7 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e5d5922f-4ebe-45a9-8fe4-011da7665c6f")
 	)
 	(wire
 		(pts
@@ -5133,13 +5189,13 @@
 	)
 	(hierarchical_label "VDDD_VSEL"
 		(shape input)
-		(at 144.78 113.03 180)
+		(at 152.4 124.46 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left)
 		)
 		(uuid "5683c290-c7be-4d71-a4a1-f705fa7c833b")
 	)
@@ -5409,6 +5465,138 @@
 			(project "zeus-le"
 				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/f708f289-4e33-4862-a301-b54fefd2b8cc"
 					(reference "#PWR066")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 139.7 119.38 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3a55ae5e-44ab-407d-ae58-960f42b5c161")
+		(property "Reference" "#PWR085"
+			(at 139.7 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 139.7 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 139.7 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 139.7 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 139.7 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a9da2cb2-0135-43bd-baec-f517bf0901b7")
+		)
+		(instances
+			(project "zeus-le"
+				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/f708f289-4e33-4862-a301-b54fefd2b8cc"
+					(reference "#PWR085")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 130.81 119.38 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "41d7c2df-aed2-4f8c-862e-b7e561563184")
+		(property "Reference" "#PWR083"
+			(at 130.81 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 130.81 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 130.81 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 130.81 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 130.81 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2cdb01f9-81bf-41b9-87e7-26a63e251776")
+		)
+		(instances
+			(project "zeus-le"
+				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/f708f289-4e33-4862-a301-b54fefd2b8cc"
+					(reference "#PWR083")
 					(unit 1)
 				)
 			)
@@ -5951,6 +6139,85 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
+		(at 130.81 114.3 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "633dbcfc-7440-4835-b482-9779e1c9b0c8")
+		(property "Reference" "R20"
+			(at 133.35 113.0299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100k"
+			(at 133.35 115.5699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 130.81 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 130.81 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, I2C pull-up"
+			(at 130.81 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "RC0402FR-131K21L"
+			(at 130.81 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "75683715-96da-4ced-95eb-1c6f5f1992e2")
+		)
+		(pin "2"
+			(uuid "ce0e83ce-eebb-495c-b0d2-23ddd5273f8a")
+		)
+		(instances
+			(project "zeus-le"
+				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/f708f289-4e33-4862-a301-b54fefd2b8cc"
+					(reference "R20")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small_US")
 		(at 60.96 52.07 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6469,6 +6736,84 @@
 			(project "zeus-le"
 				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/f708f289-4e33-4862-a301-b54fefd2b8cc"
 					(reference "#PWR057")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small_US")
+		(at 139.7 114.3 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e3e78dfb-d3dd-4934-bc98-ee30ef63a245")
+		(property "Reference" "R21"
+			(at 142.24 113.0299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100k"
+			(at 142.24 115.5699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 139.7 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 139.7 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, I2C pull-up"
+			(at 139.7 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "manf#" "RC0402FR-131K21L"
+			(at 139.7 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ad037bef-5a10-4ae6-abd2-5838e0256904")
+		)
+		(pin "2"
+			(uuid "0589fb62-8c9a-48b7-9ab2-d92d597984a2")
+		)
+		(instances
+			(project "zeus-le"
+				(path "/45d4abf7-8cf8-470c-bd26-f127279c8d1b/f708f289-4e33-4862-a301-b54fefd2b8cc"
+					(reference "R21")
 					(unit 1)
 				)
 			)
