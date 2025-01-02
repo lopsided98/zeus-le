@@ -1,0 +1,8 @@
+~*
+fp-info-cache
+*.bak
+*-backups/
+*.raw
+*.net
+*.log
+.~lock*

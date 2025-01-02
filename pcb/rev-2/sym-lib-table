@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "zeus-le")(type "KiCad")(uri "${KIPRJMOD}/../zeus-le.kicad_sym")(options "")(descr ""))
+)

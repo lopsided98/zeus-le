@@ -4,8 +4,7 @@
 	(generator_version "8.0")
 	(layer "F.Cu")
 	(property "Reference" "REF**"
-		(at 0 -1.5 0)
-		(unlocked yes)
+		(at 0 -2 0)
 		(layer "F.SilkS")
 		(uuid "e5525d27-f1f6-4770-b0dd-d9376afbcf33")
 		(effects
@@ -17,7 +16,6 @@
 	)
 	(property "Value" "LED_QBLP615-RGB-3053"
 		(at 0 3.4 0)
-		(unlocked yes)
 		(layer "F.Fab")
 		(uuid "ecf44c79-fe1e-4fe5-b2ac-1c9bfc2f5f6f")
 		(effects
@@ -150,7 +148,6 @@
 	)
 	(fp_text user "${REFERENCE}"
 		(at -0.3 1.4 0)
-		(unlocked yes)
 		(layer "F.Fab")
 		(uuid "04fb55b9-d7b1-4a22-93fb-f9a7f0086a7c")
 		(effects
