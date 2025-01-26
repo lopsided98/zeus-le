@@ -4283,7 +4283,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.cde.com/resources/catalogs/FCA.pdf"
+		(property "Datasheet" "https://www.we-online.com/components/products/datasheet/885012208093.pdf"
 			(at 63.5 64.77 0)
 			(effects
 				(font
@@ -4292,7 +4292,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Film Capacitor 12V 10V Acrylic, Metallized 1206 (3216 Metric)"
+		(property "Description" "1 µF ±10% 50V Ceramic Capacitor X7R"
 			(at 63.5 64.77 0)
 			(effects
 				(font
@@ -4301,7 +4301,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "FCA1206A105M-H3"
+		(property "manf#" "885012208093"
 			(at 63.5 64.77 90)
 			(effects
 				(font
@@ -4915,7 +4915,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.cde.com/resources/catalogs/FCA.pdf"
+		(property "Datasheet" "https://www.we-online.com/components/products/datasheet/885012208093.pdf"
 			(at 63.5 76.2 0)
 			(effects
 				(font
@@ -4924,7 +4924,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Film Capacitor 12V 10V Acrylic, Metallized 1206 (3216 Metric)"
+		(property "Description" "1 µF ±10% 50V Ceramic Capacitor X7R"
 			(at 63.5 76.2 0)
 			(effects
 				(font
@@ -4933,7 +4933,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "FCA1206A105M-H3"
+		(property "manf#" "885012208093"
 			(at 63.5 76.2 90)
 			(effects
 				(font
@@ -5467,7 +5467,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.cde.com/resources/catalogs/FCA.pdf"
+		(property "Datasheet" "https://www.we-online.com/components/products/datasheet/885012208093.pdf"
 			(at 63.5 88.9 0)
 			(effects
 				(font
@@ -5476,7 +5476,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Film Capacitor 12V 10V Acrylic, Metallized 1206 (3216 Metric)"
+		(property "Description" "1 µF ±10% 50V Ceramic Capacitor X7R"
 			(at 63.5 88.9 0)
 			(effects
 				(font
@@ -5485,7 +5485,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "FCA1206A105M-H3"
+		(property "manf#" "885012208093"
 			(at 63.5 88.9 90)
 			(effects
 				(font
@@ -5755,7 +5755,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.cde.com/resources/catalogs/FCA.pdf"
+		(property "Datasheet" "https://www.we-online.com/components/products/datasheet/885012208093.pdf"
 			(at 63.5 101.6 0)
 			(effects
 				(font
@@ -5764,7 +5764,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Film Capacitor 12V 10V Acrylic, Metallized 1206 (3216 Metric)"
+		(property "Description" "1 µF ±10% 50V Ceramic Capacitor X7R"
 			(at 63.5 101.6 0)
 			(effects
 				(font
@@ -5773,7 +5773,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "FCA1206A105M-H3"
+		(property "manf#" "885012208093"
 			(at 63.5 101.6 90)
 			(effects
 				(font

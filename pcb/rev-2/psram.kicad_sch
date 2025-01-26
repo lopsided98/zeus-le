@@ -762,7 +762,7 @@
 		(uuid "e1c18cc7-33ae-4b8b-a060-80db17836e68")
 	)
 	(bus_entry
-		(at 121.92 82.55)
+		(at 124.46 82.55)
 		(size -2.54 -2.54)
 		(stroke
 			(width 0)
@@ -771,7 +771,7 @@
 		(uuid "069de74d-7720-47ae-9c2b-2b4a30870648")
 	)
 	(bus_entry
-		(at 121.92 92.71)
+		(at 124.46 92.71)
 		(size -2.54 -2.54)
 		(stroke
 			(width 0)
@@ -780,7 +780,7 @@
 		(uuid "39ded67b-3317-4adb-a76a-f543602c5a9a")
 	)
 	(bus_entry
-		(at 121.92 80.01)
+		(at 124.46 80.01)
 		(size -2.54 -2.54)
 		(stroke
 			(width 0)
@@ -789,7 +789,7 @@
 		(uuid "7d3ba36b-fe2a-4c29-b775-a6ec227db2b7")
 	)
 	(bus_entry
-		(at 121.92 90.17)
+		(at 124.46 90.17)
 		(size -2.54 -2.54)
 		(stroke
 			(width 0)
@@ -819,7 +819,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 82.55) (xy 173.99 82.55)
+			(xy 124.46 82.55) (xy 173.99 82.55)
 		)
 		(stroke
 			(width 0)
@@ -839,7 +839,7 @@
 	)
 	(bus
 		(pts
-			(xy 119.38 77.47) (xy 116.84 77.47)
+			(xy 121.92 77.47) (xy 119.38 77.47)
 		)
 		(stroke
 			(width 0)
@@ -859,7 +859,7 @@
 	)
 	(bus
 		(pts
-			(xy 119.38 80.01) (xy 119.38 77.47)
+			(xy 121.92 80.01) (xy 121.92 77.47)
 		)
 		(stroke
 			(width 0)
@@ -899,7 +899,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 92.71) (xy 170.18 92.71)
+			(xy 124.46 92.71) (xy 170.18 92.71)
 		)
 		(stroke
 			(width 0)
@@ -939,7 +939,7 @@
 	)
 	(bus
 		(pts
-			(xy 119.38 87.63) (xy 119.38 90.17)
+			(xy 121.92 87.63) (xy 121.92 90.17)
 		)
 		(stroke
 			(width 0)
@@ -989,7 +989,7 @@
 	)
 	(bus
 		(pts
-			(xy 119.38 87.63) (xy 119.38 80.01)
+			(xy 121.92 87.63) (xy 121.92 80.01)
 		)
 		(stroke
 			(width 0)
@@ -1049,7 +1049,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 90.17) (xy 173.99 90.17)
+			(xy 124.46 90.17) (xy 173.99 90.17)
 		)
 		(stroke
 			(width 0)
@@ -1069,7 +1069,7 @@
 	)
 	(wire
 		(pts
-			(xy 121.92 80.01) (xy 152.4 80.01)
+			(xy 124.46 80.01) (xy 152.4 80.01)
 		)
 		(stroke
 			(width 0)
@@ -1128,7 +1128,7 @@
 		(uuid "fc8eafcd-a6c9-491a-9ccb-6d18f5ecdeb0")
 	)
 	(label "SPI.MISO"
-		(at 121.92 92.71 0)
+		(at 124.46 92.71 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1139,7 +1139,7 @@
 		(uuid "0c8da95f-a5bc-428d-be6b-f6faf456d83a")
 	)
 	(label "SPI.MOSI"
-		(at 121.92 90.17 0)
+		(at 124.46 90.17 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1150,7 +1150,7 @@
 		(uuid "6c8515c6-c04d-4f75-8547-b861dd43b9ba")
 	)
 	(label "SPI.SCK"
-		(at 121.92 82.55 0)
+		(at 124.46 82.55 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1161,7 +1161,7 @@
 		(uuid "73369b06-1f69-40e7-92db-3fd82a53b96c")
 	)
 	(label "SPI.~{CS}"
-		(at 121.92 80.01 0)
+		(at 124.46 80.01 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1173,7 +1173,7 @@
 	)
 	(hierarchical_label "SPI{~{CS}, SCK, MOSI, MISO}"
 		(shape bidirectional)
-		(at 116.84 77.47 180)
+		(at 119.38 77.47 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
