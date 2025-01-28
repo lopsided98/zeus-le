@@ -4,6 +4,10 @@
 	(generator_version "8.0")
 	(uuid "45d4abf7-8cf8-470c-bd26-f127279c8d1b")
 	(paper "A4")
+	(title_block
+		(title "Top Level Design")
+		(rev "2")
+	)
 	(lib_symbols
 		(symbol "power:GND"
 			(power)
@@ -212,7 +216,7 @@
 	)
 	(wire
 		(pts
-			(xy 66.04 116.84) (xy 66.04 115.57)
+			(xy 48.26 116.84) (xy 48.26 115.57)
 		)
 		(stroke
 			(width 0)
@@ -252,13 +256,13 @@
 	)
 	(bus
 		(pts
-			(xy 111.76 109.22) (xy 111.76 99.06)
+			(xy 143.51 99.06) (xy 107.95 99.06)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "22cb1f8f-152c-4fb2-a693-ebded3c59772")
+		(uuid "230cf8c2-0a41-4102-b595-c6a0abfe9926")
 	)
 	(wire
 		(pts
@@ -352,6 +356,16 @@
 	)
 	(bus
 		(pts
+			(xy 107.95 99.06) (xy 107.95 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b7b287d0-099e-4945-aac4-7386a5c6e090")
+	)
+	(bus
+		(pts
 			(xy 162.56 52.07) (xy 198.12 52.07)
 		)
 		(stroke
@@ -412,16 +426,6 @@
 	)
 	(bus
 		(pts
-			(xy 111.76 99.06) (xy 143.51 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e0a7d9b4-ddec-4499-bcd7-bd827a1b3944")
-	)
-	(bus
-		(pts
 			(xy 148.59 82.55) (xy 148.59 109.22)
 		)
 		(stroke
@@ -452,7 +456,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 66.04 115.57 0)
+		(at 48.26 115.57 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -461,7 +465,7 @@
 		(fields_autoplaced yes)
 		(uuid "590817ef-dc74-4c2d-bef3-87ae66b2d18b")
 		(property "Reference" "#FLG01"
-			(at 66.04 113.665 0)
+			(at 48.26 113.665 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -470,7 +474,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 66.04 110.49 0)
+			(at 48.26 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -478,7 +482,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 66.04 115.57 0)
+			(at 48.26 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -487,7 +491,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 66.04 115.57 0)
+			(at 48.26 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -496,7 +500,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 66.04 115.57 0)
+			(at 48.26 115.57 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -518,7 +522,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 66.04 116.84 0)
+		(at 48.26 116.84 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -527,7 +531,7 @@
 		(fields_autoplaced yes)
 		(uuid "71a89740-f15a-43ad-94d3-987618c2e30e")
 		(property "Reference" "#PWR01"
-			(at 66.04 123.19 0)
+			(at 48.26 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -536,7 +540,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 66.04 121.92 0)
+			(at 48.26 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -544,7 +548,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 66.04 116.84 0)
+			(at 48.26 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -553,7 +557,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 66.04 116.84 0)
+			(at 48.26 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -562,7 +566,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 66.04 116.84 0)
+			(at 48.26 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -875,7 +879,7 @@
 		)
 	)
 	(sheet
-		(at 95.885 109.22)
+		(at 92.075 109.22)
 		(size 31.115 31.75)
 		(fields_autoplaced yes)
 		(stroke
@@ -887,7 +891,7 @@
 		)
 		(uuid "e8ca79a7-19fa-4dcb-a1d0-42310c6e9032")
 		(property "Sheetname" "PSRAM"
-			(at 95.1734 140.97 90)
+			(at 92.075 108.5084 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -896,7 +900,7 @@
 			)
 		)
 		(property "Sheetfile" "psram.kicad_sch"
-			(at 127.5846 140.97 90)
+			(at 92.075 141.5546 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -905,7 +909,7 @@
 			)
 		)
 		(pin "SPI{~{CS}, SCK, MOSI, MISO}" bidirectional
-			(at 111.76 109.22 90)
+			(at 107.95 109.22 90)
 			(effects
 				(font
 					(size 1.27 1.27)

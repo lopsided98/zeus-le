@@ -4,6 +4,9 @@
 	(generator_version "8.0")
 	(uuid "b6bb8ec7-f204-4253-b648-07ff1294e288")
 	(paper "A4")
+	(title_block
+		(title "ADC and input circuitry")
+	)
 	(lib_symbols
 		(symbol "Connector_Generic:Conn_01x05"
 			(pin_names

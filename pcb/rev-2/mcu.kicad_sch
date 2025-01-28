@@ -4,6 +4,10 @@
 	(generator_version "8.0")
 	(uuid "2c245749-172a-4a1f-99f2-58305b9f53da")
 	(paper "A4")
+	(title_block
+		(title "nRF53 Microcontroller")
+		(rev "2")
+	)
 	(lib_symbols
 		(symbol "Connector_Generic:Conn_02x05_Odd_Even"
 			(pin_names
@@ -3655,22 +3659,13 @@
 		(uuid "d83d3ab7-282e-4a3b-acda-837fdd72e4e5")
 	)
 	(bus_entry
-		(at 142.24 160.02)
+		(at 142.24 154.94)
 		(size 2.54 2.54)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "193efd67-742a-400d-bd35-d2dc731cc94e")
-	)
-	(bus_entry
-		(at 142.24 157.48)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "19718e0f-edbe-4a92-91b5-464607530530")
+		(uuid "0575270d-654a-4fab-aae7-ae629c83676d")
 	)
 	(bus_entry
 		(at 38.1 55.88)
@@ -3680,15 +3675,6 @@
 			(type default)
 		)
 		(uuid "276598f1-90d6-4551-a85e-f8754f3e4097")
-	)
-	(bus_entry
-		(at 142.24 154.94)
-		(size 2.54 2.54)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2c637c95-2b99-4842-b556-20ef6960af95")
 	)
 	(bus_entry
 		(at 68.58 111.76)
@@ -3709,13 +3695,13 @@
 		(uuid "52ebd215-f180-452d-b84c-e08ad5e8d75d")
 	)
 	(bus_entry
-		(at 142.24 162.56)
+		(at 142.24 152.4)
 		(size 2.54 2.54)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "648664af-d25b-49bb-b6a5-b3fe4cba7d4a")
+		(uuid "620ffbbd-7dd9-4b61-ab0d-ac98f1c0b0da")
 	)
 	(bus_entry
 		(at 38.1 59.69)
@@ -3763,6 +3749,15 @@
 		(uuid "a4409d05-afa1-4d0f-a015-9345b41696f2")
 	)
 	(bus_entry
+		(at 142.24 157.48)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ab74ab3f-7606-42b9-a993-f7e98b165fc2")
+	)
+	(bus_entry
 		(at 68.58 116.84)
 		(size 2.54 2.54)
 		(stroke
@@ -3779,6 +3774,15 @@
 			(type default)
 		)
 		(uuid "ec225b3a-7cb8-4214-a592-8ee7551ecd1f")
+	)
+	(bus_entry
+		(at 142.24 149.86)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f4430a1d-8a10-4680-b81e-26bc9b6073c5")
 	)
 	(bus_entry
 		(at 242.57 133.35)
@@ -4339,6 +4343,16 @@
 		)
 		(uuid "650ae7da-1e36-473e-bde8-dac6b66a29d0")
 	)
+	(bus
+		(pts
+			(xy 144.78 154.94) (xy 144.78 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6586cc2e-c57b-4ef4-b4cb-9c47709ca7ac")
+	)
 	(wire
 		(pts
 			(xy 68.58 85.09) (xy 74.93 85.09)
@@ -4521,13 +4535,23 @@
 	)
 	(bus
 		(pts
-			(xy 144.78 157.48) (xy 144.78 160.02)
+			(xy 147.32 160.02) (xy 144.78 160.02)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "9d7063dc-b357-4f92-bbcd-9cf5480778b6")
+		(uuid "982a7559-dc66-4f45-87a0-f11bd3cc790a")
+	)
+	(bus
+		(pts
+			(xy 144.78 152.4) (xy 144.78 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9adfc7f8-91aa-4c29-84ff-6a1390d5460e")
 	)
 	(wire
 		(pts
@@ -4649,16 +4673,6 @@
 		)
 		(uuid "bc1381bb-70c0-4b80-af65-df839a438e48")
 	)
-	(bus
-		(pts
-			(xy 144.78 160.02) (xy 144.78 162.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bc902af9-c332-4a97-976a-0688fea78ceb")
-	)
 	(wire
 		(pts
 			(xy 257.81 62.23) (xy 271.78 62.23)
@@ -4749,16 +4763,6 @@
 		)
 		(uuid "ce4ceabc-c947-42fb-9f40-a5bca5b3ca32")
 	)
-	(bus
-		(pts
-			(xy 147.32 165.1) (xy 144.78 165.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cfa5e258-5127-4666-9acd-67e147d2f045")
-	)
 	(wire
 		(pts
 			(xy 80.01 110.49) (xy 85.09 110.49)
@@ -4818,6 +4822,16 @@
 			(type default)
 		)
 		(uuid "db4abca7-ddce-467b-9962-330186609e8f")
+	)
+	(bus
+		(pts
+			(xy 144.78 157.48) (xy 144.78 160.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dd1a9679-6561-4e40-abb6-85ea74952f0c")
 	)
 	(wire
 		(pts
@@ -4898,16 +4912,6 @@
 			(type default)
 		)
 		(uuid "f3a7135a-82fe-42fd-ae46-c55f853c1597")
-	)
-	(bus
-		(pts
-			(xy 144.78 162.56) (xy 144.78 165.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f47d1f31-e1c6-4e10-acea-f32f38bb1002")
 	)
 	(wire
 		(pts
@@ -5361,7 +5365,7 @@
 	)
 	(hierarchical_label "RAM{~{CS}, SCK, MOSI, MISO}"
 		(shape bidirectional)
-		(at 147.32 165.1 0)
+		(at 147.32 160.02 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5369,7 +5373,7 @@
 			)
 			(justify left)
 		)
-		(uuid "63010524-298b-47b5-a26a-85111c1d1ae3")
+		(uuid "8461139d-1fd7-4b7d-bef0-5bdccae078e7")
 	)
 	(hierarchical_label "CHG_INT"
 		(shape input)

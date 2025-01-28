@@ -4,6 +4,9 @@
 	(generator_version "8.0")
 	(uuid "4afd586f-0a7b-40cf-9268-999421e3f736")
 	(paper "A4")
+	(title_block
+		(title "PSRAM")
+	)
 	(lib_symbols
 		(symbol "Device:C_Small"
 			(pin_numbers hide)
