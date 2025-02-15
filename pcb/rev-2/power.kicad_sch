@@ -4090,7 +4090,7 @@
 		(uuid "4e1e92ec-8716-4132-8d29-1742f82e9534")
 	)
 	(junction
-		(at 119.38 92.71)
+		(at 114.3 92.71)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "5a5291db-8e37-4144-a63f-80fa31bf168c")
@@ -4120,13 +4120,13 @@
 		(uuid "8780e35e-12ba-4c62-b9bc-35c3354879a6")
 	)
 	(junction
-		(at 128.27 107.95)
+		(at 123.19 107.95)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8bca53d3-3887-490c-9298-8e175e123e81")
 	)
 	(junction
-		(at 142.24 115.57)
+		(at 137.16 115.57)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8d6efe4c-c3b3-47ac-b9ca-d48746593529")
@@ -4180,7 +4180,7 @@
 		(uuid "c34aee21-2b1c-4ceb-b56e-5139a4aceb0c")
 	)
 	(junction
-		(at 161.29 92.71)
+		(at 156.21 92.71)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "c8d1c7c3-73af-45b2-8791-02a0b7b7344d")
@@ -4359,7 +4359,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 100.33) (xy 128.27 107.95)
+			(xy 123.19 100.33) (xy 123.19 107.95)
 		)
 		(stroke
 			(width 0)
@@ -4429,7 +4429,7 @@
 	)
 	(wire
 		(pts
-			(xy 154.94 92.71) (xy 161.29 92.71)
+			(xy 149.86 92.71) (xy 156.21 92.71)
 		)
 		(stroke
 			(width 0)
@@ -4449,7 +4449,7 @@
 	)
 	(wire
 		(pts
-			(xy 156.21 100.33) (xy 156.21 110.49)
+			(xy 151.13 100.33) (xy 151.13 110.49)
 		)
 		(stroke
 			(width 0)
@@ -4469,7 +4469,7 @@
 	)
 	(wire
 		(pts
-			(xy 83.82 92.71) (xy 119.38 92.71)
+			(xy 83.82 92.71) (xy 114.3 92.71)
 		)
 		(stroke
 			(width 0)
@@ -4539,7 +4539,7 @@
 	)
 	(wire
 		(pts
-			(xy 156.21 110.49) (xy 157.48 110.49)
+			(xy 151.13 110.49) (xy 152.4 110.49)
 		)
 		(stroke
 			(width 0)
@@ -4699,7 +4699,7 @@
 	)
 	(wire
 		(pts
-			(xy 154.94 100.33) (xy 156.21 100.33)
+			(xy 149.86 100.33) (xy 151.13 100.33)
 		)
 		(stroke
 			(width 0)
@@ -4719,7 +4719,7 @@
 	)
 	(wire
 		(pts
-			(xy 181.61 22.86) (xy 201.93 22.86)
+			(xy 181.61 22.86) (xy 204.47 22.86)
 		)
 		(stroke
 			(width 0)
@@ -4729,7 +4729,7 @@
 	)
 	(wire
 		(pts
-			(xy 142.24 116.84) (xy 142.24 115.57)
+			(xy 137.16 116.84) (xy 137.16 115.57)
 		)
 		(stroke
 			(width 0)
@@ -4949,7 +4949,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 107.95) (xy 128.27 115.57)
+			(xy 123.19 107.95) (xy 123.19 115.57)
 		)
 		(stroke
 			(width 0)
@@ -5069,7 +5069,7 @@
 	)
 	(wire
 		(pts
-			(xy 119.38 92.71) (xy 129.54 92.71)
+			(xy 114.3 92.71) (xy 124.46 92.71)
 		)
 		(stroke
 			(width 0)
@@ -5219,7 +5219,7 @@
 	)
 	(wire
 		(pts
-			(xy 119.38 92.71) (xy 119.38 93.98)
+			(xy 114.3 92.71) (xy 114.3 93.98)
 		)
 		(stroke
 			(width 0)
@@ -5239,7 +5239,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 100.33) (xy 129.54 100.33)
+			(xy 123.19 100.33) (xy 124.46 100.33)
 		)
 		(stroke
 			(width 0)
@@ -5379,7 +5379,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 107.95) (xy 129.54 107.95)
+			(xy 123.19 107.95) (xy 124.46 107.95)
 		)
 		(stroke
 			(width 0)
@@ -5389,7 +5389,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 115.57) (xy 142.24 115.57)
+			(xy 123.19 115.57) (xy 137.16 115.57)
 		)
 		(stroke
 			(width 0)
@@ -5559,7 +5559,7 @@
 	)
 	(wire
 		(pts
-			(xy 161.29 92.71) (xy 186.69 92.71)
+			(xy 156.21 92.71) (xy 186.69 92.71)
 		)
 		(stroke
 			(width 0)
@@ -5659,7 +5659,7 @@
 	)
 	(wire
 		(pts
-			(xy 161.29 92.71) (xy 161.29 93.98)
+			(xy 156.21 92.71) (xy 156.21 93.98)
 		)
 		(stroke
 			(width 0)
@@ -6138,7 +6138,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 16V, X7R"
+		(property "Description" "Capacitor, decoupling, 16V, X7R"
 			(at 181.61 26.67 0)
 			(effects
 				(font
@@ -6334,7 +6334,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7µF"
+		(property "Value" "10µF"
 			(at 255.27 107.9499 0)
 			(effects
 				(font
@@ -6343,7 +6343,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 251.46 106.68 0)
 			(effects
 				(font
@@ -6361,7 +6361,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 25V, X7R, >1µF after derating"
+		(property "Description" "Capacitor, decoupling, 10V, X5R, >2.2µF after derating"
 			(at 251.46 106.68 0)
 			(effects
 				(font
@@ -6370,7 +6370,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "C1608X5R1E475K080AC"
+		(property "manf#" "CL05A106MP6NUN8"
 			(at 251.46 106.68 0)
 			(effects
 				(font
@@ -6462,7 +6462,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 161.29 99.06 0)
+		(at 156.21 99.06 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6471,7 +6471,7 @@
 		(fields_autoplaced yes)
 		(uuid "1c80beb7-c825-4fd7-8d5f-b36e1bad1bc5")
 		(property "Reference" "#PWR015"
-			(at 161.29 105.41 0)
+			(at 156.21 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6480,7 +6480,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 161.29 104.14 0)
+			(at 156.21 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6488,7 +6488,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 161.29 99.06 0)
+			(at 156.21 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6497,7 +6497,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 161.29 99.06 0)
+			(at 156.21 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6506,7 +6506,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 161.29 99.06 0)
+			(at 156.21 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7225,7 +7225,7 @@
 	)
 	(symbol
 		(lib_id "zeus-le:KTS1662")
-		(at 142.24 99.06 0)
+		(at 137.16 99.06 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7234,7 +7234,7 @@
 		(fields_autoplaced yes)
 		(uuid "3c33f1b0-b6d3-4941-a1a1-ed724a9c09ac")
 		(property "Reference" "U3"
-			(at 142.24 85.09 0)
+			(at 137.16 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7242,7 +7242,7 @@
 			)
 		)
 		(property "Value" "KTS1662EUW-TR"
-			(at 142.24 87.63 0)
+			(at 137.16 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7250,7 +7250,7 @@
 			)
 		)
 		(property "Footprint" "zeus-le:Kinetic_WLCSP-12_1.94x1.28mm_Layout4x3_P0.4mm_Ball0.25mm_Pad0.25mm_NSMD"
-			(at 145.288 88.9 0)
+			(at 140.208 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7259,7 +7259,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.kinet-ic.com/uploads/KTS1662-04d.pdf"
-			(at 142.494 129.54 0)
+			(at 137.414 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7268,7 +7268,7 @@
 			)
 		)
 		(property "Description" "Adjustable Overvoltage Protection Switch, WLCSP-12"
-			(at 141.986 126.746 0)
+			(at 136.906 126.746 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7277,7 +7277,7 @@
 			)
 		)
 		(property "manf#" " KTS1662EUW-TR"
-			(at 142.24 99.06 0)
+			(at 137.16 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7415,7 +7415,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7µF"
+		(property "Value" "10µF"
 			(at 201.93 80.0099 0)
 			(effects
 				(font
@@ -7424,7 +7424,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 205.74 78.74 0)
 			(effects
 				(font
@@ -7442,7 +7442,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, connected to battery; check leakage"
+		(property "Description" "Capacitor, decoupling, >1µF, connected to battery; check leakage"
 			(at 205.74 78.74 0)
 			(effects
 				(font
@@ -7451,7 +7451,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "C1608X5R1E475K080AC"
+		(property "manf#" "CL05A106MP6NUN8"
 			(at 205.74 78.74 0)
 			(effects
 				(font
@@ -7832,7 +7832,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 142.24 116.84 0)
+		(at 137.16 116.84 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7841,7 +7841,7 @@
 		(fields_autoplaced yes)
 		(uuid "5cbd79aa-ba05-44b4-9628-62862e183c84")
 		(property "Reference" "#PWR012"
-			(at 142.24 123.19 0)
+			(at 137.16 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7850,7 +7850,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 142.24 121.92 0)
+			(at 137.16 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7858,7 +7858,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 142.24 116.84 0)
+			(at 137.16 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7867,7 +7867,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 142.24 116.84 0)
+			(at 137.16 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7876,7 +7876,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 142.24 116.84 0)
+			(at 137.16 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8919,7 +8919,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 16V, X7R"
+		(property "Description" "Capacitor, decoupling, 16V, X7R"
 			(at 156.21 26.67 0)
 			(effects
 				(font
@@ -8954,7 +8954,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 201.93 22.86 270)
+		(at 204.47 22.86 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8962,7 +8962,7 @@
 		(dnp no)
 		(uuid "83fc98eb-9c76-461b-99ab-812c13972ff6")
 		(property "Reference" "#PWR025"
-			(at 198.12 22.86 0)
+			(at 200.66 22.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8971,7 +8971,7 @@
 			)
 		)
 		(property "Value" "VDDD"
-			(at 205.74 22.8599 90)
+			(at 208.28 22.8599 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8980,7 +8980,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 201.93 22.86 0)
+			(at 204.47 22.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8989,7 +8989,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 201.93 22.86 0)
+			(at 204.47 22.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8998,7 +8998,7 @@
 			)
 		)
 		(property "Description" "Digital supply, 3.4V"
-			(at 201.93 22.86 0)
+			(at 204.47 22.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9115,7 +9115,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7µF"
+		(property "Value" "10µF"
 			(at 182.88 97.7899 0)
 			(effects
 				(font
@@ -9124,7 +9124,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 186.69 96.52 0)
 			(effects
 				(font
@@ -9142,7 +9142,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 10V, >1µF after derating"
+		(property "Description" "Capacitor, 10V, X5R, >1µF after derating"
 			(at 186.69 96.52 0)
 			(effects
 				(font
@@ -9151,7 +9151,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "C1608X5R1E475K080AC"
+		(property "manf#" "CL05A106MP6NUN8"
 			(at 186.69 96.52 0)
 			(effects
 				(font
@@ -9177,7 +9177,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 161.29 96.52 0)
+		(at 156.21 96.52 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9186,7 +9186,7 @@
 		(fields_autoplaced yes)
 		(uuid "891f417b-0b4e-4aea-9394-63295f12a7ff")
 		(property "Reference" "C5"
-			(at 163.83 95.2562 0)
+			(at 158.75 95.2562 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9194,8 +9194,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1µF"
-			(at 163.83 97.7962 0)
+		(property "Value" "2.2µF"
+			(at 158.75 97.7962 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9203,8 +9203,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 161.29 96.52 0)
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
+			(at 156.21 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9213,7 +9213,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 161.29 96.52 0)
+			(at 156.21 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9221,8 +9221,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 10V, X7R"
-			(at 161.29 96.52 0)
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
+			(at 156.21 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9230,8 +9230,8 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "CL10B105KP8NNNC"
-			(at 161.29 96.52 0)
+		(property "manf#" "GRM155R61A225ME01D"
+			(at 156.21 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9322,7 +9322,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 119.38 96.52 0)
+		(at 114.3 96.52 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9331,7 +9331,7 @@
 		(fields_autoplaced yes)
 		(uuid "929d106a-7a45-47e4-b7d8-9ba975ff77bb")
 		(property "Reference" "C3"
-			(at 121.92 95.2562 0)
+			(at 116.84 95.2562 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9340,7 +9340,7 @@
 			)
 		)
 		(property "Value" "1µF"
-			(at 121.92 97.7962 0)
+			(at 116.84 97.7962 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9349,7 +9349,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 119.38 96.52 0)
+			(at 114.3 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9358,7 +9358,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 119.38 96.52 0)
+			(at 114.3 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9367,7 +9367,7 @@
 			)
 		)
 		(property "Description" "Capacitor, decoupling, 50V, X5R"
-			(at 119.38 96.52 0)
+			(at 114.3 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9376,7 +9376,7 @@
 			)
 		)
 		(property "manf#" "CL10A105KB8NNNC"
-			(at 119.38 96.52 0)
+			(at 114.3 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9523,7 +9523,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, 16V, X7R"
+		(property "Description" "Capacitor, decoupling, 16V, X7R"
 			(at 168.91 26.67 0)
 			(effects
 				(font
@@ -10061,7 +10061,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10µF"
+		(property "Value" "22µF"
 			(at 241.3 91.4399 0)
 			(effects
 				(font
@@ -10088,7 +10088,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 10V, X5R, >1µF after derating"
+		(property "Description" "Capacitor, decoupling, 16V, X7R"
 			(at 237.49 90.17 0)
 			(effects
 				(font
@@ -10097,7 +10097,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "GRM188R61A106ME69D"
+		(property "manf#" "CL10A226MP8NUNE"
 			(at 237.49 90.17 0)
 			(effects
 				(font
@@ -10206,7 +10206,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7µF"
+		(property "Value" "10µF"
 			(at 242.57 113.0299 0)
 			(effects
 				(font
@@ -10215,7 +10215,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 238.76 111.76 0)
 			(effects
 				(font
@@ -10233,7 +10233,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 25V, X7R, >1µF after derating"
+		(property "Description" "Capacitor, decoupling, 10V, X5R, 2.2µF recommended"
 			(at 238.76 111.76 0)
 			(effects
 				(font
@@ -10242,7 +10242,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "C1608X5R1E475K080AC"
+		(property "manf#" "CL05A106MP6NUN8"
 			(at 238.76 111.76 0)
 			(effects
 				(font
@@ -10334,7 +10334,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 157.48 110.49 270)
+		(at 152.4 110.49 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10342,7 +10342,7 @@
 		(dnp no)
 		(uuid "b2e7cde9-dead-4678-866c-1a75533edb4b")
 		(property "Reference" "#PWR014"
-			(at 153.67 110.49 0)
+			(at 148.59 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10351,7 +10351,7 @@
 			)
 		)
 		(property "Value" "VBUS_DET"
-			(at 161.29 110.4899 90)
+			(at 156.21 110.4899 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10360,7 +10360,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 157.48 110.49 0)
+			(at 152.4 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10369,7 +10369,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 157.48 110.49 0)
+			(at 152.4 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10378,7 +10378,7 @@
 			)
 		)
 		(property "Description" "5V USB Power, max 30mA"
-			(at 157.48 110.49 0)
+			(at 152.4 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11187,7 +11187,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 6.3V, X5R"
+		(property "Description" "Capacitor, filtering, 6.3V, X5R"
 			(at 254 52.07 0)
 			(effects
 				(font
@@ -11370,7 +11370,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7µF"
+		(property "Value" "10µF"
 			(at 267.97 105.4099 0)
 			(effects
 				(font
@@ -11379,7 +11379,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 264.16 104.14 0)
 			(effects
 				(font
@@ -11397,7 +11397,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 25V, X7R, >1µF after derating"
+		(property "Description" "Capacitor, decoupling, 10V, X5R, >1µF after derating"
 			(at 264.16 104.14 0)
 			(effects
 				(font
@@ -11406,7 +11406,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "C1608X5R1E475K080AC"
+		(property "manf#" "CL05A106MP6NUN8"
 			(at 264.16 104.14 0)
 			(effects
 				(font
@@ -11642,7 +11642,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 119.38 99.06 0)
+		(at 114.3 99.06 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11651,7 +11651,7 @@
 		(fields_autoplaced yes)
 		(uuid "fdbc1ed1-aa7c-4f17-86ca-8d6cb5b28217")
 		(property "Reference" "#PWR010"
-			(at 119.38 105.41 0)
+			(at 114.3 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11660,7 +11660,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 119.38 104.14 0)
+			(at 114.3 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11668,7 +11668,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 119.38 99.06 0)
+			(at 114.3 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11677,7 +11677,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 119.38 99.06 0)
+			(at 114.3 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11686,7 +11686,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 119.38 99.06 0)
+			(at 114.3 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)

@@ -1796,7 +1796,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1µF"
+		(property "Value" "2.2µF"
 			(at 119.38 78.7462 0)
 			(effects
 				(font
@@ -1805,7 +1805,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 116.84 77.47 0)
 			(effects
 				(font
@@ -1823,7 +1823,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 10V, X7R"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
 			(at 116.84 77.47 0)
 			(effects
 				(font
@@ -1832,7 +1832,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "CL10B105KP8NNNC"
+		(property "manf#" "GRM155R61A225ME01D"
 			(at 116.84 77.47 0)
 			(effects
 				(font

@@ -3824,7 +3824,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1µF"
+		(property "Value" "2.2µF"
 			(at 273.05 60.9662 0)
 			(effects
 				(font
@@ -3833,7 +3833,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 270.51 59.69 0)
 			(effects
 				(font
@@ -3851,7 +3851,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 10V, X7R"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
 			(at 270.51 59.69 0)
 			(effects
 				(font
@@ -3860,7 +3860,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "CL10B105KP8NNNC"
+		(property "manf#" "GRM155R61A225ME01D"
 			(at 270.51 59.69 0)
 			(effects
 				(font
@@ -4413,7 +4413,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1µF"
+		(property "Value" "2.2µF"
 			(at 120.65 39.3762 0)
 			(effects
 				(font
@@ -4422,7 +4422,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 118.11 38.1 0)
 			(effects
 				(font
@@ -4440,7 +4440,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 10V, X7R"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
 			(at 118.11 38.1 0)
 			(effects
 				(font
@@ -4449,7 +4449,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "CL10B105KP8NNNC"
+		(property "manf#" "GRM155R61A225ME01D"
 			(at 118.11 38.1 0)
 			(effects
 				(font
@@ -5819,7 +5819,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1µF"
+		(property "Value" "2.2µF"
 			(at 127 69.8562 0)
 			(effects
 				(font
@@ -5828,7 +5828,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "zeus-le:C_0402_1005Metric_Silkscreen_Clearance"
 			(at 129.54 68.58 0)
 			(effects
 				(font
@@ -5846,7 +5846,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor, decoupling, 10V, X7R"
+		(property "Description" "Capacitor, decoupling, 10V, X5R"
 			(at 129.54 68.58 0)
 			(effects
 				(font
@@ -5855,7 +5855,7 @@
 				(hide yes)
 			)
 		)
-		(property "manf#" "CL10B105KP8NNNC"
+		(property "manf#" "GRM155R61A225ME01D"
 			(at 129.54 68.58 0)
 			(effects
 				(font
