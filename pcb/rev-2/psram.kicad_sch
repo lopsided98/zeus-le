@@ -1748,7 +1748,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "APS1604M-3SQR-ZR"
+		(property "Value" "APS6404L-3SQR-ZR"
 			(at 193.04 88.8999 0)
 			(effects
 				(font
@@ -1766,7 +1766,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.apmemory.com/wp-content/uploads/APM_PSRAM_QSPI-APS1604M-3SQR-v2.7-PKG.pdf"
+		(property "Datasheet" "https://www.mouser.com/datasheet/2/1127/APM_PSRAM_QSPI_APS6404L_3SQR_v2_3_PKG-1954826.pdf"
 			(at 194.31 74.93 0)
 			(effects
 				(font
@@ -1775,7 +1775,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "16 Mbit serial pseudo SRAM device organized as 2Mx8 bits, 3.3 VDD, USON-8"
+		(property "Description" "64 Mbit serial pseudo SRAM device organized as 8Mx8 bits, 3.3 VDD, USON-8"
 			(at 184.15 87.63 0)
 			(effects
 				(font
