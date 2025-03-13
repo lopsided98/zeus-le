@@ -65,7 +65,6 @@ int main(void) {
 
     usb_init();
     sd_card_init();
-    ftp_init();
     sync_timer_init();
     record_init();
     audio_init();
