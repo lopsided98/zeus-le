@@ -256,10 +256,6 @@ static void audio_thread_run(void *p1, void *p2, void *p3) {
         // Don't pass buffer to recording module if we don't have a valid
         // timestamp for it
         if (block_start_time_valid) {
-            // Audio is transferred as 32-bit samples but we want to save as
-            // 24-bit
-            block_size = audio_buffer_32_to_24(block_buf, block_size);
-
             const struct audio_block block = {
                 .buf = block_buf,
                 .len = block_size,
@@ -453,7 +449,7 @@ int audio_init() {
         .dai_type = AUDIO_DAI_TYPE_I2S,
         .dai_cfg.i2s =
             {
-                .word_size = 32,
+                .word_size = 16,
                 .channels = 2,
                 .format = I2S_FMT_DATA_FORMAT_LEFT_JUSTIFIED,
                 .options = I2S_OPT_BIT_CLK_MASTER | I2S_OPT_FRAME_CLK_MASTER,
