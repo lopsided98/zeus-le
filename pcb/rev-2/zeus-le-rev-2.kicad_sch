@@ -1,7 +1,7 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "45d4abf7-8cf8-470c-bd26-f127279c8d1b")
 	(paper "A4")
 	(title_block
@@ -11,9 +11,13 @@
 	(lib_symbols
 		(symbol "power:GND"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -104,12 +108,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:PWR_FLAG"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -200,6 +209,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 	)
 	(junction
@@ -589,6 +599,10 @@
 	(sheet
 		(at 53.34 49.53)
 		(size 34.29 33.02)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -618,73 +632,73 @@
 		)
 		(pin "VDDD_VSEL" input
 			(at 87.63 62.23 0)
+			(uuid "279d2ba8-88a7-45e4-9308-c0f33f33c8ab")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "279d2ba8-88a7-45e4-9308-c0f33f33c8ab")
 		)
 		(pin "CHG_LP" input
 			(at 87.63 67.31 0)
+			(uuid "f4503a3b-11de-4fdc-a7a2-b7c7dc23ce16")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "f4503a3b-11de-4fdc-a7a2-b7c7dc23ce16")
 		)
 		(pin "CHG_INT" output
 			(at 87.63 69.85 0)
+			(uuid "37c99b4e-2eb5-4b79-b6ed-b9dbf14dc1eb")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "37c99b4e-2eb5-4b79-b6ed-b9dbf14dc1eb")
 		)
 		(pin "CHG_PG" output
 			(at 87.63 72.39 0)
+			(uuid "9ce0dce6-d991-4e9e-8581-aae138a763e5")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "9ce0dce6-d991-4e9e-8581-aae138a763e5")
 		)
 		(pin "I2C{SDA, SCL}" bidirectional
 			(at 87.63 80.01 0)
+			(uuid "a1dc04f7-0c6e-4782-a46b-7d0f46cfc839")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "a1dc04f7-0c6e-4782-a46b-7d0f46cfc839")
 		)
 		(pin "USB{D-,D+}" bidirectional
 			(at 87.63 52.07 0)
+			(uuid "4da5854f-02d5-4961-b88d-acf1a8a45e49")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "4da5854f-02d5-4961-b88d-acf1a8a45e49")
 		)
 		(pin "CHG_EN" input
 			(at 87.63 74.93 0)
+			(uuid "eabbd9d4-2b5c-48db-b1a8-9019648c8705")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "eabbd9d4-2b5c-48db-b1a8-9019648c8705")
 		)
 		(instances
 			(project "zeus-le-rev-2"
@@ -697,6 +711,10 @@
 	(sheet
 		(at 198.12 49.53)
 		(size 35.56 33.02)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -726,33 +744,33 @@
 		)
 		(pin "I2S{SCK, WS, SD}" input
 			(at 198.12 52.07 180)
+			(uuid "7b3141c7-7f56-4daf-a3f1-9ee0d4091484")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "7b3141c7-7f56-4daf-a3f1-9ee0d4091484")
 		)
 		(pin "I2C{SDA, SCL}" bidirectional
 			(at 198.12 80.01 180)
+			(uuid "fc4348bc-c26a-485c-bcbc-8bd3b12ef900")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "fc4348bc-c26a-485c-bcbc-8bd3b12ef900")
 		)
 		(pin "IRQ" output
 			(at 198.12 54.61 180)
+			(uuid "03a6981b-cc88-4232-83ee-f1e380f5076c")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "03a6981b-cc88-4232-83ee-f1e380f5076c")
 		)
 		(instances
 			(project "zeus-le-rev-2"
@@ -765,6 +783,10 @@
 	(sheet
 		(at 179.07 113.03)
 		(size 22.86 21.59)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -794,13 +816,13 @@
 		)
 		(pin "I2C{SDA, SCL}" bidirectional
 			(at 190.5 113.03 90)
+			(uuid "d92a8419-9cc7-4cac-bfb8-e0ad9e7bee8e")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "d92a8419-9cc7-4cac-bfb8-e0ad9e7bee8e")
 		)
 		(instances
 			(project "zeus-le-rev-2"
@@ -813,6 +835,10 @@
 	(sheet
 		(at 132.08 109.22)
 		(size 36.83 31.75)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -842,33 +868,33 @@
 		)
 		(pin "EN" input
 			(at 151.13 109.22 90)
+			(uuid "7cbb4e7f-21ce-4d9d-82f3-dc509327f995")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "7cbb4e7f-21ce-4d9d-82f3-dc509327f995")
 		)
 		(pin "SPI{~{CS}, SCK, MOSI, MISO}" bidirectional
 			(at 148.59 109.22 90)
+			(uuid "fd234372-c81e-44d1-8e26-40f3e41a810e")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "fd234372-c81e-44d1-8e26-40f3e41a810e")
 		)
 		(pin "DET" output
 			(at 153.67 109.22 90)
+			(uuid "cbc295ae-491d-48c8-a8f8-bc7c4588076c")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "cbc295ae-491d-48c8-a8f8-bc7c4588076c")
 		)
 		(instances
 			(project "zeus-le-rev-2"
@@ -881,6 +907,10 @@
 	(sheet
 		(at 92.075 109.22)
 		(size 31.115 31.75)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -910,13 +940,13 @@
 		)
 		(pin "SPI{~{CS}, SCK, MOSI, MISO}" bidirectional
 			(at 107.95 109.22 90)
+			(uuid "14cfd0aa-df32-4d26-b032-296af46e73f0")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "14cfd0aa-df32-4d26-b032-296af46e73f0")
 		)
 		(instances
 			(project "zeus-le-rev-2"
@@ -929,6 +959,10 @@
 	(sheet
 		(at 116.84 49.53)
 		(size 45.72 33.02)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -958,133 +992,133 @@
 		)
 		(pin "I2C{SDA, SCL}" bidirectional
 			(at 138.43 82.55 270)
+			(uuid "d66fa7ed-da9e-44e1-9afe-8dafab750169")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "d66fa7ed-da9e-44e1-9afe-8dafab750169")
 		)
 		(pin "I2S{SCK, WS, SD}" input
 			(at 162.56 52.07 0)
+			(uuid "522be49d-2588-4567-81c9-a99860ebbb13")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "522be49d-2588-4567-81c9-a99860ebbb13")
 		)
 		(pin "USB{D-,D+}" bidirectional
 			(at 116.84 52.07 180)
+			(uuid "8b95fb36-7cb1-415d-b72e-1ebfe80f83c7")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "8b95fb36-7cb1-415d-b72e-1ebfe80f83c7")
 		)
 		(pin "SD{~{CS}, SCK, MOSI, MISO}" bidirectional
 			(at 148.59 82.55 270)
+			(uuid "bdc05a7d-0b18-4d16-9964-4dbb254e01e7")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "bdc05a7d-0b18-4d16-9964-4dbb254e01e7")
 		)
 		(pin "ADC_IRQ" input
 			(at 162.56 54.61 0)
+			(uuid "7b64a67f-f031-4d26-a60a-8c384cbf58ab")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify right)
 			)
-			(uuid "7b64a67f-f031-4d26-a60a-8c384cbf58ab")
 		)
 		(pin "SD_DET" input
 			(at 153.67 82.55 270)
+			(uuid "f4fe8746-4e1b-406e-b9cc-83fa62bdf922")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "f4fe8746-4e1b-406e-b9cc-83fa62bdf922")
 		)
 		(pin "SD_EN" output
 			(at 151.13 82.55 270)
+			(uuid "5388ec94-2b78-4489-9b96-98aafc010c54")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "5388ec94-2b78-4489-9b96-98aafc010c54")
 		)
 		(pin "VDDD_VSEL" input
 			(at 116.84 62.23 180)
+			(uuid "5d9ee082-0a16-4cf2-9511-0c58c5a93f27")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "5d9ee082-0a16-4cf2-9511-0c58c5a93f27")
 		)
 		(pin "CHG_INT" input
 			(at 116.84 69.85 180)
+			(uuid "ed8cda29-1b58-4f8d-b688-263296264b66")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "ed8cda29-1b58-4f8d-b688-263296264b66")
 		)
 		(pin "CHG_PG" input
 			(at 116.84 72.39 180)
+			(uuid "5fa7e2b8-dac9-4488-9c0d-2b1f78aae6d4")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "5fa7e2b8-dac9-4488-9c0d-2b1f78aae6d4")
 		)
 		(pin "CHG_LP" output
 			(at 116.84 67.31 180)
+			(uuid "f03a34d9-c74f-457b-8865-46c986799a49")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "f03a34d9-c74f-457b-8865-46c986799a49")
 		)
 		(pin "CHG_EN" output
 			(at 116.84 74.93 180)
+			(uuid "30340df7-ee65-4892-a3b0-d6001a35b840")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "30340df7-ee65-4892-a3b0-d6001a35b840")
 		)
 		(pin "RAM{~{CS}, SCK, MOSI, MISO}" bidirectional
 			(at 143.51 82.55 270)
+			(uuid "a54be999-4dce-4bc2-a7e5-cd6615e8023f")
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
 			)
-			(uuid "a54be999-4dce-4bc2-a7e5-cd6615e8023f")
 		)
 		(instances
 			(project "zeus-le-rev-2"
@@ -1099,4 +1133,5 @@
 			(page "1")
 		)
 	)
+	(embedded_fonts no)
 )
