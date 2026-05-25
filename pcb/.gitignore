@@ -6,3 +6,4 @@ fp-info-cache
 *.net
 *.log
 .~lock*
+.history/
